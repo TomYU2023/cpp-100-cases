@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 56：端口扫描器 - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 56：端口扫描器</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;chrono&gt;</td></tr>
+<tr><td class="ln">6</td><td class="cd" colspan="2">// Windows socket</td></tr>
+<tr><td class="ln">7</td><td class="cd">#include &lt;winsock2.h&gt;</td><td class="cmt">Windows Socket API</td></tr>
+<tr><td class="ln">8</td><td class="cd" colspan="2">#include &lt;ws2tcpip.h&gt;</td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">10</td><td class="cd">#pragma comment(lib, "ws2_32.lib")</td><td class="cmt">链接 ws2_32 库</td></tr>
+<tr><td class="ln">11</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">12</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">14</td><td class="cd" colspan="2">// 检测单个端口是否开放</td></tr>
+<tr><td class="ln">15</td><td class="cd" colspan="2">bool isPortOpen(const string&amp; host, int port, int timeoutMs = 1000) {</td></tr>
+<tr><td class="ln">16</td><td class="cd">    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);</td><td class="cmt">创建 TCP 套接字</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2">    if (sock == INVALID_SOCKET) return false;</td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">    // 设置超时</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">    DWORD timeout = timeoutMs;</td></tr>
+<tr><td class="ln">21</td><td class="cd">    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&amp;timeout, sizeof(timeout));</td><td class="cmt">接收超时</td></tr>
+<tr><td class="ln">22</td><td class="cd">    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&amp;timeout, sizeof(timeout));</td><td class="cmt">发送超时</td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2">    // 配置连接地址</td></tr>
+<tr><td class="ln">25</td><td class="cd">    sockaddr_in addr{};</td><td class="cmt">零初始化</td></tr>
+<tr><td class="ln">26</td><td class="cd">    addr.sin_family = AF_INET;</td><td class="cmt">IPv4</td></tr>
+<tr><td class="ln">27</td><td class="cd">    addr.sin_port   = htons(port);</td><td class="cmt">htons: Host to Network Short（字节序转换）</td></tr>
+<tr><td class="ln">28</td><td class="cd">    inet_pton(AF_INET, host.c_str(), &amp;addr.sin_addr);</td><td class="cmt">IP 字符串转二进制</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">30</td><td class="cd" colspan="2">    // 尝试连接</td></tr>
+<tr><td class="ln">31</td><td class="cd">    int result = connect(sock, (sockaddr*)&amp;addr, sizeof(addr));</td><td class="cmt">connect 返回值：0=成功</td></tr>
+<tr><td class="ln">32</td><td class="cd">    closesocket(sock);</td><td class="cmt">关闭套接字</td></tr>
+<tr><td class="ln">33</td><td class="cd">    return result == 0;</td><td class="cmt">0 表示连接成功，端口开放</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">// 并发扫描一批端口</td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2">vector&lt;int&gt; scanPorts(const string&amp; host, int startPort, int endPort,</td></tr>
+<tr><td class="ln">38</td><td class="cd" colspan="2">                      int numThreads = 8) {</td></tr>
+<tr><td class="ln">39</td><td class="cd">    vector&lt;int&gt; openPorts;</td><td class="cmt">收集开放端口</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2">    vector&lt;thread&gt; threads;</td></tr>
+<tr><td class="ln">41</td><td class="cd">    mutex mtx;</td><td class="cmt">保护 openPorts 的互斥锁</td></tr>
+<tr><td class="ln">42</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">43</td><td class="cd" colspan="2">    int total = endPort - startPort + 1;</td></tr>
+<tr><td class="ln">44</td><td class="cd">    int chunkSize = (total + numThreads - 1) / numThreads;</td><td class="cmt">每个线程的端口数</td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2">    for (int t = 0; t &lt; numThreads; t++) {</td></tr>
+<tr><td class="ln">47</td><td class="cd">        threads.emplace_back([&amp;, t, chunkSize, startPort, endPort]() {</td><td class="cmt">Lambda 捕获</td></tr>
+<tr><td class="ln">48</td><td class="cd">            int stepStart = startPort + t * chunkSize;</td><td class="cmt">起始端口</td></tr>
+<tr><td class="ln">49</td><td class="cd">            int stepEnd   = min(stepStart + chunkSize - 1, endPort);</td><td class="cmt">结束端口</td></tr>
+<tr><td class="ln">50</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2">            for (int port = stepStart; port &lt;= stepEnd; port++) {</td></tr>
+<tr><td class="ln">52</td><td class="cd">                if (isPortOpen(host, port, 500)) {</td><td class="cmt">500ms 超时</td></tr>
+<tr><td class="ln">53</td><td class="cd">                    lock_guard&lt;mutex&gt; lock(mtx);</td><td class="cmt">加锁写入结果</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">                    openPorts.push_back(port);</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2">                    cout &lt;&lt; "[+] Port " &lt;&lt; port &lt;&lt; " is OPEN" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">56</td><td class="cd" colspan="2">                }</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">        });</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">61</td><td class="cd">    for (auto&amp; t : threads) t.join();</td><td class="cmt">等待所有线程</td></tr>
+<tr><td class="ln">62</td><td class="cd" colspan="2">    return openPorts;</td></tr>
+<tr><td class="ln">63</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">64</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">65</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">66</td><td class="cd" colspan="2">    // 初始化 Winsock</td></tr>
+<tr><td class="ln">67</td><td class="cd" colspan="2">    WSADATA wsaData;</td></tr>
+<tr><td class="ln">68</td><td class="cd">    if (WSAStartup(MAKEWORD(2, 2), &amp;wsaData) != 0) {</td><td class="cmt">Windows Socket 初始化</td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2">        cerr &lt;&lt; "WSAStartup failed" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">70</td><td class="cd" colspan="2">        return 1;</td></tr>
+<tr><td class="ln">71</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">72</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2">    // 扫描本地常用端口</td></tr>
+<tr><td class="ln">74</td><td class="cd">    auto ports = scanPorts("127.0.0.1", 80, 1000, 16);</td><td class="cmt">扫描 80-1000 端口，16 线程</td></tr>
+<tr><td class="ln">75</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">76</td><td class="cd" colspan="2">    cout &lt;&lt; "\nOpen ports: ";</td></tr>
+<tr><td class="ln">77</td><td class="cd" colspan="2">    for (int p : ports) cout &lt;&lt; p &lt;&lt; " ";</td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2">    cout &lt;&lt; endl;</td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">80</td><td class="cd">    WSACleanup();</td><td class="cmt">清理 Winsock</td></tr>
+<tr><td class="ln">81</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>Winsock 初始化流程（Windows）</h3>
+<div class="rule"><strong>语法规则：</strong>Windows 下 socket 编程必须先调用 <code>WSAStartup</code> 加载 Winsock DLL，结束时调用 <code>WSACleanup</code>。<code>MAKEWORD(2,2)</code> 请求 2.2 版本。Linux 上直接使用 sys/socket.h，无需初始化。</div>
+<pre class="example"><code>// Windows
+WSADATA wsa;
+WSAStartup(MAKEWORD(2, 2), &wsa);
+// ... socket 操作 ...
+WSACleanup();
+// Linux（无需初始化）
+int sock = socket(AF_INET, SOCK_STREAM, 0);
+close(sock);</code></pre>
+</div>
+<div class="grammar-item">
+<h3>网络字节序：htons / htonl / ntohs / ntohl</h3>
+<div class="rule"><strong>语法规则：</strong>网络传输统一使用<strong>大端字节序</strong>（Network Byte Order）。<code>htons</code>（Host to Network Short）将 16 位整数从主机字节序转为网络字节序。x86 是小端，ARM 可配置，所以网络编程<strong>必须用这些函数</strong>。</div>
+<pre class="example"><code>uint16_t port = 8080;
+// 错误：直接赋值（假设主机是大端）
+addr.sin_port = port;
+// 正确：转为网络字节序
+addr.sin_port = htons(port);
+// 接收时转回：
+int port = ntohs(addr.sin_port);</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>SYN 半开扫描（Stealth Scan）：</strong><pre><code>isPortOpen() 是 TCP Connect 扫描（完成三次握手），会被目标记录。更隐蔽的 SYN 扫描发送 SYN 包后立即响应 RST（不完成握手），需要 RAW Socket 或 pcap 库。</code></pre><p>注意：未经授权的端口扫描可能违反法律法规或服务条款。始终在自己的设备或获得明确授权的目标上测试。</p></li>
+<li><strong>常用端口速查表：</strong><pre><code>21=FTP, 22=SSH, 23=Telnet, 25=SMTP, 53=DNS, 80=HTTP, 110=POP3, 143=IMAP, 443=HTTPS, 993=IMAPS, 995=POPS, 3306=MySQL, 3389=RDP, 5432=PostgreSQL, 6379=Redis, 8080=HTTP-Alt, 27017=MongoDB</code></pre><p>端口扫描工具常用于安全审计和网络排查，nmap 是功能最强的开源端口扫描器。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_055.html">← 案例 55</a><a href="case_057.html">案例 57 →</a>
+</nav>
+</main>
+</body>
+</html>

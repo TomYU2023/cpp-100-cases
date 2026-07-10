@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 52：图片缩略图批量生成（stb_image） - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 52：图片缩略图批量生成（stb_image）</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">// 编译: g++ -std=c++17 case_052.cpp -o thumbnail</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">// stb 是 header-only 库，下载后放在项目目录即可</td></tr>
+<tr><td class="ln">3</td><td class="cd">#define STB_IMAGE_IMPLEMENTATION</td><td class="cmt">定义此宏才能包含实现</td></tr>
+<tr><td class="ln">4</td><td class="cd">#include "stb_image.h"</td><td class="cmt">图像读取（Header-only 库）</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2">#define STB_IMAGE_RESIZE_IMPLEMENTATION</td></tr>
+<tr><td class="ln">6</td><td class="cd">#include "stb_image_resize2.h"</td><td class="cmt">图像缩放（Header-only 库）</td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2">#define STB_IMAGE_WRITE_IMPLEMENTATION</td></tr>
+<tr><td class="ln">8</td><td class="cd">#include "stb_image_write.h"</td><td class="cmt">图像写入</td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">11</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
+<tr><td class="ln">12</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">13</td><td class="cd" colspan="2">#include &lt;filesystem&gt;</td></tr>
+<tr><td class="ln">14</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">15</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">16</td><td class="cd" colspan="2">namespace fs = filesystem;</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">// stb_image 使用 unsigned char 存储像素数据</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">bool resizeImage(const string&amp; inputPath, const string&amp; outputPath,</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">                 int newWidth, int newHeight) {</td></tr>
+<tr><td class="ln">21</td><td class="cd" colspan="2">    int width, height, channels;</td></tr>
+<tr><td class="ln">22</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2">    // stbi_load 读取图片，返回 RGBA 像素数据</td></tr>
+<tr><td class="ln">24</td><td class="cd">    unsigned char* img = stbi_load(inputPath.c_str(),</td><td class="cmt">c_str() 转为 C 风格字符串</td></tr>
+<tr><td class="ln">25</td><td class="cd">                                  &amp;width, &amp;height, &amp;channels, 0);</td><td class="cmt">0 表示保持原始通道数</td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">27</td><td class="cd" colspan="2">    if (!img) {</td></tr>
+<tr><td class="ln">28</td><td class="cd">        cerr &lt;&lt; "Cannot load image: " &lt;&lt; stbi_failure_reason() &lt;&lt; endl;</td><td class="cmt">获取失败原因</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">        return false;</td></tr>
+<tr><td class="ln">30</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">31</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2">    // 分配缩放后的缓冲区</td></tr>
+<tr><td class="ln">33</td><td class="cd" colspan="2">    unsigned char* resized = (unsigned char*)malloc(newWidth * newHeight * channels);</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2">    // stbir_resize_uint8_linear 缩放 RGBA 图片</td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">    stbir_resize_uint8_linear(</td></tr>
+<tr><td class="ln">37</td><td class="cd">        img, width, height, width * channels,</td><td class="cmt">源图 + 行步幅</td></tr>
+<tr><td class="ln">38</td><td class="cd">        resized, newWidth, newHeight, newWidth * channels,</td><td class="cmt">目标 + 行步幅</td></tr>
+<tr><td class="ln">39</td><td class="cd">        (stbir_pixel_layout)channels);</td><td class="cmt">通道布局</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">41</td><td class="cd">    stbi_image_free(img);</td><td class="cmt">释放原图内存</td></tr>
+<tr><td class="ln">42</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">43</td><td class="cd" colspan="2">    // 保存为 PNG</td></tr>
+<tr><td class="ln">44</td><td class="cd">    bool ok = stbi_write_png(outputPath.c_str(),</td><td class="cmt">写入 PNG 文件</td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2">                           newWidth, newHeight, channels,</td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2">                           resized, newWidth * channels);</td></tr>
+<tr><td class="ln">47</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">48</td><td class="cd">    free(resized);</td><td class="cmt">释放缩放缓冲区</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2">    return ok;</td></tr>
+<tr><td class="ln">50</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2">    string input  = "input/high_res_photo.jpg";</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">    string output = "output/thumbnail_300px.png";</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">56</td><td class="cd">    fs::create_directories("output");</td><td class="cmt">确保输出目录存在</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">58</td><td class="cd">    if (resizeImage(input, output, 300, 200)) {</td><td class="cmt">缩放到 300x200</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">        cout &lt;&lt; "Thumbnail created: " &lt;&lt; output &lt;&lt; endl;</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">61</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">62</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">63</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>Header-Only 库的使用方式</h3>
+<div class="rule"><strong>语法规则：</strong>Header-Only 库的所有代码都在 .h 文件中。使用时：(1) 下载 .h 文件放在项目目录；(2) 在<strong>一个 .cpp 文件</strong>中 <code>#define STB_IMAGE_IMPLEMENTATION</code> 再 include；(3) 其他文件直接 include 即可。这种方法避免了链接的麻烦。</div>
+<pre class="example"><code>// ---- image_loader.cpp（唯一的实现文件）----
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+// ---- 其他文件 ----
+#include "stb_image.h"  // 直接使用，无需 DEFINED 宏</code></pre>
+</div>
+<div class="grammar-item">
+<h3>malloc/free 与 RAII 的对比</h3>
+<div class="rule"><strong>语法规则：</strong>stb 库使用 C 风格的 <strong>malloc/free</strong> 管理内存。在现代 C++ 中应优先使用 <code>unique_ptr</code> 配合自定义删除器来包装 C 内存，确保异常安全。</div>
+<pre class="example"><code>// C++ 安全的 stbi 封装
+using stbi_ptr = unique_ptr<unsigned char[], decltype(&stbi_image_free)>;
+stbi_ptr img(stbi_load(path, &w, &h, &c, 0), stbi_image_free);
+// img 离开作用域时自动调用 stbi_image_free</code></pre>
+</div>
+<div class="grammar-item">
+<h3>c_str() 将 std::string 转为 C 字符串</h3>
+<div class="rule"><strong>语法规则：</strong><code>c_str()</code> 返回以 null 结尾的<strong>不可修改</strong>字符数组指针。仅在调用 C API 时使用。注意返回的指针在原始 string 修改或析构后失效—不要保存并长期使用。</div>
+<pre class="example"><code>string path = "image.png";
+FILE* f = fopen(path.c_str(), "rb");  // C API 需要 const char*
+// c_str() 返回的是 const char*，不能修改内容
+// path.data() 在 C++17 后也可读写（非 const 版本）</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>OpenCV 做图像处理（功能更强）：</strong><pre><code>#include <opencv2/opencv.hpp>
+cv::Mat img = cv::imread("photo.jpg");
+cv::Mat resized;
+cv::resize(img, resized, cv::Size(300, 200));
+cv::imwrite("thumb.jpg", resized);</code></pre><p>stb 轻量但功能有限。OpenCV 提供了完整的图像处理能力（滤波、变换、颜色空间转换等），适合复杂的图像处理需求。</p></li>
+<li><strong>批量遍历目录 + 多线程缩放：</strong><pre><code>for (auto& entry : fs::directory_iterator("input")) {
+    if (entry.is_regular_file()) {
+        pool.enqueue([entry] { resizeImage(entry.path().string(), ...); });
+    }
+}</code></pre><p>结合第 51 案例的多线程技术，可以高效地批量处理整个目录的图片。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_051.html">← 案例 51</a><a href="case_053.html">案例 53 →</a>
+</nav>
+</main>
+</body>
+</html>

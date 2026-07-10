@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 95：Raft 共识算法</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_094.html">&#8592; 上一案例</a>    <span class="sep">|</span>
+            <a href="case_096.html">下一案例 &#8594;</a>
+        </div>
+    </nav><main class="container"><h1>案例 95：Raft 共识算法</h1><section class="intro"><p>实现 Raft 算法的核心选举模块：Follower/Candidate/Leader 状态转换，随机超时、投票、心跳机制。</p><p><strong>核心知识点：</strong>Raft 选举状态机、std::mt19937 随机数、std::chrono 时间测量、分布式共识</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 95：Raft 共识算法（核心选举模块）
+// Raft 是分布式系统核心算法（etcd/TiKV 使用）。
+// 本案例实现 Leader 选举: Follower -&gt; Candidate -&gt; Leader。
+
+#include &lt;iostream&gt;
+#include &lt;chrono&gt;
+#include &lt;thread&gt;
+#include &lt;random&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+enum class RaftState { FOLLOWER, CANDIDATE, LEADER };
+
+class RaftNode {
+    int id;
+    RaftState state = RaftState::FOLLOWER;
+    int currentTerm = 0;
+    int votedFor = -1;
+    int leaderId = -1;
+    int voteCount = 0;
+    int totalNodes;
+    std::chrono::milliseconds electionTimeout;
+    std::chrono::steady_clock::time_point lastHeartbeat;
+    std::mt19937 rng;
+
+public:
+    RaftNode(int id, int total) : id(id), totalNodes(total), rng(std::random_device{}()) {
+        resetElectionTimer();
+        lastHeartbeat = std::chrono::steady_clock::now();
+    }
+
+    void resetElectionTimer() {
+        std::uniform_int_distribution&lt;int&gt; dist(150, 300);
+        electionTimeout = std::chrono::milliseconds(dist(rng));
+    }
+
+    bool isElectionTimeout() {
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(now - lastHeartbeat);
+        return elapsed &gt;= electionTimeout;
+    }
+
+    void receiveHeartbeat(int term, int leader) {
+        if (term &gt;= currentTerm) {
+            currentTerm = term;
+            state = RaftState::FOLLOWER;
+            leaderId = leader;
+            votedFor = -1;
+            lastHeartbeat = std::chrono::steady_clock::now();
+            voteCount = 0;
+            std::cout &lt;&lt; &quot;  [节点&quot; &lt;&lt; id &lt;&lt; &quot;] 收到心跳, Leader=&quot; &lt;&lt; leader &lt;&lt; &quot;, Term=&quot; &lt;&lt; term &lt;&lt; std::endl;
+        }
+    }
+
+    void startElection() {
+        state = RaftState::CANDIDATE;
+        currentTerm++;               // 任期 +1
+        votedFor = id;               // 投票给自己
+        voteCount = 1;               // 自己的一票
+        resetElectionTimer();
+        std::cout &lt;&lt; &quot;[节点&quot; &lt;&lt; id &lt;&lt; &quot;] 发起选举, Term=&quot; &lt;&lt; currentTerm &lt;&lt; std::endl;
+    }
+
+    bool requestVote(int candidateId, int term) {
+        if (term &lt; currentTerm) return false;   // 候选人 term 更旧，拒绝
+        if (term &gt; currentTerm) {
+            currentTerm = term;
+            state = RaftState::FOLLOWER;
+            votedFor = -1;
+        }
+        if (votedFor == -1 || votedFor == candidateId) {
+            votedFor = candidateId;
+            lastHeartbeat = std::chrono::steady_clock::now();
+            std::cout &lt;&lt; &quot;  [节点&quot; &lt;&lt; id &lt;&lt; &quot;] 投票给节点&quot; &lt;&lt; candidateId &lt;&lt; &quot; (Term=&quot; &lt;&lt; term &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+            return true;
+        }
+        return false;
+    }
+
+    void receiveVote(bool granted, int term) {
+        if (state != RaftState::CANDIDATE) return;
+        if (term &gt; currentTerm) {
+            currentTerm = term;
+            state = RaftState::FOLLOWER;
+            voteCount = 0;
+            return;
+        }
+        if (granted) {
+            voteCount++;
+            std::cout &lt;&lt; &quot;  [节点&quot; &lt;&lt; id &lt;&lt; &quot;] 获得一票 (&quot; &lt;&lt; voteCount &lt;&lt; &quot;/&quot; &lt;&lt; (totalNodes/2+1) &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+            if (voteCount &gt; totalNodes / 2) becomeLeader();
+        }
+    }
+
+    void becomeLeader() {
+        state = RaftState::LEADER;
+        leaderId = id;
+        std::cout &lt;&lt; &quot;\n=== [节点&quot; &lt;&lt; id &lt;&lt; &quot;] 当选 Leader (Term=&quot; &lt;&lt; currentTerm &lt;&lt; &quot;) ===&quot; &lt;&lt; std::endl;
+    }
+
+    void sendHeartbeat(std::vector&lt;RaftNode&gt;&amp; nodes) {
+        if (state != RaftState::LEADER) return;
+        for (auto&amp; node : nodes)
+            if (node.id != id)
+                node.receiveHeartbeat(currentTerm, id);
+    }
+
+    int getId() const { return id; }
+    RaftState getState() const { return state; }
+    int getCurrentTerm() const { return currentTerm; }
+
+    void tick(std::vector&lt;RaftNode&gt;&amp; nodes) {
+        if (state == RaftState::LEADER) {
+            static int tickCount = 0;
+            if (++tickCount % 5 == 0) sendHeartbeat(nodes);
+        } else if (isElectionTimeout()) {
+            startElection();
+            for (auto&amp; node : nodes)
+                if (node.id != id) {
+                    bool granted = node.requestVote(id, currentTerm);
+                    receiveVote(granted, node.getCurrentTerm());
+                }
+        }
+    }
+};
+
+int main() {
+    const int N = 3;
+    std::vector&lt;RaftNode&gt; nodes;
+    for (int i = 0; i &lt; N; i++)
+        nodes.emplace_back(i, N);
+
+    std::cout &lt;&lt; &quot;=== Raft 选举演示 (3 节点) ===&quot; &lt;&lt; std::endl;
+    for (int t = 0; t &lt; 50; t++) {
+        for (auto&amp; node : nodes) node.tick(nodes);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        if (t % 10 == 0) {
+            std::cout &lt;&lt; &quot;--- tick &quot; &lt;&lt; t &lt;&lt; &quot; ---&quot; &lt;&lt; std::endl;
+            for (auto&amp; node : nodes) {
+                const char* states[] = {&quot;Follower&quot;,&quot;Candidate&quot;,&quot;Leader&quot;};
+                std::cout &lt;&lt; &quot;  节点&quot; &lt;&lt; node.getId() &lt;&lt; &quot;: &quot; &lt;&lt; states[(int)node.getState()]
+                          &lt;&lt; &quot; (Term=&quot; &lt;&lt; node.getCurrentTerm() &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+            }
+        }
+    }
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：Raft 选举状态机模型</h3><pre class="code-block"><code class="language-cpp">// Raft 的状态转换规则:
+// Follower --(选举超时)--&gt; Candidate --(获得多数票)--&gt; Leader
+// Candidate --(发现更高Term)--&gt; Follower
+// Leader --(发现更高Term)--&gt; Follower
+
+// 关键设计:
+// 1. 随机选举超时(150~300ms) - 防止多个节点同时发起选举
+// 2. 每个 Term 每节点只能投一票
+// 3. 获得超过半数(N/2+1)投票即可当选 Leader</code></pre><p class="tip">举一反三：Raft 是 Diego Ongaro 2014 年提出的共识算法，相比 Paxos 更易理解。选举只是 Raft 的一部分，完整实现还包括日志复制（Log Replication）和安全性约束。etcd、TiKV、Consul 等都使用 Raft。</p>
+<h3>语法规则：std::mt19937 随机数生成器</h3><pre class="code-block"><code class="language-cpp">#include &lt;random&gt;
+std::mt19937 rng(std::random_device{}());
+std::uniform_int_distribution&lt;int&gt; dist(150, 300);
+int timeout = dist(rng);  // 每次返回 [150,300] 随机整数</code></pre><p class="tip">举一反三：C++11 的 <random> 库比 C 语言的 rand() 好得多：(1) 真正的均匀分布；(2) mt19937 周期长(2^19937-1)；(3) 支持多种分布(uniform/normal/bernoulli)。std::random_device 生成真随机种子。</p>
+<h3>语法规则：std::chrono 时间点差值</h3><pre class="code-block"><code class="language-cpp">#include &lt;chrono&gt;
+auto start = std::chrono::steady_clock::now();
+auto now = std::chrono::steady_clock::now();
+auto elapsed = std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(now - start);
+if (elapsed &gt;= std::chrono::milliseconds(300)) { /* 超时 */ }</code></pre><p class="tip">举一反三：steady_clock 保证单调递增（不受系统时间调整影响），适合测量时间间隔。duration_cast 将高精度 duration 转为指定单位。</p></section></main></body></html>

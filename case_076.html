@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 76：Google Test 单元测试框架</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_075.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_077.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 76：Google Test 单元测试框架</h1><section class="intro"><p>演示 GTest 的核心断言（EXPECT_EQ/ASSERT_EQ/EXPECT_THROW）和 Test Fixture 模式。</p><p><strong>核心知识点：</strong>Google Test、单元测试、TDD、Test Fixture、EXPECT vs ASSERT</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 76：Google Test 单元测试框架
+// GTest 是 C++ 最流行的单元测试框架，本案例展示常用断言和测试组织方式。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;cassert&gt;  // C 风格断言（仅用于调试，测试中不用）
+
+/* 语法规则：GTest 核心 API
+   安装：vcpkg install gtest 或 CMake FetchContent
+   链接：target_link_libraries(your_test PRIVATE GTest::gtest_main)
+
+   基本断言：
+     EXPECT_EQ(a, b);   // 期望相等，失败继续
+     EXPECT_NE(a, b);   // 期望不等
+     EXPECT_TRUE(cond); // 期望为真
+     EXPECT_FALSE(cond);
+     EXPECT_STREQ(s1, s2); // C 字符串比较
+     EXPECT_THROW(expr, exception); // 期望抛出异常
+
+   ASSERT vs EXPECT：
+     ASSERT 失败 → 立即终止当前测试
+     EXPECT 失败 → 记录失败并继续
+
+   测试宏：
+     TEST(TestSuiteName, TestName) { ... }       // 简单测试
+     TEST_F(FixtureName, TestName) { ... }       // 使用 fixture
+
+   示例：
+     TEST(MathTest, Addition) {
+       EXPECT_EQ(2 + 2, 4);
+       EXPECT_GT(5, 3);   // 大于
+       EXPECT_LT(1, 10);  // 小于
+     }
+
+   举一反三：单元测试不仅用来找 bug，更是&quot;活文档&quot;——测试用例描述了
+   代码应该怎么用。TDD（测试驱动开发）用测试驱动设计，先写测试再写实现。
+*/
+
+// ======== 被测代码 ========
+
+// 数学工具
+class Calculator {
+public:
+    static int add(int a, int b) { return a + b; }
+    static int divide(int a, int b) {
+        if (b == 0) throw std::invalid_argument(&quot;除数不能为零&quot;);
+        return a / b;
+    }
+};
+
+// 字符串工具
+class StringUtils {
+public:
+    static std::string toUpper(std::string s) {
+        std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+        return s;
+    }
+    static std::vector&lt;std::string&gt; split(const std::string&amp; s, char delim) {
+        std::vector&lt;std::string&gt; result;
+        size_t start = 0, end;
+        while ((end = s.find(delim, start)) != std::string::npos) {
+            result.push_back(s.substr(start, end - start));
+            start = end + 1;
+        }
+        result.push_back(s.substr(start));
+        return result;
+    }
+};
+
+// ======== Simple test (no gtest linking needed to run) ========
+struct TestResult { const char* name; bool pass; const char* msg; };
+std::vector&lt;TestResult&gt; results;
+
+#define CHECK_EQ(a, b) do { \
+    bool ok = ((a) == (b)); \
+    results.push_back({__func__, ok, ok ? &quot;&quot; : &quot;FAIL&quot;}); \
+} while(0)
+
+#define CHECK_THROW(expr, ex) do { \
+    bool ok = false; \
+    try { expr; } catch(const ex&amp;) { ok = true; } catch(...) {} \
+    results.push_back({__func__, ok, ok ? &quot;&quot; : &quot;未抛出预期异常&quot;}); \
+} while(0)
+
+// ======== GTest 语法风格演示 ========
+/*
+#include &lt;gtest/gtest.h&gt;
+
+// 基本测试
+TEST(CalculatorTest, Add) {
+    EXPECT_EQ(Calculator::add(2, 3), 5);
+    EXPECT_EQ(Calculator::add(-1, 1), 0);
+    EXPECT_EQ(Calculator::add(0, 0), 0);
+}
+
+// 异常测试
+TEST(CalculatorTest, DivideByZeroThrows) {
+    EXPECT_THROW(Calculator::divide(10, 0), std::invalid_argument);
+}
+
+// 使用 Test Fixture（共享初始化代码）
+class StringUtilsTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // 每个测试前执行
+        testStr = &quot;hello,world,cpp&quot;;
+    }
+    void TearDown() override {
+        // 每个测试后执行
+    }
+    std::string testStr;
+};
+
+TEST_F(StringUtilsTest, ToUpper) {
+    EXPECT_EQ(StringUtils::toUpper(&quot;hello&quot;), &quot;HELLO&quot;);
+    EXPECT_EQ(StringUtils::toUpper(&quot;C++&quot;), &quot;C++&quot;);
+}
+
+TEST_F(StringUtilsTest, Split) {
+    auto parts = StringUtils::split(testStr, ',');
+    ASSERT_EQ(parts.size(), 3);      // 断言大小，失败后续无意义
+    EXPECT_EQ(parts[0], &quot;hello&quot;);
+    EXPECT_EQ(parts[1], &quot;world&quot;);
+    EXPECT_EQ(parts[2], &quot;cpp&quot;);
+}
+*/
+
+int main() {
+    std::cout &lt;&lt; &quot;案例 76：Google Test 单元测试框架&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;====================================&quot; &lt;&lt; std::endl;
+
+    // 运行简化版测试
+    CHECK_EQ(Calculator::add(2, 3), 5);
+    CHECK_EQ(Calculator::add(-1, 1), 0);
+    CHECK_EQ(StringUtils::toUpper(&quot;hello&quot;), &quot;HELLO&quot;);
+
+    int pass = 0, fail = 0;
+    for (auto&amp; r : results) {
+        std::cout &lt;&lt; &quot;[&quot; &lt;&lt; (r.pass ? &quot;PASS&quot; : &quot;FAIL&quot;) &lt;&lt; &quot;] &quot; &lt;&lt; r.name;
+        if (!r.pass) std::cout &lt;&lt; &quot; - &quot; &lt;&lt; r.msg;
+        std::cout &lt;&lt; std::endl;
+        r.pass ? pass++ : fail++;
+    }
+    std::cout &lt;&lt; &quot;\n&quot; &lt;&lt; pass &lt;&lt; &quot; 通过, &quot; &lt;&lt; fail &lt;&lt; &quot; 失败&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;\n完整的 GTest 测试代码见上方注释。&quot; &lt;&lt; std::endl;
+
+    return fail &gt; 0 ? 1 : 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：TEST_F Test Fixture 模式</h3><pre class="code-block"><code class="language-cpp">class MyTest : public ::testing::Test {
+protected:
+  void SetUp() override { /* 每个测试前初始化 */ }
+  void TearDown() override { /* 每个测试后清理 */ }
+  int sharedData;
+};
+TEST_F(MyTest, TestA) { EXPECT_GT(sharedData, 0); }</code></pre><p class="tip">💡 举一反三：Fixture 避免代码重复——多个测试共享初始化逻辑。SetUp/TearDown 在每个 TEST_F 前后自动调用。构造函数/析构函数也可用但不如 SetUp 语义清晰。</p></section></main></body></html>

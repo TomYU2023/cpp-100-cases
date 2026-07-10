@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 54：SQLite 数据库封装（增删改查） - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 54：SQLite 数据库封装（增删改查）</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd">#include &lt;memory&gt;</td><td class="cmt">unique_ptr 自定义删除器</td></tr>
+<tr><td class="ln">5</td><td class="cd">#include &lt;sqlite3.h&gt;</td><td class="cmt">SQLite C API</td></tr>
+<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">8</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2">// RAII 封装的 SQLite 句柄</td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">class Database {</td></tr>
+<tr><td class="ln">11</td><td class="cd">    sqlite3* db = nullptr;</td><td class="cmt">数据库句柄</td></tr>
+<tr><td class="ln">12</td><td class="cd">    char* errMsg = nullptr;</td><td class="cmt">错误信息</td></tr>
+<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">14</td><td class="cd" colspan="2">public:</td></tr>
+<tr><td class="ln">15</td><td class="cd" colspan="2">    bool open(const string&amp; path) {</td></tr>
+<tr><td class="ln">16</td><td class="cd" colspan="2">        // sqlite3_open 打开（或创建）数据库文件</td></tr>
+<tr><td class="ln">17</td><td class="cd">        int rc = sqlite3_open(path.c_str(), &amp;db);</td><td class="cmt">第二个参数是输出句柄</td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">        if (rc != SQLITE_OK) {</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">            cerr &lt;&lt; "Cannot open database: " &lt;&lt; sqlite3_errmsg(db) &lt;&lt; endl;</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">            sqlite3_close(db);</td></tr>
+<tr><td class="ln">21</td><td class="cd" colspan="2">            return false;</td></tr>
+<tr><td class="ln">22</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2">        return true;</td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2">    // 执行非查询 SQL（INSERT/UPDATE/DELETE/CREATE）</td></tr>
+<tr><td class="ln">27</td><td class="cd" colspan="2">    bool exec(const string&amp; sql) {</td></tr>
+<tr><td class="ln">28</td><td class="cd">        int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &amp;errMsg);</td><td class="cmt">exec 第四个参数是回调</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">        if (rc != SQLITE_OK) {</td></tr>
+<tr><td class="ln">30</td><td class="cd" colspan="2">            cerr &lt;&lt; "SQL error: " &lt;&lt; errMsg &lt;&lt; endl;</td></tr>
+<tr><td class="ln">31</td><td class="cd">            sqlite3_free(errMsg);</td><td class="cmt">SQLite 分配的错误信息需手动释放</td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2">            return false;</td></tr>
+<tr><td class="ln">33</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2">        return true;</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2">    // 查询回调的数据结构</td></tr>
+<tr><td class="ln">38</td><td class="cd" colspan="2">    struct Row {</td></tr>
+<tr><td class="ln">39</td><td class="cd">        vector&lt;string&gt; columns;</td><td class="cmt">一行数据</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2">    };</td></tr>
+<tr><td class="ln">41</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">42</td><td class="cd" colspan="2">    // 查询方法：返回结果集</td></tr>
+<tr><td class="ln">43</td><td class="cd" colspan="2">    vector&lt;Row&gt; query(const string&amp; sql) {</td></tr>
+<tr><td class="ln">44</td><td class="cd" colspan="2">        vector&lt;Row&gt; results;</td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2">        // Lambda 回调函数（每行调用一次）</td></tr>
+<tr><td class="ln">47</td><td class="cd">        auto callback = [](void* data, int argc, char** argv, char** colNames) -&gt; int {</td><td class="cmt">C 风格回调</td></tr>
+<tr><td class="ln">48</td><td class="cd">            auto* results = static_cast&lt;vector&lt;Row&gt;*&gt;(data);</td><td class="cmt">void* 转回具体类型</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2">            Row row;</td></tr>
+<tr><td class="ln">50</td><td class="cd" colspan="2">            for (int i = 0; i &lt; argc; i++) {</td></tr>
+<tr><td class="ln">51</td><td class="cd">                row.columns.push_back(argv[i] ? argv[i] : "NULL");</td><td class="cmt">NULL 值处理</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">53</td><td class="cd">            results-&gt;push_back(row);</td><td class="cmt">添加到结果集</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">            return 0;</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2">        };</td></tr>
+<tr><td class="ln">56</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">57</td><td class="cd">        int rc = sqlite3_exec(db, sql.c_str(), callback, &amp;results, &amp;errMsg);</td><td class="cmt">第四个参数传给回调</td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">        if (rc != SQLITE_OK) {</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">            cerr &lt;&lt; "Query error: " &lt;&lt; errMsg &lt;&lt; endl;</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2">            sqlite3_free(errMsg);</td></tr>
+<tr><td class="ln">61</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">62</td><td class="cd" colspan="2">        return results;</td></tr>
+<tr><td class="ln">63</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">64</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">65</td><td class="cd" colspan="2">    ~Database() {</td></tr>
+<tr><td class="ln">66</td><td class="cd">        if (db) sqlite3_close(db);</td><td class="cmt">析构时关闭数据库</td></tr>
+<tr><td class="ln">67</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">68</td><td class="cd" colspan="2">};</td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">70</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">71</td><td class="cd" colspan="2">    Database db;</td></tr>
+<tr><td class="ln">72</td><td class="cd" colspan="2">    db.open("test.db");</td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">74</td><td class="cd" colspan="2">    // 创建表</td></tr>
+<tr><td class="ln">75</td><td class="cd">    db.exec("CREATE TABLE IF NOT EXISTS users("</td><td class="cmt">IF NOT EXISTS 防止重复创建</td></tr>
+<tr><td class="ln">76</td><td class="cd">           "id INTEGER PRIMARY KEY AUTOINCREMENT,"</td><td class="cmt">自增主键</td></tr>
+<tr><td class="ln">77</td><td class="cd">           "name TEXT NOT NULL,"</td><td class="cmt">NOT NULL 约束</td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2">           "age INTEGER)");</td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">80</td><td class="cd" colspan="2">    // 插入数据</td></tr>
+<tr><td class="ln">81</td><td class="cd" colspan="2">    db.exec("INSERT INTO users (name, age) VALUES ('Alice', 25)");</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">    db.exec("INSERT INTO users (name, age) VALUES ('Bob', 30)");</td></tr>
+<tr><td class="ln">83</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">84</td><td class="cd" colspan="2">    // 查询</td></tr>
+<tr><td class="ln">85</td><td class="cd" colspan="2">    auto rows = db.query("SELECT * FROM users");</td></tr>
+<tr><td class="ln">86</td><td class="cd" colspan="2">    for (auto&amp; row : rows) {</td></tr>
+<tr><td class="ln">87</td><td class="cd" colspan="2">        for (auto&amp; col : row.columns) cout &lt;&lt; col &lt;&lt; "\t";</td></tr>
+<tr><td class="ln">88</td><td class="cd" colspan="2">        cout &lt;&lt; endl;</td></tr>
+<tr><td class="ln">89</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">90</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">91</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">92</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>回调函数与 void* 上下文参数</h3>
+<div class="rule"><strong>语法规则：</strong>C 风格的 API 常用回调 + void* 传递用户数据。<strong>void* 是通用指针</strong>，需要 <code>static_cast</code> 转回实际类型。Lambda 只要无捕获就可以转为函数指针（有捕获时不行）。</div>
+<pre class="example"><code>// C API 的回调模式
+typedef int (*Callback)(void* userdata, int col, char** vals);
+
+// 我们的数据
+vector<Row> results;
+
+// Lambda 作为回调
+int rc = db_exec(sql, [](void* p, int n, char** v, char**) {
+    auto* rows = static_cast<vector<Row>*>(p);
+    // ... 填充 rows
+    return 0;
+}, &results);</code></pre>
+</div>
+<div class="grammar-item">
+<h3>sqlite3_free 与 C 内存管理</h3>
+<div class="rule"><strong>语法规则：</strong>SQLite 用 <strong>sqlite3_malloc</strong> 分配内存，错误信息也由它分配。<strong>必须用 sqlite3_free</strong> 释放，不能用 C++ 的 delete 或 free。这是 C 库集成时常见的注意事项。</div>
+<pre class="example"><code>char* errMsg = nullptr;
+int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
+if (rc != SQLITE_OK) {
+    cerr << errMsg;        // 使用错误信息
+    sqlite3_free(errMsg);  // 释放！
+}</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>使用 Prepared Statement 防 SQL 注入：</strong><pre><code>sqlite3_stmt* stmt;
+sqlite3_prepare_v2(db, "SELECT * FROM users WHERE name = ?", -1, &stmt, 0);
+sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int age = sqlite3_column_int(stmt, 2);
+}</code></pre><p>直接用 sqlite3_exec 拼接 SQL 字符串存在 SQL 注入风险。生产代码必须使用 Prepared Statement（预编译语句）。</p></li>
+<li><strong>ORM 库简化数据库操作：</strong><pre><code>C++ 生态中有 sqlite_orm（header-only，使用模板元编程实现 ORM）和 SOCI 等库，可以将 SQL 操作封装为 C++ 对象操作，极大简化代码。</code></pre><p>#include <sqlite_orm/sqlite_orm.h>
+using namespace sqlite_orm;
+auto storage = make_storage("db.sqlite",
+    make_table("users",
+        make_column("id", &User::id, primary_key().autoincrement()),
+        make_column("name", &User::name)));
+auto users = storage.get_all<User>();</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_053.html">← 案例 53</a><a href="case_055.html">案例 55 →</a>
+</nav>
+</main>
+</body>
+</html>

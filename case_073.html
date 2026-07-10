@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 73：命令模式 — 撤销/重做系统</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_072.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_074.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 73：命令模式 — 撤销/重做系统</h1><section class="intro"><p>实现类似文本编辑器的 Undo/Redo 系统，展示命令模式如何将操作对象化并支持回滚。</p><p><strong>核心知识点：</strong>命令模式、Undo/Redo 栈、std::stack 容器适配器、操作原子化</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 73：命令模式（Command Pattern）— 撤销/重做系统
+// 命令模式将请求封装为对象，支持参数化、排队、日志记录、撤销/重做。
+// 典型场景：编辑器 Undo/Redo、宏录制、任务队列、事务回滚。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;stack&gt;
+
+/* 语法规则：命令模式结构
+   Command 接口：execute() + undo()
+   ConcreteCommand：绑定 Receiver，实现具体操作
+   Invoker：调用命令（如按钮、菜单）
+   Receiver：真正执行操作的对象
+   示例：文字编辑器的命令模式
+     Command 接口  ← execute() / undo()
+     ├── InsertCommand   ← 持有 Document&amp; 和位置/文本
+     ├── DeleteCommand   ← 持有 Document&amp; 和位置/文本
+     └── ReplaceCommand
+     Invoker: 编辑器菜单/快捷键
+     Receiver: Document 对象
+   举一反三：数据库事务就是命令模式的集合——所有 SQL 包装成 Command，
+   提交前可以 undo，提交后写入日志。游戏的回放系统用命令模式记录每一帧的操作。
+*/
+
+// Receiver：文本文档（真正的数据）
+class Document {
+    std::string content;
+public:
+    void insert(size_t pos, const std::string&amp; text) {
+        content.insert(pos, text);
+    }
+    void erase(size_t pos, size_t length) {
+        content.erase(pos, length);
+    }
+    const std::string&amp; get() const { return content; }
+    size_t size() const { return content.size(); }
+};
+
+// Command 接口
+class Command {
+public:
+    virtual ~Command() = default;
+    virtual void execute() = 0;
+    virtual void undo() = 0;
+    virtual std::string description() const = 0;
+};
+
+// 插入命令：记住位置和文本，支持撤销
+class InsertCommand : public Command {
+    Document&amp; doc;
+    size_t pos;
+    std::string text;
+public:
+    InsertCommand(Document&amp; d, size_t p, std::string t)
+        : doc(d), pos(p), text(std::move(t)) {}
+    void execute() override { doc.insert(pos, text); }
+    void undo() override { doc.erase(pos, text.size()); }
+    std::string description() const override { return &quot;插入: &quot; + text; }
+};
+
+// 删除命令：执行前先保存被删除内容
+class DeleteCommand : public Command {
+    Document&amp; doc;
+    size_t pos;
+    size_t length;
+    std::string deleted;           // 备份，用于 undo
+public:
+    DeleteCommand(Document&amp; d, size_t p, size_t len)
+        : doc(d), pos(p), length(len) {
+        deleted = doc.get().substr(p, len);  // 保存被删除的文本
+    }
+    void execute() override { doc.erase(pos, length); }
+    void undo() override { doc.insert(pos, deleted); }
+    std::string description() const override { return &quot;删除: &quot; + deleted; }
+};
+
+// Invoker：命令执行器，管理 undo/redo 栈
+class CommandManager {
+    std::stack&lt;std::unique_ptr&lt;Command&gt;&gt; undoStack;  // 撤销栈
+    std::stack&lt;std::unique_ptr&lt;Command&gt;&gt; redoStack;  // 重做栈
+
+public:
+    void execute(std::unique_ptr&lt;Command&gt; cmd) {
+        cmd-&gt;execute();
+        undoStack.push(std::move(cmd));
+        // 新命令清空 redo 栈（常见编辑器行为）
+        while (!redoStack.empty()) redoStack.pop();
+    }
+
+    bool canUndo() const { return !undoStack.empty(); }
+    bool canRedo() const { return !redoStack.empty(); }
+
+    void undo() {
+        if (!canUndo()) return;
+        auto cmd = std::move(undoStack.top()); undoStack.pop();
+        cmd-&gt;undo();
+        redoStack.push(std::move(cmd));
+    }
+
+    void redo() {
+        if (!canRedo()) return;
+        auto cmd = std::move(redoStack.top()); redoStack.pop();
+        cmd-&gt;execute();
+        undoStack.push(std::move(cmd));
+    }
+};
+
+int main() {
+    Document doc;
+    CommandManager mgr;
+
+    mgr.execute(std::make_unique&lt;InsertCommand&gt;(doc, 0, &quot;Hello&quot;));
+    std::cout &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello
+
+    mgr.execute(std::make_unique&lt;InsertCommand&gt;(doc, 5, &quot; World&quot;));
+    std::cout &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
+
+    mgr.undo();
+    std::cout &lt;&lt; &quot;撤销后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello
+
+    mgr.redo();
+    std::cout &lt;&lt; &quot;重做后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
+
+    mgr.execute(std::make_unique&lt;DeleteCommand&gt;(doc, 0, 6));
+    std::cout &lt;&lt; &quot;删除后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // World
+
+    mgr.undo();
+    std::cout &lt;&lt; &quot;撤销删除: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：std::stack — 后进先出(LIFO)</h3><pre class="code-block"><code class="language-cpp">std::stack&lt;int&gt; s;
+s.push(1); s.push(2); s.push(3);
+int top = s.top();  // 3
+s.pop();            // 移除栈顶
+// stack 底层默认用 deque，也可指定 vector/list</code></pre><p class="tip">💡 举一反三：stack 适合递归模拟/括号匹配/undo 栈/函数调用栈。queue 是 FIFO，priority_queue 是堆排序。三者都是容器适配器。</p>
+<h3>语法规则：while(!s.empty()) s.pop() 清空栈</h3><pre class="code-block"><code class="language-cpp">// C++ 的 stack 没有 clear() 方法，用循环清空
+while (!undoStack.empty()) undoStack.pop();</code></pre><p class="tip">💡 举一反三：这是 C++ 容器适配器的一个"坑"——stack/queue/priority_queue 都没有 clear()。C++23 可能修复此问题。也可以 swap 空栈：std::stack<T>().swap(s);</p></section></main></body></html>

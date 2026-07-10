@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 18：移动语义演练 - C++ 100工程案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
+  <div class="stage-title">第一阶段：语法练兵场</div>
+    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
+    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
+    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
+    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
+    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
+    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
+    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
+    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
+    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
+    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
+    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
+    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
+    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
+    <a href="case_014.html" class="case-link ">14. 模板函数</a>
+    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
+    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
+    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
+    <a href="case_018.html" class="case-link active">18. 移动语义演练</a>
+    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr 实战</a>
+    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
+  <div class="stage-title">第二阶段：STL 熟练工</div>
+    <a href="case_021.html" class="case-link ">21. vector 深入</a>
+    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
+    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
+    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
+    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
+    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
+    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
+    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
+    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
+    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
+    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
+    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
+    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
+    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
+    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
+    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
+    <a href="case_037.html" class="case-link ">37. thread 入门</a>
+    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
+    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
+    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
+  <div class="stage-title">第三阶段：实用小工具</div>
+    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
+    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
+    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
+    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
+    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
+    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
+    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
+    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
+    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
+    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
+    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
+    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
+    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
+    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
+    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
+    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
+    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
+    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
+    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
+    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
+  <div class="stage-title">第四阶段：工程能力锻造</div>
+    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
+    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
+    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
+    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
+    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
+    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
+    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
+    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
+    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
+    <a href="case_070.html" class="case-link ">70. 策略模式</a>
+    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
+    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
+    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
+    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
+    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
+    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
+    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
+    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
+    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
+    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
+    <a href="case_081.html" class="case-link ">81. 插件系统</a>
+    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
+    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
+    <a href="case_084.html" class="case-link ">84. 连接池</a>
+    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
+  <div class="stage-title">第五阶段：综合项目</div>
+    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
+    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
+    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
+    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
+    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
+    <a href="case_091.html" class="case-link ">91. 协程库</a>
+    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
+    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
+    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
+    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
+    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
+    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
+    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
+    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
+    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
+</nav>
+
+    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
+    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+
+    <main class="content">
+        <div class="top-nav">
+            <a href="case_017.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_019.html" class="nav-link">下一个 →</a>
+        </div>
+
+        <h1>案例 18：移动语义演练</h1>
+
+        <section class="section">
+            <h2>完整代码（带逐行注释）</h2>
+            <div class="code-container">
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>#include &lt;chrono&gt;</code></span>
+                        <span class="line-comment">计时</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>class Buffer {</code></span>
+                        <span class="line-comment">模拟大资源类</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>private:</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>    int* data_;</code></span>
+                        <span class="line-comment">动态大数组</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code>    size_t size_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>public:</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>    Buffer(size_t n) : size_(n) {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code>        data_ = new int[n];</code></span>
+                        <span class="line-comment">分配资源</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "构造函数（分配 " &lt;&lt; n &lt;&lt; " 个 int）" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code>    Buffer(const Buffer&amp; other) : size_(other.size_) {</code></span>
+                        <span class="line-comment">拷贝构造</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>        data_ = new int[size_];</code></span>
+                        <span class="line-comment">深拷贝：分配新内存</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>        copy(other.data_, other.data_ + size_, data_);</code></span>
+                        <span class="line-comment">逐个复制元素</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "拷贝构造（深拷贝 " &lt;&lt; size_ &lt;&lt; " 个元素）" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>    Buffer(Buffer&amp;&amp; other) noexcept</code></span>
+                        <span class="line-comment">移动构造：&amp;&amp; 表示右值引用，noexcept 重要！</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>        : data_(other.data_), size_(other.size_) {</code></span>
+                        <span class="line-comment">直接接管资源（指针赋值）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code>        other.data_ = nullptr;</code></span>
+                        <span class="line-comment">将源对象置空</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>        other.size_ = 0;</code></span>
+                        <span class="line-comment">防止析构时释放已转移的资源</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "移动构造（零拷贝！）" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>    Buffer&amp; operator=(Buffer&amp;&amp; other) noexcept {</code></span>
+                        <span class="line-comment">移动赋值</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>        if (this == &amp;other) return *this;</code></span>
+                        <span class="line-comment">自赋值检查</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>        delete[] data_;</code></span>
+                        <span class="line-comment">释放当前资源</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>        data_ = other.data_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>        size_ = other.size_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>        other.data_ = nullptr;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>        other.size_ = 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "移动赋值" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>        return *this;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>    ~Buffer() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">41</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "析构" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">42</span>
+                        <span class="line-code"><code>        delete[] data_;</code></span>
+                        <span class="line-comment">delete 空指针安全</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">43</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">44</span>
+                        <span class="line-code"><code>};</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">45</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">46</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">47</span>
+                        <span class="line-code"><code>    Buffer b1(1000000);</code></span>
+                        <span class="line-comment">分配 100w 个 int（约 4MB）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">48</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">49</span>
+                        <span class="line-code"><code>    cout &lt;&lt; endl &lt;&lt; \"--- 拷贝 vs 移动 ---\" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">50</span>
+                        <span class="line-code"><code>    Buffer b2 = b1;</code></span>
+                        <span class="line-comment">调用拷贝构造</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">51</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">52</span>
+                        <span class="line-code"><code>    Buffer b3 = move(b1);</code></span>
+                        <span class="line-comment">move 将 b1 转为右值，触发移动构造</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">53</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "b1 已被移动: size=\" &lt;&lt; b1.size_ &lt;&lt; endl;</code></span>
+                        <span class="line-comment">b1 大小变为 0</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">54</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">55</span>
+                        <span class="line-code"><code>    cout &lt;&lt; endl &lt;&lt; \"--- vector push_back 对比 ---\" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">56</span>
+                        <span class="line-code"><code>    vector&lt;Buffer&gt; v;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">57</span>
+                        <span class="line-code"><code>    v.reserve(3);</code></span>
+                        <span class="line-comment">预留空间，避免扩容干扰</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">58</span>
+                        <span class="line-code"><code>    v.push_back(Buffer(100));</code></span>
+                        <span class="line-comment">临时对象 → 移动</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">59</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "---" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">60</span>
+                        <span class="line-code"><code>    Buffer tmp(100);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">61</span>
+                        <span class="line-code"><code>    v.push_back(tmp);</code></span>
+                        <span class="line-comment">左值 → 拷贝</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">62</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "---" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">63</span>
+                        <span class="line-code"><code>    v.push_back(move(tmp));</code></span>
+                        <span class="line-comment">显式移动</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">64</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">65</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">66</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>新语法讲解</h2>
+            <div class="grammar-container">
+                <div class="grammar-item">
+                    <h3>右值引用 (&&) 与移动语义</h3>
+                    <div class="rule-box"><code>T&&</code> 是右值引用，只能绑定到<strong>临时对象</strong>或 <code>move()</code> 转换后的对象。移动构造/赋值直接接管资源而非复制，大幅提升性能。</div>
+                    <pre><code>string s1 = "hello";
+string s2 = move(s1); // 移动，s1 变为空
+// 规则：只对即将销毁的变量使用 move()</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>noexcept 的重要性</h3>
+                    <div class="rule-box">移动操作应声明为 <code>noexcept</code>。这对 <code>vector</code> 的扩容至关重要：如果移动构造不是 noexcept，vector 扩容时会<strong>退化到拷贝</strong>以确保异常安全。</div>
+                    <pre><code>// 检查你的类型
+static_assert(is_nothrow_move_constructible_v&lt;MyType&gt;);
+// 确保 vector 扩容时使用移动</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>举一反三</h2>
+            <div class="extend-container">
+                <div class="extend-item">
+                    <h4>编写 swap 用移动优化</h4>
+                    <p><strong>代码：</strong><code>template<typename T> void fastSwap(T& a, T& b) { T tmp=move(a); a=move(b); b=move(tmp); }</code></p>
+                    <p><strong>思路：</strong>零拷贝交换两个对象</p>
+                </div>
+                <div class="extend-item">
+                    <h4>返回值优化 (RVO)</h4>
+                    <p><strong>代码：</strong><code>Buffer create() { return Buffer(1000); } // 编译器自动优化，不调用移动</code></p>
+                    <p><strong>思路：</strong>现代编译器会自动消除临时对象</p>
+                </div>
+                <div class="extend-item">
+                    <h4>完美转发 forward<T></h4>
+                    <p><strong>代码：</strong><code>template<typename T> void wrapper(T&& arg) { target(forward<T>(arg)); }</code></p>
+                    <p><strong>思路：</strong>保持参数的值类别不变</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="bottom-nav">
+            <a href="case_017.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_019.html" class="nav-link">下一个 →</a>
+        </div>
+    </main>
+</body>
+</html>

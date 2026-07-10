@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 100：终点即起点</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_099.html">← 上一案例</a>
+            
+        </div>
+    </nav><main class="container"><h1>案例 100：终点即起点</h1><section class="intro"><p>百案例收官站：回顾完整的技能树、给出三条继续前进的路线（开源贡献/游戏引擎/量化交易）和持续学习资源。</p><p><strong>核心知识点：</strong>技能树整合、initializer_list、开源贡献路径、持续学习推荐</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 100：C++ 百案例终点站 —— 整合项目
+// 这是整个 100 案例之旅的收官项目。
+// 我们不再引入新技术，而是回顾旅程、给出系统整合的建议路径。
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;map&gt;
+#include &lt;sstream&gt;
+#include &lt;iomanip&gt;
+#include &lt;chrono&gt;
+#include &lt;algorithm&gt;
+#include &lt;thread&gt;
+
+// --- 回顾：你在 100 个案例中学到的技术栈 ---
+
+struct SkillCategory {
+    std::string name;
+    std::vector&lt;std::string&gt; items;
+};
+
+std::vector&lt;SkillCategory&gt; skills = {
+    {&quot;语言核心&quot;, {&quot;变量/类型/指针/引用&quot;, &quot;函数重载/默认参数&quot;,
+        &quot;类/继承/多态/虚函数&quot;, &quot;模板函数与模板类&quot;,
+        &quot;移动语义/智能指针&quot;, &quot;Lambda/auto/constexpr&quot;}},
+    {&quot;STL精通&quot;, {&quot;vector/map/set/unordered_map&quot;,
+        &quot;algorithm(sort/find/transform)&quot;,
+        &quot;string/string_view&quot;,
+        &quot;智能指针(unique/shared/weak)&quot;,
+        &quot;chrono/thread/mutex/future&quot;}},
+    {&quot;并发编程&quot;, {&quot;mutex/lock_guard&quot;, &quot;condition_variable&quot;,
+        &quot;线程池实现&quot;, &quot;无锁编程(atomic)&quot;,
+        &quot;协程(有栈无栈)&quot;, &quot;epoll/IO多路复用&quot;}},
+    {&quot;系统编程&quot;, {&quot;socket网络编程&quot;, &quot;文件IO与映射&quot;,
+        &quot;动态库加载&quot;, &quot;Linux Namespace&quot;,
+        &quot;信号处理&quot;, &quot;进程间通信&quot;}},
+    {&quot;工程质量&quot;, {&quot;CMake构建&quot;, &quot;单元测试(GTest)&quot;,
+        &quot;设计模式(C++实现)&quot;, &quot;RAII资源管理&quot;,
+        &quot;异常安全&quot;, &quot;性能剖析&quot;}},
+    {&quot;进阶专题&quot;, {&quot;数据库(B-Tree/连接池)&quot;,
+        &quot;Raft共识算法&quot;, &quot;HTTP/反向代理&quot;,
+        &quot;LLVM Pass插件&quot;, &quot;Tensor推理库&quot;,
+        &quot;解释器/编译器&quot;}},
+};
+
+// --- 100 案例整合建议 ---
+int main() {
+    std::cout &lt;&lt; &quot;╔════════════════════════════════════╗\n&quot;;
+    std::cout &lt;&lt; &quot;║   C++ 100 案例 —— 终点即起点       ║\n&quot;;
+    std::cout &lt;&lt; &quot;╚════════════════════════════════════╝\n\n&quot;;
+
+    // 打印技能树
+    for (auto&amp; cat : skills) {
+        std::cout &lt;&lt; &quot;\n[&quot; &lt;&lt; cat.name &lt;&lt; &quot;]\n&quot;;
+        for (size_t i = 0; i &lt; cat.items.size(); i++)
+            std::cout &lt;&lt; &quot;  &quot; &lt;&lt; std::setw(2) &lt;&lt; (i+1) &lt;&lt; &quot;. &quot;
+                      &lt;&lt; cat.items[i] &lt;&lt; std::endl;
+    }
+
+    // --- 整合路径建议 ---
+    std::cout &lt;&lt; &quot;\n\n========================================\n&quot;;
+    std::cout &lt;&lt; &quot;  三条继续前进的路线\n&quot;;
+    std::cout &lt;&lt; &quot;========================================\n\n&quot;;
+
+    std::cout &lt;&lt; &quot;路线 A — 开源贡献者\n&quot;;
+    std::cout &lt;&lt; &quot;  把案例 88(简易Git) + 95(Raft) 整合\n&quot;;
+    std::cout &lt;&lt; &quot;  写一个真正的分布式键值存储\n&quot;;
+    std::cout &lt;&lt; &quot;  贡献给 TiKV / etcd 社区\n\n&quot;;
+
+    std::cout &lt;&lt; &quot;路线 B — 游戏引擎开发者\n&quot;;
+    std::cout &lt;&lt; &quot;  把案例 62(内存池) + 93(游戏引擎) + 98(Tensor) 整合\n&quot;;
+    std::cout &lt;&lt; &quot;  加入 Unreal Engine 贡献队伍\n\n&quot;;
+
+    std::cout &lt;&lt; &quot;路线 C — 量化交易工程师\n&quot;;
+    std::cout &lt;&lt; &quot;  把案例 84(连接池) + 99(高并发) 整合\n&quot;;
+    std::cout &lt;&lt; &quot;  搭建低延迟交易系统原型\n\n&quot;;
+
+    std::cout &lt;&lt; &quot;---\n&quot;;
+    std::cout &lt;&lt; &quot;记住：100 个案例不是终点，\n&quot;;
+    std::cout &lt;&lt; &quot;而是你写第一个生产级系统的起点。\n&quot;;
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：回顾 std::initializer_list 聚合初始化</h3><pre class="code-block"><code class="language-cpp">std::vector&lt;SkillCategory&gt; skills = {
+    {&quot;语言核心&quot;, {&quot;指针&quot;, &quot;模板&quot;, &quot;Lambda&quot;}},
+    {&quot;并发&quot;, {&quot;mutex&quot;, &quot;thread&quot;}}
+};
+// vector 接受 initializer_list&lt;SkillCategory&gt;
+// SkillCategory 接受 initializer_list&lt;string&gt;（聚合初始化）</code></pre><p class="tip">举一反三：C++11 的 initializer_list 让容器初始化变得优雅。本质是编译器在栈上生成临时数组，然后传给构造函数。注意 initializer_list 只持有常量引用，不拥有数据，出了作用域就失效。</p>
+<h3>从案例到生产：几条必经之路</h3><pre class="code-block"><code class="language-cpp">// 入门 → 进阶 → 生产 的关键跳跃：
+// 1. 脚本 → CMake 构建系统（案例 75）
+// 2. 单线程 → 并发安全（案例 36-40, 61, 99）
+// 3. 内存手动 → RAII + 智能指针（案例 19, 62）
+// 4. 打印调试 → 单元测试 + 日志（案例 47, 76）
+// 5. 单机 → 分布式（案例 88, 95）
+// 6. 应用代码 → 系统底层（案例 91, 96, 97）</code></pre><p class="tip">举一反三：这六次跳跃，每一次都会让你对 C++ 的理解上一个台阶。建议不要全部并行，每一层扎实后再跳。</p>
+<h3>C++ 持续学习的资源推荐</h3><pre class="code-block"><code class="language-cpp">// 必读材料（按优先级排序）：
+// 1. 《Effective Modern C++》Scott Meyers — C++11/14 最佳实践
+// 2. 《C++ Concurrency in Action》Anthony Williams — 并发圣经
+// 3. cppreference.com — 日常查 API
+// 4. 《Computer Systems: A Programmer's Perspective》— 系统理解
+// 5. isocpp.github.io/CppCoreGuidelines — 编码规范
+
+// 进阶路线：
+// 写一个开源项目 → 被 review → 改 → 再被 review
+// 这是成长最快的方式，没有之一。</code></pre><p class="tip">举一反三：每天看 cppreference.com 一个页面（函数/类/算法），一年就是 365 个。这和这 100 个案例是一回事：日拱一卒。</p></section></main></body></html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 98：简易 Tensor 前向推理库</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_097.html">← 上一案例</a>    <span class="sep">|</span>
+            <a href="case_099.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 98：简易 Tensor 前向推理库</h1><section class="intro"><p>用纯 C++ 实现张量数据结构、矩阵乘法优化、全连接层、ReLU/Softmax 激活，构建一个能跑 MNIST 数字识别的微型推理引擎。</p><p><strong>核心知识点：</strong>矩阵乘法 ikj 优化、He 初始化、Softmax 数值稳定、行优先存储、随机数生成</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 98：简易 Tensor 前向推理库
+// 实现张量数据结构、矩阵乘法、全连接层、ReLU/Softmax、MNIST 数字识别推理。
+// 这是理解 PyTorch/TensorFlow 底层计算图的最佳入口。
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+#include &lt;random&gt;
+#include &lt;iomanip&gt;
+
+// --- Tensor 类（二维，行优先存储）---
+class Tensor {
+    std::vector&lt;float&gt; data;
+    int R, C;  // 行数、列数
+
+public:
+    Tensor(int rows, int cols) : R(rows), C(cols) {
+        data.resize(rows * cols, 0.0f);
+    }
+
+    float&amp; at(int r, int c)       { return data[r * C + c]; }
+    float  at(int r, int c) const { return data[r * C + c]; }
+    int rows() const { return R; }
+    int cols() const { return C; }
+
+    // --- 矩阵乘法 C = A * B（ikj 顺序，cache 友好）---
+    static Tensor matmul(const Tensor&amp; A, const Tensor&amp; B) {
+        int M = A.R, K = A.C, N = B.C;
+        Tensor C(M, N);
+        for (int i = 0; i &lt; M; i++)
+            for (int k = 0; k &lt; K; k++) {
+                float aik = A.at(i, k);
+                for (int j = 0; j &lt; N; j++)
+                    C.at(i, j) += aik * B.at(k, j);
+            }
+        return C;
+    }
+
+    // --- 加偏置（行向量广播到每行）---
+    Tensor addBias(const Tensor&amp; bias) const {
+        Tensor out(R, C);
+        for (int i = 0; i &lt; R; i++)
+            for (int j = 0; j &lt; C; j++)
+                out.at(i, j) = at(i, j) + bias.at(0, j);
+        return out;
+    }
+
+    // --- ReLU 激活 ---
+    Tensor relu() const {
+        Tensor out(R, C);
+        for (int i = 0; i &lt; R; i++)
+            for (int j = 0; j &lt; C; j++)
+                out.at(i, j) = std::max(0.0f, at(i, j));
+        return out;
+    }
+
+    // --- Softmax（沿行方向，数值稳定实现）---
+    Tensor softmax() const {
+        Tensor out(R, C);
+        for (int i = 0; i &lt; R; i++) {
+            float mx = at(i, 0);
+            for (int j = 1; j &lt; C; j++)
+                mx = std::max(mx, at(i, j));
+            float sum = 0;
+            for (int j = 0; j &lt; C; j++) {
+                out.at(i, j) = std::exp(at(i, j) - mx);
+                sum += out.at(i, j);
+            }
+            for (int j = 0; j &lt; C; j++)
+                out.at(i, j) /= sum;
+        }
+        return out;
+    }
+
+    // --- argmax ---
+    int argmax(int row) const {
+        int best = 0;
+        for (int j = 1; j &lt; C; j++)
+            if (at(row, j) &gt; at(row, best)) best = j;
+        return best;
+    }
+};
+
+// --- 全连接层 ---
+struct Linear {
+    Tensor W, b;
+
+    Linear(int in, int out) : W(in, out), b(1, out) {
+        // He 初始化（适用于 ReLU）：方差 = 2 / in
+        float scale = std::sqrt(2.0f / in);
+        std::mt19937 rng(42);
+        std::normal_distribution&lt;float&gt; d(0, scale);
+        for (int i = 0; i &lt; W.rows(); i++)
+            for (int j = 0; j &lt; W.cols(); j++)
+                W.at(i, j) = d(rng);
+    }
+
+    Tensor forward(const Tensor&amp; x) {
+        return Tensor::matmul(x, W).addBias(b);
+    }
+};
+
+// --- MNIST 模型：784-&gt;128-&gt;ReLU-&gt;64-&gt;ReLU-&gt;10-&gt;Softmax ---
+struct MNISTNet {
+    Linear fc1{784, 128};
+    Linear fc2{128, 64};
+    Linear fc3{64, 10};
+
+    int predict(const std::vector&lt;float&gt;&amp; img) {
+        Tensor x(1, 784);
+        for (int i = 0; i &lt; 784; i++) x.at(0, i) = img[i];
+
+        x = fc1.forward(x).relu();
+        x = fc2.forward(x).relu();
+        x = fc3.forward(x).softmax();
+
+        return x.argmax(0);
+    }
+};
+
+// --- 演示 ---
+int main() {
+    // 模拟一张&quot;3&quot;的手写数字图片（28x28 像素，784 维向量）
+    std::vector&lt;float&gt; fakeImage(784, 0.0f);
+    auto setPixel = [&amp;](int row, int col, float val) {
+        fakeImage[row * 28 + col] = val;
+    };
+    for (int r = 3; r &lt;= 24; r++) setPixel(r, 20, 1.0f);    // 竖
+    for (int r : {5, 14, 23})
+        for (int c = 5; c &lt;= 19; c++) setPixel(r, c, 1.0f);  // 三横
+
+    MNISTNet net;
+    int digit = net.predict(fakeImage);
+
+    std::cout &lt;&lt; &quot;=== 简易 Tensor 推理库 ===\n&quot;;
+    std::cout &lt;&lt; &quot;模型: 784 -&gt; 128 -&gt; ReLU -&gt; 64 -&gt; ReLU -&gt; 10 -&gt; Softmax\n&quot;;
+    std::cout &lt;&lt; &quot;参数量: &quot; &lt;&lt; (784*128 + 128 + 128*64 + 64 + 64*10 + 10) &lt;&lt; &quot; 个\n\n&quot;;
+    std::cout &lt;&lt; &quot;预测的数字是: &quot; &lt;&lt; digit &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;（注意：使用随机初始化权重，结果无意义，仅供演示架构）\n&quot;;
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：矩阵乘法的行优先存储与循环优化</h3><pre class="code-block"><code class="language-cpp">// 行优先存储：元素 (r,c) 在数组中下标 = r * 列数 + c
+// 三重循环的访问顺序影响 cache 命中率
+
+// 优：i-k-j 顺序（ikj）— 内层访问 B 连续
+for (int i = 0; i &lt; M; i++)
+    for (int k = 0; k &lt; K; k++) {
+        float aik = A.at(i, k);
+        for (int j = 0; j &lt; N; j++)
+            C.at(i, j) += aik * B.at(k, j);
+    }
+
+// 差：i-j-k 顺序 — 内层 B.at(k,j) 跳跃访问，cache miss 多</code></pre><p class="tip">举一反三：矩阵乘法有 6 种循环排列（ijk/ikj/jik/jki/kij/kji），性能差距可达 10 倍。ikj 和 kij 最优，因为内层访问连续内存。生产环境用 BLAS（OpenBLAS/MKL/CUDA）库，比手写快 1000+ 倍。</p>
+<h3>语法规则：随机初始化参数（He 初始化）</h3><pre class="code-block"><code class="language-cpp">#include &lt;random&gt;
+float scale = std::sqrt(2.0f / inputFeatures);  // He 公式
+std::mt19937 rng(42);                          // 固定种子可复现
+std::normal_distribution&lt;float&gt; dist(0, scale);
+float w = dist(rng);                            // 每次调用生成一个随机数</code></pre><p class="tip">举一反三：权重初始化影响训练收敛速度。He 初始化（2015）适合 ReLU：方差 = 2/n_in。Xavier 初始化适合 tanh/sigmoid：方差 = 1/n_in。固定随机种子(rng(42))保证结果可复现，调试神经网络时常这样做。</p>
+<h3>语法规则：Softmax 数值稳定实现</h3><pre class="code-block"><code class="language-cpp">// 先减最大值，防止 exp 溢出
+float mx = *std::max_element(values.begin(), values.end());
+float sum = 0;
+for (auto v : values) sum += std::exp(v - mx);
+for (auto&amp; v : values) v = std::exp(v - mx) / sum;</code></pre><p class="tip">举一反三：不先减最大值的话，e^700 会溢出 float。减掉最大值后，最大项变成 e^0=1，其余 <=1，总和 >=1，完全安全。这在每个深度学习框架中都做了这件事，自己的代码也别忘。</p></section></main></body></html>

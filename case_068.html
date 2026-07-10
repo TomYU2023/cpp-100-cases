@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 68：gRPC 概念与 Protobuf 入门</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-phase">
+            <span class="phase-label">Phase 4:</span>
+            <a href="case_061.html">线程池</a>
+            <a href="case_062.html">内存池</a>
+            <a href="case_063.html">无锁队列</a>
+            <a href="case_064.html">对象池</a>
+            <a href="case_065.html">TCP聊天</a>
+            <a href="case_066.html">HTTP服务</a>
+            <a href="case_067.html">REST客户端</a>
+            <a href="case_068.html">gRPC</a>
+            <a href="case_069.html">观察者</a>
+            <a href="case_070.html">策略</a>
+        </div>
+        <div class="nav-links">
+            <a href="case_065.html"><a href="case_067.html">← 上一案例</a></a>
+            <span class="sep">|</span>
+            <a href="case_067.html"><a href="case_069.html">下一案例 →</a></a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>案例 68：gRPC 概念与 Protobuf 入门</h1>
+        <section class="intro">
+            <p>完整展示 gRPC 的 .proto 服务定义、C++ 服务端实现和客户端调用的代码结构。</p>
+            <p><strong>核心知识点：</strong>gRPC、Protobuf 语法、四种 RPC 模式、override、unique_ptr</p>
+        </section>
+        <section class="code-section">
+            <h2>完整代码（含逐行注释）</h2>
+            <pre class="code-block"><code class="language-cpp">// 案例 68：gRPC 概念与 Protobuf 入门
+// 本案例展示 gRPC 的核心概念：Protobuf 定义服务，gRPC 自动生成代码
+// 注意：实际编译需要安装 gRPC 和 protoc，此处展示完整的 .proto 文件和 C++ 使用代码
+
+/* ── 语法规则：Protobuf (.proto) 定义语言 ──
+   Protobuf 是 Google 的高效二进制序列化格式，也是 gRPC 的接口定义语言(IDL)。
+
+   基本语法：
+     syntax = &quot;proto3&quot;;              // 指定 proto3 版本
+     message MessageName {            // 定义消息（相当于 struct）
+       type field_name = number;      // 字段类型 + 名称 + 唯一编号
+       repeated type field = number;  // repeated = 数组/列表
+     }
+     service ServiceName {            // 定义服务（RPC 接口）
+       rpc MethodName(Request) returns (Response);  // 一元 RPC
+       rpc StreamMethod(stream X) returns (stream Y); // 流式 RPC
+     }
+
+   标量类型映射：
+     int32 → C++ int32_t    double → C++ double
+     int64 → C++ int64_t    bool   → C++ bool
+     string → std::string   bytes  → std::string
+
+   示例 message：
+     message Person {
+       string name = 1;       // =1 是字段编号（不是值！），用于二进制编码
+       int32 age = 2;
+       repeated string tags = 3;
+     }
+
+   举一反三：Protobuf 比 JSON 体积小 3~10 倍，解析快 20~100 倍，
+   是微服务间通信的事实标准。gRPC 用 Protobuf 定义接口，
+   自动生成 C++/Java/Python/Go 等 11 种语言的服务端和客户端代码。
+*/
+
+// ============= 第一步：定义 .proto 文件 =============
+// 文件名：calculator.proto
+/*
+syntax = &quot;proto3&quot;;
+
+package calculator;                   // 包名，避免命名冲突，对应 C++ namespace
+
+// 定义请求消息
+message AddRequest {
+  int32 a = 1;                        // 第一个加数，字段编号=1
+  int32 b = 2;                        // 第二个加数，字段编号=2
+}
+
+// 定义响应消息
+message AddResponse {
+  int32 result = 1;                   // 计算结果
+}
+
+// 定义计算器服务
+service CalculatorService {
+  // 一元 RPC：发送一个请求，返回一个响应
+  rpc Add(AddRequest) returns (AddResponse);
+
+  // 服务器流式 RPC：发送一个请求，返回多个响应
+  rpc Fibonacci(FibRequest) returns (stream FibResponse);
+
+  // 客户端流式 RPC：发送多个请求，返回一个响应
+  rpc Average(stream NumberRequest) returns (AverageResponse);
+
+  // 双向流式 RPC：双方都可以持续发送和接收
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+message FibRequest { int32 n = 1; }
+message FibResponse { int32 value = 1; }
+message NumberRequest { int32 number = 1; }
+message AverageResponse { double average = 1; }
+message ChatMessage { string user = 1; string text = 2; }
+*/
+
+// ============= 第二步：编译 .proto 生成 C++ 代码 =============
+// 命令行：
+//   protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` calculator.proto
+//
+// 生成文件：
+//   calculator.pb.h / calculator.pb.cc         → 消息序列化代码
+//   calculator.grpc.pb.h / calculator.grpc.pb.cc → 服务 stub 代码
+
+// ============= 第三步：服务端实现 =============
+/*
+#include &lt;grpcpp/grpcpp.h&gt;
+#include &quot;calculator.grpc.pb.h&quot;
+
+using grpc::Server;
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::Status;
+
+// 继承自动生成的服务基类，重写 RPC 方法
+class CalculatorServiceImpl final : public calculator::CalculatorService::Service {
+    // 实现 Add RPC
+    Status Add(ServerContext* context,
+               const calculator::AddRequest* request,
+               calculator::AddResponse* response) override {
+        response-&gt;set_result(request-&gt;a() + request-&gt;b());  // 设置响应字段
+        return Status::OK;                                  // 返回成功状态
+    }
+};
+
+void RunServer() {
+    std::string serverAddress(&quot;0.0.0.0:50051&quot;);  // 监听所有接口的 50051 端口
+    CalculatorServiceImpl service;
+
+    ServerBuilder builder;
+    builder.AddListeningPort(serverAddress, grpc::InsecureServerCredentials());
+    builder.RegisterService(&amp;service);            // 注册服务实现
+
+    std::unique_ptr&lt;Server&gt; server(builder.BuildAndStart());
+    std::cout &lt;&lt; &quot;gRPC Server listening on &quot; &lt;&lt; serverAddress &lt;&lt; std::endl;
+    server-&gt;Wait();                               // 阻塞直到服务器关闭
+}
+
+int main() { RunServer(); return 0; }
+*/
+
+// ============= 第四步：客户端调用 =============
+/*
+#include &lt;grpcpp/grpcpp.h&gt;
+#include &quot;calculator.grpc.pb.h&quot;
+
+int main() {
+    // 创建 channel（连接到服务端）
+    auto channel = grpc::CreateChannel(&quot;localhost:50051&quot;,
+                                        grpc::InsecureChannelCredentials());
+
+    // 创建 stub（远程调用代理）
+    std::unique_ptr&lt;calculator::CalculatorService::Stub&gt; stub =
+        calculator::CalculatorService::NewStub(channel);
+
+    // 构造请求
+    calculator::AddRequest request;
+    request.set_a(10);
+    request.set_b(20);
+
+    // 构造响应容器和 RPC 上下文
+    calculator::AddResponse response;
+    grpc::ClientContext context;
+
+    // 调用远程方法（同步阻塞）
+    grpc::Status status = stub-&gt;Add(&amp;context, request, &amp;response);
+
+    if (status.ok()) {
+        std::cout &lt;&lt; &quot;10 + 20 = &quot; &lt;&lt; response.result() &lt;&lt; std::endl;  // 输出 30
+    } else {
+        std::cerr &lt;&lt; &quot;RPC failed: &quot; &lt;&lt; status.error_message() &lt;&lt; std::endl;
+    }
+
+    return 0;
+}
+
+// 编译命令（需要 gRPC 库）：
+// g++ -std=c++17 server.cpp calculator.pb.cc calculator.grpc.pb.cc \
+//     `pkg-config --cflags --libs grpc++ protobuf` -o server
+*/
+
+#include &lt;iostream&gt;
+int main() {
+    std::cout &lt;&lt; &quot;案例 68：gRPC 与 Protobuf 概念演示&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;====================================&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;gRPC 四大通信模式：&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  1. 一元 RPC（Unary）     ：单请求 → 单响应（最常用）&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  2. 服务端流式（Server Stream） ：单请求 → 多响应&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  3. 客户端流式（Client Stream） ：多请求 → 单响应&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;  4. 双向流式（Bidirectional）：多请求 ⇄ 多响应&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;\n本项目为概念演示，完整编译需要安装 gRPC 库。&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;见代码注释中的 .proto 定义和 C++ 客户端/服务端示例。&quot; &lt;&lt; std::endl;
+    return 0;
+}</code></pre>
+        </section>
+        <section class="grammar-section">
+            <h3>语法规则：override 关键字</h3>
+            <pre class="code-block"><code class="language-cpp">class Animal { virtual void speak(); };
+class Dog : public Animal {
+  void speak() override;  // 明确告知编译器：我是在重写基类虚函数
+};
+// 如果基类没有同签名虚函数，编译器会报错</code></pre>
+            <p class="tip">💡 举一反三：C++11 引入 override，防止手滑写错函数签名（如 speak() 写成 speek()）。final 则相反——禁止子类继续重写：void speak() final;</p>
+            <h3>语法规则：unique_ptr 独占所有权</h3>
+            <pre class="code-block"><code class="language-cpp">std::unique_ptr&lt;int&gt; p1 = std::make_unique&lt;int&gt;(42);
+auto p2 = std::move(p1);  // 所有权转移，p1 变为 nullptr
+// p1 此时访问无效！// 函数结束时 p2 自动 delete</code></pre>
+            <p class="tip">💡 举一反三：unique_ptr 是 RAII 的典型应用：离开作用域自动释放，性能零开销（裸指针级别）。永远不要手动 new/delete，用 make_unique。</p>
+        </section>
+    </main>
+</body>
+</html>

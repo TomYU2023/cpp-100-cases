@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 89：LSM-Tree 键值数据库</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_088.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_090.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 89：LSM-Tree 键值数据库</h1><section class="intro"><p>实现 memtable（内存红黑树）+ SSTable（磁盘有序文件）+ 压缩合并的简化版 LSM-Tree，理解 LevelDB 的核心思想。</p><p><strong>核心知识点：</strong>LSM-Tree 架构、lower_bound 二分查找、结构化绑定、多路归并压缩、文件系统操作</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 89：LSM-Tree 键值数据库
+// LSM-Tree（Log-Structured Merge-Tree）是 LevelDB/RocksDB 的核心数据结构。
+// 本案例实现 memtable + SSTable + 合并压缩的简化版。
+
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+#include &lt;vector&gt;
+#include &lt;fstream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+#include &lt;filesystem&gt;
+
+namespace fs = std::filesystem;
+
+// ─── 常量 ────────────────────────────────────────
+const size_t MEMTABLE_LIMIT = 5;  // memtable 达到 5 条就落盘
+const std::string DATA_DIR = &quot;lsm_data/&quot;;
+int sstableSeq = 0;  // SSTable 序号
+
+// ─── SSTable（磁盘上的有序文件）─────────────────
+struct SSTable {
+    std::string filename;
+    std::vector&lt;std::pair&lt;std::string, std::string&gt;&gt; entries;
+};
+
+// ─── Memtable（内存红黑树）───────────────────────
+std::map&lt;std::string, std::string&gt; memtable;
+std::vector&lt;SSTable&gt; sstables;
+
+// ─── 初始化 ──────────────────────────────────────
+void init() {
+    fs::create_directories(DATA_DIR);
+    // 加载已有的 SSTable
+    for (const auto&amp; entry : fs::directory_iterator(DATA_DIR)) {
+        if (entry.is_regular_file()) {
+            SSTable sst;
+            sst.filename = entry.path().string();
+            std::ifstream in(sst.filename);
+            std::string line;
+            while (std::getline(in, line)) {
+                auto sep = line.find('\t');
+                if (sep != std::string::npos)
+                    sst.entries.push_back({
+                        line.substr(0, sep),
+                        line.substr(sep + 1)
+                    });
+            }
+            sstables.push_back(sst);
+        }
+    }
+    // 恢复序号
+    if (!sstables.empty())
+        sstableSeq = sstables.size();
+}
+
+// ─── 写入 ────────────────────────────────────────
+void put(const std::string&amp; key, const std::string&amp; value) {
+    memtable[key] = value;  // map::operator[] 会覆盖已有 key
+    if (memtable.size() &gt;= MEMTABLE_LIMIT)
+        flushMemtable();
+}
+
+// ─── Memtable 刷盘 ──────────────────────────────
+void flushMemtable() {
+    std::string fname = DATA_DIR + &quot;sst_&quot; + std::to_string(sstableSeq++) + &quot;.txt&quot;;
+    std::ofstream out(fname);
+    for (const auto&amp; [k, v] : memtable)
+        out &lt;&lt; k &lt;&lt; &quot;\t&quot; &lt;&lt; v &lt;&lt; &quot;\n&quot;;
+    out.close();
+
+    // 记录 SSTable
+    SSTable sst;
+    sst.filename = fname;
+    sst.entries.assign(memtable.begin(), memtable.end());
+    sstables.push_back(sst);
+
+    std::cout &lt;&lt; &quot;[Flush] &quot; &lt;&lt; memtable.size() &lt;&lt; &quot; 条写入 &quot; &lt;&lt; fname &lt;&lt; std::endl;
+    memtable.clear();
+}
+
+// ─── 读取 ────────────────────────────────────────
+std::string get(const std::string&amp; key) {
+    // 1. 先查 memtable（最新数据）
+    auto mit = memtable.find(key);
+    if (mit != memtable.end()) return mit-&gt;second;
+
+    // 2. 从最新到最旧遍历 SSTable
+    for (int i = sstables.size() - 1; i &gt;= 0; i--) {
+        // 二分查找（SSTable 已排序）
+        auto&amp; entries = sstables[i].entries;
+        auto it = std::lower_bound(entries.begin(), entries.end(),
+            std::make_pair(key, std::string(&quot;&quot;)),
+            [](const auto&amp; a, const auto&amp; b) { return a.first &lt; b.first; });
+        if (it != entries.end() &amp;&amp; it-&gt;first == key)
+            return it-&gt;second;
+    }
+    return &quot;（未找到）&quot;;
+}
+
+// ─── 压缩合并：将多个 SSTable 合并为一个 ────────
+void compact() {
+    if (sstables.size() &lt; 2) return;
+    std::cout &lt;&lt; &quot;[Compact] 合并 &quot; &lt;&lt; sstables.size() &lt;&lt; &quot; 个 SSTable...&quot; &lt;&lt; std::endl;
+
+    // 多路归并：将所有 SSTable 的键值对合并到一个 map（自动去重排序）
+    std::map&lt;std::string, std::string&gt; merged;
+    for (auto&amp; sst : sstables)
+        for (auto&amp; [k, v] : sst.entries)
+            merged[k] = v;
+
+    // 删除旧文件
+    for (auto&amp; sst : sstables)
+        fs::remove(sst.filename);
+    sstables.clear();
+
+    // 写回一个 SSTable
+    std::string fname = DATA_DIR + &quot;sst_&quot; + std::to_string(sstableSeq++) + &quot;.txt&quot;;
+    std::ofstream out(fname);
+    for (const auto&amp; [k, v] : merged)
+        out &lt;&lt; k &lt;&lt; &quot;\t&quot; &lt;&lt; v &lt;&lt; &quot;\n&quot;;
+    out.close();
+
+    SSTable sst;
+    sst.filename = fname;
+    sst.entries.assign(merged.begin(), merged.end());
+    sstables.push_back(sst);
+    std::cout &lt;&lt; &quot;[Compact] 完成，共 &quot; &lt;&lt; merged.size() &lt;&lt; &quot; 键。&quot; &lt;&lt; std::endl;
+}
+
+// ─── 列出所有键 ──────────────────────────────────
+void listAll() {
+    std::map&lt;std::string, std::string&gt; all;
+    for (auto&amp; sst : sstables)
+        for (auto&amp; [k, v] : sst.entries)
+            all[k] = v;
+    for (auto&amp; [k, v] : memtable)
+        all[k] = v;
+
+    for (const auto&amp; [k, v] : all)
+        std::cout &lt;&lt; k &lt;&lt; &quot; =&gt; &quot; &lt;&lt; v &lt;&lt; std::endl;
+}
+
+// ─── CLI ─────────────────────────────────────────
+int main() {
+    init();
+    std::cout &lt;&lt; &quot;=== LSM-Tree 键值数据库 ===\n&quot;;
+    std::cout &lt;&lt; &quot;命令: put k v | get k | list | compact | flush | quit\n&quot;;
+
+    while (true) {
+        std::cout &lt;&lt; &quot;\n&gt; &quot;;
+        std::string cmd;
+        std::cin &gt;&gt; cmd;
+
+        if (cmd == &quot;quit&quot;) break;
+        else if (cmd == &quot;put&quot;) {
+            std::string k, v;
+            std::cin &gt;&gt; k &gt;&gt; v;
+            put(k, v);
+            std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;
+        }
+        else if (cmd == &quot;get&quot;) {
+            std::string k;
+            std::cin &gt;&gt; k;
+            std::cout &lt;&lt; get(k) &lt;&lt; std::endl;
+        }
+        else if (cmd == &quot;list&quot;) listAll();
+        else if (cmd == &quot;compact&quot;) compact();
+        else if (cmd == &quot;flush&quot;) flushMemtable();
+        else std::cout &lt;&lt; &quot;未知命令&quot; &lt;&lt; std::endl;
+    }
+
+    flushMemtable();  // 退出前落盘
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：std::lower_bound 二分查找</h3><pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+// 在有序序列中查找第一个 &gt;= target 的位置
+auto it = std::lower_bound(v.begin(), v.end(), target);
+// 需要自定义比较器时：
+auto it = std::lower_bound(v.begin(), v.end(), target,
+    [](const auto&amp; a, const auto&amp; b) { return a.first &lt; b.first; });</code></pre><p class="tip">💡 举一反三：lower_bound 要求序列已排序（对 vector 用 std::sort），返回的是迭代器。检查 it->first == key 确认精确匹配。时间复杂度 O(log n)，是 LSM-Tree 查询 SSTable 的关键。</p>
+<h3>语法规则：std::map + 结构化绑定（C++17）</h3><pre class="code-block"><code class="language-cpp">#include &lt;map&gt;
+std::map&lt;std::string, int&gt; m;
+m[&quot;a&quot;] = 1;
+for (const auto&amp; [key, value] : m)
+    std::cout &lt;&lt; key &lt;&lt; &quot; =&gt; &quot; &lt;&lt; value &lt;&lt; std::endl;</code></pre><p class="tip">💡 举一反三：结构化绑定（Structured Binding）将 pair/tuple/struct 的成员解包为独立变量。auto& [k, v] 是对引用解包（不拷贝）。map 的迭代器解引用后得到 std::pair<const K, V>，绑定为 [key, value] 就是取 pair 的两个成员。</p>
+<h3>语法规则：filesystem::remove / remove_all 删除文件</h3><pre class="code-block"><code class="language-cpp">#include &lt;filesystem&gt;
+std::filesystem::remove(&quot;file.txt&quot;);        // 删除文件或空目录
+std::filesystem::remove_all(&quot;dir/&quot;);     // 递归删除目录（含内容）</code></pre><p class="tip">💡 举一反三：remove 对不存在文件抛异常或返回 false（取决于实现）。remove_all 返回删除的文件数。Compaction 阶段需要覆盖写入，先删除旧 SSTable 再生成新文件，保证原子性。</p></section></main></body></html>

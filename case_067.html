@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 67：REST API 客户端</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-phase">
+            <span class="phase-label">Phase 4:</span>
+            <a href="case_061.html">线程池</a>
+            <a href="case_062.html">内存池</a>
+            <a href="case_063.html">无锁队列</a>
+            <a href="case_064.html">对象池</a>
+            <a href="case_065.html">TCP聊天</a>
+            <a href="case_066.html">HTTP服务</a>
+            <a href="case_067.html">REST客户端</a>
+            <a href="case_068.html">gRPC</a>
+            <a href="case_069.html">观察者</a>
+            <a href="case_070.html">策略</a>
+        </div>
+        <div class="nav-links">
+            <a href="case_065.html"><a href="case_066.html">← 上一案例</a></a>
+            <span class="sep">|</span>
+            <a href="case_067.html"><a href="case_068.html">下一案例 →</a></a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>案例 67：REST API 客户端</h1>
+        <section class="intro">
+            <p>封装一个轻量级 HTTP 客户端类，支持 GET 和 POST 请求，包含 DNS 解析和 JSON POST 示例。</p>
+            <p><strong>核心知识点：</strong>HTTP 客户端、getaddrinfo DNS 解析、原始字符串字面量、ostringstream</p>
+        </section>
+        <section class="code-section">
+            <h2>完整代码（含逐行注释）</h2>
+            <pre class="code-block"><code class="language-cpp">// 案例 67：REST API 客户端（封装 HTTP GET/POST）
+// 用原生 socket 封装一个轻量级 HTTP 客户端，支持 GET 和 POST 请求
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;sstream&gt;
+#include &lt;cstring&gt;
+#include &lt;map&gt;
+
+#ifdef _WIN32
+    #include &lt;winsock2.h&gt;
+    #include &lt;ws2tcpip.h&gt;
+    #pragma comment(lib, &quot;ws2_32.lib&quot;)
+    using socklen_t = int;
+    #define CLOSE_SOCK closesocket
+#else
+    #include &lt;sys/socket.h&gt;
+    #include &lt;netinet/in.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;netdb.h&gt;       // gethostbyname
+    #include &lt;unistd.h&gt;
+    #define CLOSE_SOCK close
+#endif
+
+/* ── 语法规则：DNS 解析 getaddrinfo ──
+   int getaddrinfo(node, service, hints, res)
+     node: 主机名（如 &quot;www.baidu.com&quot;）或 IP
+     service: 端口号字符串（如 &quot;80&quot;）
+     hints: addrinfo 结构体，设置期望的地址族/协议等
+     res: 输出，addrinfo 链表头指针
+     返回：0 成功，非 0 失败 → gai_strerror(code) 获取错误信息
+
+   示例：
+     addrinfo hints{};
+     hints.ai_family = AF_INET;     // IPv4
+     hints.ai_socktype = SOCK_STREAM; // TCP
+     addrinfo* result;
+     getaddrinfo(&quot;www.example.com&quot;, &quot;80&quot;, &amp;hints, &amp;result);
+     // result 中 ai_addr 就是可用的 sockaddr
+     freeaddrinfo(result);
+
+   举一反三：getaddrinfo 替代过时的 gethostbyname，支持 IPv6。
+   几乎所有网络程序建立连接的第一步就是 DNS 解析。
+*/
+
+class HttpClient {
+    std::string host;
+    int port;
+    int sockFd;
+    static const int BUFFER_SIZE = 8192;
+
+    // 连接到服务器
+    bool connect() {
+        // 1. 创建 socket
+        sockFd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockFd &lt; 0) return false;
+
+        // 2. DNS 解析
+        addrinfo hints{}, *result;
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+
+        std::string portStr = std::to_string(port);
+        if (getaddrinfo(host.c_str(), portStr.c_str(), &amp;hints, &amp;result) != 0) {
+            CLOSE_SOCK(sockFd);
+            return false;
+        }
+
+        // 3. 连接服务器
+        int ret = ::connect(sockFd, result-&gt;ai_addr, result-&gt;ai_addrlen);
+        freeaddrinfo(result);  // 释放 DNS 结果内存
+
+        if (ret &lt; 0) {
+            CLOSE_SOCK(sockFd);
+            return false;
+        }
+        return true;
+    }
+
+    // 发送请求并接收响应
+    std::string sendRequest(const std::string&amp; request) {
+        if (!connect()) return &quot;连接失败&quot;;
+
+        // 发送请求
+        ::send(sockFd, request.c_str(), request.size(), 0);
+
+        // 接收响应
+        char buffer[BUFFER_SIZE];
+        std::string response;
+        int bytes;
+        while ((bytes = recv(sockFd, buffer, BUFFER_SIZE - 1, 0)) &gt; 0) {
+            buffer[bytes] = '\0';
+            response += buffer;
+        }
+
+        CLOSE_SOCK(sockFd);
+        return response;
+    }
+
+public:
+    HttpClient(const std::string&amp; h, int p = 80) : host(h), port(p), sockFd(-1) {}
+
+    // GET 请求
+    std::string get(const std::string&amp; path) {
+        std::ostringstream oss;
+        oss &lt;&lt; &quot;GET &quot; &lt;&lt; path &lt;&lt; &quot; HTTP/1.1\r\n&quot;
+            &lt;&lt; &quot;Host: &quot; &lt;&lt; host &lt;&lt; &quot;\r\n&quot;
+            &lt;&lt; &quot;User-Agent: CppHttpClient/1.0\r\n&quot;  // 自定义 User-Agent
+            &lt;&lt; &quot;Accept: */*\r\n&quot;
+            &lt;&lt; &quot;Connection: close\r\n&quot;              // 短连接
+            &lt;&lt; &quot;\r\n&quot;;                              // 请求头结束
+        return sendRequest(oss.str());
+    }
+
+    // POST 请求（JSON）
+    std::string post(const std::string&amp; path, const std::string&amp; body) {
+        std::ostringstream oss;
+        oss &lt;&lt; &quot;POST &quot; &lt;&lt; path &lt;&lt; &quot; HTTP/1.1\r\n&quot;
+            &lt;&lt; &quot;Host: &quot; &lt;&lt; host &lt;&lt; &quot;\r\n&quot;
+            &lt;&lt; &quot;Content-Type: application/json\r\n&quot;   // JSON 类型
+            &lt;&lt; &quot;Content-Length: &quot; &lt;&lt; body.size() &lt;&lt; &quot;\r\n&quot;
+            &lt;&lt; &quot;Connection: close\r\n&quot;
+            &lt;&lt; &quot;\r\n&quot;
+            &lt;&lt; body;                                     // 请求体
+        return sendRequest(oss.str());
+    }
+};
+
+int main() {
+#ifdef _WIN32
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,2), &amp;wsa);
+#endif
+
+    // 测试 GET 请求（向 httpbin.org 发送测试请求）
+    HttpClient client(&quot;httpbin.org&quot;, 80);
+
+    std::cout &lt;&lt; &quot;=== GET /get?name=cpp ===\n&quot;;
+    std::string getResp = client.get(&quot;/get?name=cpp&quot;);
+    std::cout &lt;&lt; getResp &lt;&lt; &quot;\n\n&quot;;
+
+    // 测试 POST 请求
+    std::cout &lt;&lt; &quot;=== POST /post ===\n&quot;;
+    std::string postResp = client.post(&quot;/post&quot;, R&quot;({&quot;language&quot;:&quot;C++&quot;,&quot;level&quot;:&quot;intermediate&quot;})&quot;);
+    std::cout &lt;&lt; postResp &lt;&lt; std::endl;
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
+    return 0;
+}</code></pre>
+        </section>
+        <section class="grammar-section">
+            <h3>语法规则：原始字符串字面量 R"(...)"</h3>
+            <pre class="code-block"><code class="language-cpp">// C++11 原始字符串，括号内所有字符原样保留，无需转义
+std::string json = R&quot;({&quot;key&quot;:&quot;value&quot;})&quot;;  // 错误：内引号需注意
+std::string json = R&quot;({&quot;key&quot;:&quot;value&quot;})&quot;; // 正确
+// 推荐用分隔符：R&quot;delim(...)delim&quot;</code></pre>
+            <p class="tip">💡 举一反三：写 JSON、正则表达式、HTML 模板时非常实用，避免大量反斜杠转义。delim 可以是任意字符串，只要首尾一致即可：R"JSON({"a":1})JSON"。</p>
+            <h3>语法规则：ostringstream 字符串拼接</h3>
+            <pre class="code-block"><code class="language-cpp">std::ostringstream oss;
+oss &lt;&lt; &quot;Hello &quot; &lt;&lt; name &lt;&lt; &quot;, age &quot; &lt;&lt; age;
+std::string result = oss.str();  // 获取拼接结果</code></pre>
+            <p class="tip">💡 举一反三：比 + 号拼接效率高（避免多次临时对象分配），也方便格式化输出。类似的有 istringstream 用于字符串解析。</p>
+        </section>
+    </main>
+</body>
+</html>

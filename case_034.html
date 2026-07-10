@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 34: chrono 计时器 | C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html"><h2>C++ 100 案例</h2></a>
+            </div>
+            <div class="sidebar-nav">
+<div class="section-title">阶段一：语法练兵场</div>
+<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
+<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
+<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
+<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
+<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
+<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
+<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
+<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
+<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
+<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
+<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
+<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
+<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
+<a href="case_014.html" class="nav-item ">14. 模板函数</a>
+<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
+<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
+<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
+<a href="case_018.html" class="nav-item ">18. 移动语义</a>
+<a href="case_019.html" class="nav-item ">19. 智能指针</a>
+<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
+<div class="section-title">阶段二：STL 熟练工</div>
+<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
+<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
+<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
+<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
+<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
+<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
+<a href="case_027.html" class="nav-item ">27. sort 对比实验</a>
+<a href="case_028.html" class="nav-item ">28. find_if 条件筛选</a>
+<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
+<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
+<a href="case_031.html" class="nav-item ">31. partition 分区</a>
+<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
+<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
+<a href="case_034.html" class="nav-item active">34. chrono 计时器</a>
+<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
+<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
+<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
+<a href="case_038.html" class="nav-item ">38. mutex 线程安全</a>
+<a href="case_039.html" class="nav-item ">39. condition_variable 生产者消费者</a>
+<a href="case_040.html" class="nav-item ">40. future/async 异步任务</a>
+<div class="section-title">阶段三：实用小工具</div>
+<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
+<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
+<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
+<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
+<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
+<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
+<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
+<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
+<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
+<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
+<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
+<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
+<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
+<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
+<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
+<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
+<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
+<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
+<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
+<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
+<div class="section-title">阶段四：工程能力锻造</div>
+<a href="case_061.html" class="nav-item ">61. 线程池</a>
+<a href="case_062.html" class="nav-item ">62. 内存池</a>
+<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
+<a href="case_064.html" class="nav-item ">64. 对象池</a>
+<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
+<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
+<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
+<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
+<a href="case_069.html" class="nav-item ">69. 事件总线</a>
+<a href="case_070.html" class="nav-item ">70. 策略模式</a>
+<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
+<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
+<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
+<a href="case_074.html" class="nav-item ">74. 状态机</a>
+<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
+<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
+<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
+<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
+<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
+<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
+<a href="case_081.html" class="nav-item ">81. 插件系统</a>
+<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
+<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
+<a href="case_084.html" class="nav-item ">84. 连接池</a>
+<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
+<div class="section-title">阶段五：综合项目</div>
+<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
+<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
+<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
+<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
+<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
+<a href="case_091.html" class="nav-item ">91. 协程库</a>
+<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
+<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
+<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
+<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
+<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
+<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
+<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
+<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
+<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
+            </div>
+        </nav>
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <main class="content">
+            <header class="case-header">
+                <span class="case-badge">案例 034</span>
+                <h1>chrono 计时器</h1>
+            </header>
+
+            <section class="code-section">
+                <h2>完整代码（逐行注释）</h2>
+                <div class="code-container">
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include &lt;chrono&gt;</code></span>
+                        <span class="line-comment">时间库</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>#include &lt;thread&gt;</code></span>
+                        <span class="line-comment">sleep_for</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code>#include &lt;algorithm&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>using namespace chrono;</code></span>
+                        <span class="line-comment">简化书写</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code>// 简易性能测试 RAII 计时器</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>class Timer {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>    string name_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code>    time_point&lt;high_resolution_clock&gt; start_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>public:</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>    Timer(const string&amp; name) : name_(name), start_(high_resolution_clock::now()) {}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>    ~Timer() {</code></span>
+                        <span class="line-comment">析构时自动输出耗时</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code>        auto end = high_resolution_clock::now();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>        auto ms = duration_cast&lt;milliseconds&gt;(end - start_).count();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>        cout &lt;&lt; name_ &lt;&lt; ": " &lt;&lt; ms &lt;&lt; " ms" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>};</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>    // 1. 获取当前时间（多种时钟）</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code>    auto now_sys = system_clock::now();</code></span>
+                        <span class="line-comment">系统时钟，可转日历时间</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>    auto now_steady = steady_clock::now();</code></span>
+                        <span class="line-comment">单调时钟，不会被调整</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>    auto now_hires = high_resolution_clock::now();</code></span>
+                        <span class="line-comment">最高精度（通常是 steady_clock 的别名）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code>    // 2. 时间点转 time_t（用于输出）</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>    time_t t = system_clock::to_time_t(now_sys);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "当前时间: " &lt;&lt; ctime(&amp;t);</code></span>
+                        <span class="line-comment">注意 ctime 自带换行</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>    // 3. duration 运算</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>    auto t1 = steady_clock::now();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>    this_thread::sleep_for(500ms);</code></span>
+                        <span class="line-comment">C++14 字面量</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>    auto t2 = steady_clock::now();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>    auto elapsed = duration_cast&lt;microseconds&gt;(t2 - t1);</code></span>
+                        <span class="line-comment">转为微秒</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "sleep 耗时: " &lt;&lt; elapsed.count() &lt;&lt; " μs" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code>    // 4. 计时器实战</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>    {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">41</span>
+                        <span class="line-code"><code>        Timer t("排序测试");</code></span>
+                        <span class="line-comment">RAII 自动计时</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">42</span>
+                        <span class="line-code"><code>        vector&lt;int&gt; v(1000000);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">43</span>
+                        <span class="line-code"><code>        generate(v.begin(), v.end(), rand);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">44</span>
+                        <span class="line-code"><code>        sort(v.begin(), v.end());</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">45</span>
+                        <span class="line-code"><code>    } // Timer 析构，输出耗时</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">46</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">47</span>
+                        <span class="line-code"><code>    // 5. 时间字面量（C++14）</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">48</span>
+                        <span class="line-code"><code>    auto oneSec = 1s;         // seconds</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">49</span>
+                        <span class="line-code"><code>    auto hundredMs = 100ms;   // milliseconds</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">50</span>
+                        <span class="line-code"><code>    auto oneMin = 1min;       // minutes (C++20)</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">51</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "时间字面量: " &lt;&lt; oneSec.count() &lt;&lt; "s, "</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">52</span>
+                        <span class="line-code"><code>        &lt;&lt; hundredMs.count() &lt;&lt; "ms" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">53</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">54</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">55</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                </div>
+                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
+            </section>
+
+            <section class="grammar-section">
+                <h2>新语法讲解</h2>
+            <div class="grammar-card">
+                <h3>chrono 三大时钟</h3>
+                <div class="grammar-rule"><strong>system_clock</strong>：系统实时时钟，可转为日历时间，但可能被 NTP 或用户调整。<strong>steady_clock</strong>：单调递增时钟，<strong>不会被调整</strong>，适合测量时间间隔。<strong>high_resolution_clock</strong>：最高精度时钟（通常就是 steady_clock），写性能测试首选。</div>
+                <div class="grammar-example">
+                    <h4>举一反三</h4>
+                    <pre><code>// 测性能用 steady_clock/high_resolution_clock
+auto t1 = steady_clock::now();
+doWork();
+auto t2 = steady_clock::now();
+// 输出时间用 system_clock
+auto now = system_clock::now();
+time_t t = system_clock::to_time_t(now);</code></pre>
+                </div>
+            </div>
+            <div class="grammar-card">
+                <h3>duration_cast 类型转换</h3>
+                <div class="grammar-rule">时间差是一个 <strong>duration</strong> 模板类型。不同单位的 duration 之间用 <strong>duration_cast</strong> 转换（可能截断）或 <strong>floor/ceil/round</strong>（C++17）控制舍入方式。C++14 提供时间字面量：1s, 500ms, 100us, 50ns。</div>
+                <div class="grammar-example">
+                    <h4>举一反三</h4>
+                    <pre><code>auto d = 1500ms;
+auto sec = duration_cast<seconds>(d); // 1 (截断)
+auto msec = duration_cast<milliseconds>(d); // 1500
+auto sec2 = floor<seconds>(d); // C++17: 1</code></pre>
+                </div>
+            </div>
+            </section>
+
+            <section class="extend-section">
+                <h2>举一反三</h2>
+            <div class="extend-card">
+                <h3>实现函数平均耗时统计</h3>
+                <pre><code>template<typename F>
+auto benchmark(F f, int n=100) {
+  auto t1=steady_clock::now();
+  for(int i=0;i<n;i++) f();
+  auto t2=steady_clock::now();
+  return duration_cast<microseconds>(t2-t1).count()/(double)n;
+}</code></pre>
+                <p>多次运行取平均，减少测量噪声</p>
+            </div>
+            <div class="extend-card">
+                <h3>日期库 (C++20)</h3>
+                <pre><code>#include <chrono>
+using namespace chrono;
+auto today = year_month_day{floor<days>(system_clock::now())};
+// 终于不依赖 C 的 tm 结构体了</code></pre>
+                <p>C++20 的 chrono 大幅扩展，支持日期运算</p>
+            </div>
+            <div class="extend-card">
+                <h3>高精度性能计数器</h3>
+                <pre><code>// Windows: QueryPerformanceCounter
+// Linux: clock_gettime(CLOCK_MONOTONIC)
+// chrono 已封装这些，直接用 steady_clock 即可</code></pre>
+                <p>steady_clock 底层就是 OS 最高精度单调时钟</p>
+            </div>
+            </section>
+
+            <nav class="case-nav">
+                <a href="case_033.html" class="nav-prev">← 上一案例</a>
+                <a href="index.html" class="nav-home">回首页</a>
+                <a href="case_035.html" class="nav-next">下一案例 →</a>
+            </nav>
+        </main>
+    </div>
+    <script>
+    function copyCode(container) {
+        const lines = container.querySelectorAll('.line-code code');
+        let code = '';
+        lines.forEach(l => code += l.textContent + '\n');
+        navigator.clipboard.writeText(code);
+    }
+    </script>
+</body>
+</html>

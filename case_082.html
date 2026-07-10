@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 82：简易脚本引擎（表达式求值）</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_081.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_083.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 82：简易脚本引擎（表达式求值）</h1><section class="intro"><p>用递归下降法手写一个数学表达式解析求值器，支持四则运算、括号、幂运算、三角函数和变量。</p><p><strong>核心知识点：</strong>递归下降解析器、语法分析、std::stod、map 变量表、浮点比较</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cctype&gt;
+#include &lt;stdexcept&gt;
+#include &lt;map&gt;
+
+// ========== 简易数学表达式求值引擎 ==========
+// 支持：数字、+、-、*、/、()、变量（单字母）、sin/cos/sqrt
+// 实现方式：递归下降解析器（Recursive Descent Parser）
+
+class ExprEngine {
+    const std::string&amp; expr_; // 表达式字符串引用
+    size_t pos_;              // 当前解析位置
+    std::map&lt;std::string, double&gt; vars_; // 变量表
+
+    // 跳过空格
+    void skipSpace() {
+        while (pos_ &lt; expr_.size() &amp;&amp; std::isspace(expr_[pos_])) pos_++;
+        // std::isspace 判断空白字符（空格、制表符、换行等），定义在 &lt;cctype&gt;
+    }
+
+    // 查看当前字符（不移动位置）
+    char peek() const {
+        return pos_ &lt; expr_.size() ? expr_[pos_] : '\0';
+    }
+
+    // 消费当前字符并返回
+    char consume() {
+        return pos_ &lt; expr_.size() ? expr_[pos_++] : '\0';
+    }
+
+    // 匹配并消费指定字符
+    bool match(char c) {
+        skipSpace();
+        if (peek() == c) { pos_++; return true; }
+        return false;
+    }
+
+    // ===== 递归下降核心：每个非终结符一个函数 =====
+
+    // expression = term { ('+'|'-') term }
+    // 语法规则：递归下降解析器 — 每个语法规则对应一个函数
+    // expression → term (('+'|'-') term)*
+    // 运算符优先级通过函数调用层级实现：expression 调用 term，term 调用 factor
+    double expression() {
+        skipSpace();
+        double result = term();  // 先解析第一个项
+        while (true) {
+            skipSpace();
+            if (match('+')) result += term();       // 加法
+            else if (match('-')) result -= term();   // 减法
+            else break;
+        }
+        return result;
+    }
+
+    // term = factor { ('*'|'/') factor }
+    double term() {
+        skipSpace();
+        double result = factor(); // 先解析第一个因子
+        while (true) {
+            skipSpace();
+            if (match('*')) result *= factor();      // 乘法
+            else if (match('/')) {                   // 除法
+                double divisor = factor();
+                if (divisor == 0) throw std::runtime_error(&quot;除零错误&quot;);
+                result /= divisor;
+            }
+            else break;
+        }
+        return result;
+    }
+
+    // factor = [ '+' | '-' ] power
+    double factor() {
+        skipSpace();
+        if (match('+')) return power();   // 正号
+        if (match('-')) return -power();  // 负号
+        return power();
+    }
+
+    // power = atom [ '^' factor ]  (右结合)
+    double power() {
+        double base = atom();
+        skipSpace();
+        if (match('^')) {
+            double exp = power(); // 递归调用实现右结合
+            // 语法规则：std::pow(base, exp) — 幂运算，定义在 &lt;cmath&gt;
+            return std::pow(base, exp);
+        }
+        return base;
+    }
+
+    // atom = number | '(' expression ')' | function '(' expression ')' | variable
+    double atom() {
+        skipSpace();
+        // 括号表达式
+        if (match('(')) {
+            double val = expression();
+            if (!match(')')) throw std::runtime_error(&quot;缺少右括号&quot;);
+            return val;
+        }
+
+        // 数字
+        // 语法规则：std::isdigit(c) — 判断字符是否为数字 '0'-'9'
+        if (std::isdigit(peek()) || peek() == '.') {
+            size_t start = pos_;
+            while (pos_ &lt; expr_.size() &amp;&amp;
+                   (std::isdigit(expr_[pos_]) || expr_[pos_] == '.')) pos_++;
+            // std::stod：string to double，定义在 &lt;string&gt;
+            return std::stod(expr_.substr(start, pos_ - start));
+        }
+
+        // 函数调用：sin/cos/sqrt
+        if (std::isalpha(peek())) {
+            std::string name;
+            while (pos_ &lt; expr_.size() &amp;&amp; std::isalpha(expr_[pos_]))
+                name += expr_[pos_++];
+            // 语法规则：std::isalpha(c) — 判断字符是否为字母 A-Z/a-z
+            skipSpace();
+            if (match('(')) {
+                double arg = expression();
+                if (!match(')')) throw std::runtime_error(&quot;函数缺少右括号&quot;);
+                if (name == &quot;sin&quot;) return std::sin(arg);
+                if (name == &quot;cos&quot;) return std::cos(arg);
+                if (name == &quot;sqrt&quot;) return std::sqrt(arg);
+                throw std::runtime_error(&quot;未知函数: &quot; + name);
+            }
+            // 变量
+            if (vars_.count(name)) return vars_[name];
+            throw std::runtime_error(&quot;未定义变量: &quot; + name);
+        }
+
+        throw std::runtime_error(&quot;意外的字符: &quot; + std::string(1, peek()));
+    }
+
+public:
+    ExprEngine(const std::string&amp; expr) : expr_(expr), pos_(0) {}
+
+    void setVar(const std::string&amp; name, double val) { vars_[name] = val; }
+
+    double eval() {
+        double result = expression();
+        skipSpace();
+        if (pos_ != expr_.size()) {
+            throw std::runtime_error(&quot;表达式末尾有多余字符&quot;);
+        }
+        return result;
+    }
+};
+
+int main() {
+    // 测试用例
+    struct Test { const char* expr; double expected; };
+    Test tests[] = {
+        {&quot;1 + 2 * 3&quot;, 7},
+        {&quot;(1 + 2) * 3&quot;, 9},
+        {&quot;-3 + 5&quot;, 2},
+        {&quot;2 ^ 3 ^ 2&quot;, 512},  // 右结合：2^(3^2)=2^9=512
+        {&quot;sin(0)&quot;, 0},
+        {&quot;sqrt(16) + 1&quot;, 5},
+    };
+
+    ExprEngine eng(&quot;&quot;);
+    for (auto&amp; t : tests) {
+        eng = ExprEngine(t.expr);
+        double result = eng.eval();
+        std::cout &lt;&lt; t.expr &lt;&lt; &quot; = &quot; &lt;&lt; result
+                  &lt;&lt; (std::abs(result - t.expected) &lt; 1e-9 ? &quot; ✓&quot; : &quot; ✗&quot;)
+                  &lt;&lt; &quot;\n&quot;;
+    }
+
+    // 变量演示
+    ExprEngine eng2(&quot;x * 2 + y&quot;);
+    eng2.setVar(&quot;x&quot;, 10);
+    eng2.setVar(&quot;y&quot;, 5);
+    std::cout &lt;&lt; &quot;x*2+y (x=10,y=5) = &quot; &lt;&lt; eng2.eval() &lt;&lt; &quot;\n&quot;;
+
+    std::cout &lt;&lt; &quot;\n核心知识点：\n&quot;
+              &lt;&lt; &quot;1. 递归下降解析器：每个语法规则对应一个函数\n&quot;
+              &lt;&lt; &quot;2. 运算符优先级通过函数调用层级实现\n&quot;
+              &lt;&lt; &quot;3. 左递归需改写为 while 循环（如 expression 函数）\n&quot;;
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：递归下降解析器（Recursive Descent Parser）</h3><pre class="code-block"><code class="language-cpp">// 文法规则：
+// expr   = term { ('+'|'-') term }
+// term   = factor { ('*'|'/') factor }
+// factor = number | '(' expr ')' | func '(' expr ')'
+// 每个规则对应一个函数，层层调用</code></pre><p class="tip">💡 举一反三：递归下降是最直观的手写解析器方式。每个非终结符一个函数，左递归需要改写为循环。比 yacc/bison 更灵活，但效率较低。适合小语言和 DSL。</p>
+<h3>语法规则：std::stod / std::stoi / std::stoul</h3><pre class="code-block"><code class="language-cpp">std::string s = &quot;3.14159&quot;;
+double d = std::stod(s);    // 3.14159
+int i = std::stoi(&quot;42&quot;);   // 42
+// 还有 stof(float), stol(long), stoll(long long), stoull</code></pre><p class="tip">💡 举一反三：C++11 引入的字符串转数值函数族。比 atof/atoi 更安全：支持指定转换位置（第二个参数），失败抛异常（std::invalid_argument / std::out_of_range）。</p>
+<h3>语法规则：std::abs / std::fabs / 浮点比较</h3><pre class="code-block"><code class="language-cpp">double a = 0.1 + 0.2;  // 0.30000000000000004
+double b = 0.3;
+// 浮点比较用容差：
+bool eq = std::abs(a - b) &lt; 1e-9;
+// 不要用 a == b，浮点有精度误差！</code></pre><p class="tip">💡 举一反三：浮点数不能用 == 直接比较。标准做法是判断差的绝对值是否小于一个很小的容差值（epsilon），通常取 1e-9 或 1e-12。</p>
+<h3>语法规则：std::map::count / find / contains(C++20)</h3><pre class="code-block"><code class="language-cpp">std::map&lt;std::string, int&gt; m = {{&quot;x&quot;,10}};
+if (m.count(&quot;x&quot;)) { /* 存在 */ }     // count 返回 0 或 1
+if (m.find(&quot;x&quot;) != m.end()) { }     // find 返回迭代器
+if (m.contains(&quot;x&quot;)) { }            // C++20，最清晰</code></pre><p class="tip">💡 举一反三：map 的键是唯一的，count() 只能返回 0 或 1。C++20 新增 contains() 语义最明确。C++17 以下用 count() 或 find() != end()。</p></section></main></body></html>

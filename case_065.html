@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 65：TCP 聊天室（服务端 + 客户端） - C++ 100 案例</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; display:flex; min-height:100vh; background:#0d1117; color:#c9d1d9; }
+.sidebar { width:260px; background:#161b22; border-right:1px solid #30363d; position:fixed; top:0; left:0; bottom:0; overflow-y:auto; z-index:100; }
+.sidebar-header { padding:20px; border-bottom:1px solid #30363d; }
+.sidebar-header h2 { color:#58a6ff; font-size:18px; }
+.nav-list { list-style:none; }
+.nav-stage { border-bottom:1px solid #21262d; }
+.stage-title { display:block; padding:12px 20px; font-size:13px; font-weight:700; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.nav-cases { list-style:none; }
+.nav-cases li {  }
+.nav-cases li a { display:block; padding:6px 20px 6px 32px; font-size:13px; color:#8b949e; text-decoration:none; transition:all 0.15s; }
+.nav-cases li a:hover { color:#58a6ff; background:#1c2128; }
+.nav-cases li.active a { color:#58a6ff; background:#1f2937; border-left:3px solid #58a6ff; padding-left:29px; }
+.main { margin-left:260px; flex:1; padding:40px; max-width:1100px; }
+.case-header { margin-bottom:30px; }
+.case-header h1 { font-size:28px; color:#58a6ff; margin-bottom:8px; }
+.case-header .meta { font-size:14px; color:#8b949e; }
+.case-header .meta span { background:#21262d; padding:3px 10px; border-radius:12px; margin-right:8px; }
+h2 { color:#f0f6fc; font-size:20px; margin:30px 0 15px; padding-bottom:8px; border-bottom:1px solid #30363d; }
+h3 { color:#f0f6fc; font-size:16px; margin:20px 0 10px; }
+.section-desc { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px 20px; margin-bottom:20px; line-height:1.7; font-size:14px; }
+.section-desc code { background:#30363d; padding:2px 6px; border-radius:4px; font-size:13px; color:#f0883e; }
+.code-block { background:#161b22; border:1px solid #30363d; border-radius:8px; overflow:hidden; margin-bottom:20px; }
+.code-block .code-header { background:#21262d; padding:8px 16px; font-size:12px; color:#8b949e; border-bottom:1px solid #30363d; }
+.code-block pre { padding:16px; overflow-x:auto; margin:0; }
+.code-block code { font-family:'Cascadia Code','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+.line { display:flex; min-height:22px; }
+.line .ln { color:#484f58; text-align:right; padding-right:16px; min-width:44px; user-select:none; flex-shrink:0; }
+.line .cc { flex:1; white-space:pre-wrap; word-break:break-all; }
+.line .comment { color:#6e7681; }
+.comment-block { background:#0d1117; border-left:3px solid #58a6ff; padding:12px 16px; margin:8px 0; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; }
+.comment-block strong { color:#58a6ff; }
+.grammar-box { background:#1a2332; border:1px solid #1f6feb; border-radius:8px; padding:20px; margin-bottom:20px; }
+.grammar-box .grammar-title { color:#58a6ff; font-size:15px; font-weight:700; margin-bottom:10px; }
+.grammar-box .grammar-rule { background:#0d1117; border-radius:6px; padding:12px 16px; font-family:'Cascadia Code',monospace; font-size:13px; margin-bottom:10px; }
+.grammar-box .grammar-example { margin-bottom:8px; }
+.grammar-box .grammar-example pre { background:#0d1117; border-radius:6px; padding:12px 16px; font-size:13px; margin:5px 0; }
+.grammar-box .grammar-tips { color:#8b949e; font-size:13px; margin-top:8px; }
+.grammar-box .grammar-tips ul { padding-left:20px; }
+.grammar-box .grammar-tips li { margin:4px 0; }
+.keyword { color:#ff7b72; }
+.string { color:#a5d6ff; }
+.func { color:#d2a8ff; }
+.type { color:#ffa657; }
+.number { color:#79c0ff; }
+.op { color:#ff7b72; }
+.macro { color:#8b949e; }
+a { color:#58a6ff; text-decoration:none; }
+a:hover { text-decoration:underline; }
+.bottom-nav { display:flex; justify-content:space-between; margin-top:40px; padding-top:20px; border-top:1px solid #30363d; }
+.bottom-nav a { background:#21262d; padding:10px 20px; border-radius:6px; font-size:14px; transition:background 0.15s; }
+.bottom-nav a:hover { background:#30363d; text-decoration:none; }
+</style>
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header"><h2>C++ 100 案例</h2></div>
+  <ul class="nav-list">
+    <li class="nav-stage"><span class="stage-title">语法练兵场</span>
+      <ul class="nav-cases">
+        <li><a href="case_001.html">案例 1</a></li>
+        <li><a href="case_002.html">案例 2</a></li>
+        <li><a href="case_003.html">案例 3</a></li>
+        <li><a href="case_004.html">案例 4</a></li>
+        <li><a href="case_005.html">案例 5</a></li>
+        <li><a href="case_006.html">案例 6</a></li>
+        <li><a href="case_007.html">案例 7</a></li>
+        <li><a href="case_008.html">案例 8</a></li>
+        <li><a href="case_009.html">案例 9</a></li>
+        <li><a href="case_010.html">案例 10</a></li>
+        <li><a href="case_011.html">案例 11</a></li>
+        <li><a href="case_012.html">案例 12</a></li>
+        <li><a href="case_013.html">案例 13</a></li>
+        <li><a href="case_014.html">案例 14</a></li>
+        <li><a href="case_015.html">案例 15</a></li>
+        <li><a href="case_016.html">案例 16</a></li>
+        <li><a href="case_017.html">案例 17</a></li>
+        <li><a href="case_018.html">案例 18</a></li>
+        <li><a href="case_019.html">案例 19</a></li>
+        <li><a href="case_020.html">案例 20</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">STL 熟练工</span>
+      <ul class="nav-cases">
+        <li><a href="case_021.html">案例 21</a></li>
+        <li><a href="case_022.html">案例 22</a></li>
+        <li><a href="case_023.html">案例 23</a></li>
+        <li><a href="case_024.html">案例 24</a></li>
+        <li><a href="case_025.html">案例 25</a></li>
+        <li><a href="case_026.html">案例 26</a></li>
+        <li><a href="case_027.html">案例 27</a></li>
+        <li><a href="case_028.html">案例 28</a></li>
+        <li><a href="case_029.html">案例 29</a></li>
+        <li><a href="case_030.html">案例 30</a></li>
+        <li><a href="case_031.html">案例 31</a></li>
+        <li><a href="case_032.html">案例 32</a></li>
+        <li><a href="case_033.html">案例 33</a></li>
+        <li><a href="case_034.html">案例 34</a></li>
+        <li><a href="case_035.html">案例 35</a></li>
+        <li><a href="case_036.html">案例 36</a></li>
+        <li><a href="case_037.html">案例 37</a></li>
+        <li><a href="case_038.html">案例 38</a></li>
+        <li><a href="case_039.html">案例 39</a></li>
+        <li><a href="case_040.html">案例 40</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">实用小工具</span>
+      <ul class="nav-cases">
+        <li><a href="case_041.html">案例 41</a></li>
+        <li><a href="case_042.html">案例 42</a></li>
+        <li><a href="case_043.html">案例 43</a></li>
+        <li><a href="case_044.html">案例 44</a></li>
+        <li><a href="case_045.html">案例 45</a></li>
+        <li><a href="case_046.html">案例 46</a></li>
+        <li><a href="case_047.html">案例 47</a></li>
+        <li><a href="case_048.html">案例 48</a></li>
+        <li><a href="case_049.html">案例 49</a></li>
+        <li><a href="case_050.html">案例 50</a></li>
+        <li><a href="case_051.html">案例 51</a></li>
+        <li><a href="case_052.html">案例 52</a></li>
+        <li><a href="case_053.html">案例 53</a></li>
+        <li><a href="case_054.html">案例 54</a></li>
+        <li><a href="case_055.html">案例 55</a></li>
+        <li><a href="case_056.html">案例 56</a></li>
+        <li><a href="case_057.html">案例 57</a></li>
+        <li><a href="case_058.html">案例 58</a></li>
+        <li><a href="case_059.html">案例 59</a></li>
+        <li><a href="case_060.html">案例 60</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">工程能力锻造</span>
+      <ul class="nav-cases">
+        <li><a href="case_061.html">案例 61</a></li>
+        <li><a href="case_062.html">案例 62</a></li>
+        <li><a href="case_063.html">案例 63</a></li>
+        <li><a href="case_064.html">案例 64</a></li>
+        <li class="active"><a href="case_065.html">案例 65</a></li>
+        <li><a href="case_066.html">案例 66</a></li>
+        <li><a href="case_067.html">案例 67</a></li>
+        <li><a href="case_068.html">案例 68</a></li>
+        <li><a href="case_069.html">案例 69</a></li>
+        <li><a href="case_070.html">案例 70</a></li>
+        <li><a href="case_071.html">案例 71</a></li>
+        <li><a href="case_072.html">案例 72</a></li>
+        <li><a href="case_073.html">案例 73</a></li>
+        <li><a href="case_074.html">案例 74</a></li>
+        <li><a href="case_075.html">案例 75</a></li>
+        <li><a href="case_076.html">案例 76</a></li>
+        <li><a href="case_077.html">案例 77</a></li>
+        <li><a href="case_078.html">案例 78</a></li>
+        <li><a href="case_079.html">案例 79</a></li>
+        <li><a href="case_080.html">案例 80</a></li>
+        <li><a href="case_081.html">案例 81</a></li>
+        <li><a href="case_082.html">案例 82</a></li>
+        <li><a href="case_083.html">案例 83</a></li>
+        <li><a href="case_084.html">案例 84</a></li>
+        <li><a href="case_085.html">案例 85</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">综合项目</span>
+      <ul class="nav-cases">
+        <li><a href="case_086.html">案例 86</a></li>
+        <li><a href="case_087.html">案例 87</a></li>
+        <li><a href="case_088.html">案例 88</a></li>
+        <li><a href="case_089.html">案例 89</a></li>
+        <li><a href="case_090.html">案例 90</a></li>
+        <li><a href="case_091.html">案例 91</a></li>
+        <li><a href="case_092.html">案例 92</a></li>
+        <li><a href="case_093.html">案例 93</a></li>
+        <li><a href="case_094.html">案例 94</a></li>
+        <li><a href="case_095.html">案例 95</a></li>
+        <li><a href="case_096.html">案例 96</a></li>
+        <li><a href="case_097.html">案例 97</a></li>
+        <li><a href="case_098.html">案例 98</a></li>
+        <li><a href="case_099.html">案例 99</a></li>
+        <li><a href="case_100.html">案例 100</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+<main class="main">
+<div class="case-header">
+<h1>案例 65：TCP 聊天室（服务端 + 客户端）</h1>
+<div class="meta">
+<span>阶段：工程能力锻造</span><span>难度：⭐⭐⭐⭐</span><span>练什么：socket、select、协议设计</span>
+</div>
+</div>
+
+<div class="section-desc">实现一个多人 TCP 聊天室：服务端用 select 管理多客户端连接，广播消息给所有人。理解 TCP 网络编程全流程。</div>
+
+<h2>完整代码与逐行注释</h2>
+<div class="code-block">
+<div class="code-header">case_065.cpp</div>
+<pre><code><div class="line"><span class="ln">1</span><span class="cc">#ifdef _WIN32</span></div>
+<div class="comment-block">💬 <strong>第1行：</strong>跨平台编译适配</div>
+<div class="line"><span class="ln">2</span><span class="cc">    #include &lt;winsock2.h&gt;</span></div>
+<div class="comment-block">💬 <strong>第2行：</strong>Windows Socket API</div>
+<div class="line"><span class="ln">3</span><span class="cc">    #include &lt;ws2tcpip.h&gt;</span></div>
+<div class="comment-block">💬 <strong>第3行：</strong>inet_pton 等</div>
+<div class="line"><span class="ln">4</span><span class="cc">    #pragma comment(lib, &quot;ws2_32.lib&quot;)</span></div>
+<div class="comment-block">💬 <strong>第4行：</strong>链接 ws2_32 库</div>
+<div class="line"><span class="ln">5</span><span class="cc">    using socklen_t = int;</span></div>
+<div class="comment-block">💬 <strong>第5行：</strong>Windows 没有 socklen_t</div>
+<div class="line"><span class="ln">6</span><span class="cc">    #define close closesocket</span></div>
+<div class="comment-block">💬 <strong>第6行：</strong>Windows 用 closesocket</div>
+<div class="line"><span class="ln">7</span><span class="cc">#else</span></div>
+<div class="line"><span class="ln">8</span><span class="cc">    #include &lt;sys/socket.h&gt;</span></div>
+<div class="line"><span class="ln">9</span><span class="cc">    #include &lt;netinet/in.h&gt;</span></div>
+<div class="line"><span class="ln">10</span><span class="cc">    #include &lt;arpa/inet.h&gt;</span></div>
+<div class="line"><span class="ln">11</span><span class="cc">    #include &lt;unistd.h&gt;</span></div>
+<div class="comment-block">💬 <strong>第11行：</strong>close</div>
+<div class="line"><span class="ln">12</span><span class="cc">#endif</span></div>
+<div class="line"><span class="ln">13</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">14</span><span class="cc">#include &lt;iostream&gt;</span></div>
+<div class="line"><span class="ln">15</span><span class="cc">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="ln">16</span><span class="cc">#include &lt;cstring&gt;</span></div>
+<div class="comment-block">💬 <strong>第16行：</strong>memset, strlen</div>
+<div class="line"><span class="ln">17</span><span class="cc">#include &lt;algorithm&gt;</span></div>
+<div class="comment-block">💬 <strong>第17行：</strong>std::find</div>
+<div class="line"><span class="ln">18</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">19</span><span class="cc">const int PORT = 8080;</span></div>
+<div class="line"><span class="ln">20</span><span class="cc">const int MAX_CLIENTS = 10;</span></div>
+<div class="comment-block">💬 <strong>第20行：</strong>最大客户端数</div>
+<div class="line"><span class="ln">21</span><span class="cc">const int BUFFER_SIZE = 4096;</span></div>
+<div class="comment-block">💬 <strong>第21行：</strong>缓冲区大小</div>
+<div class="line"><span class="ln">22</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">23</span><span class="cc">int main() {</span></div>
+<div class="line"><span class="ln">24</span><span class="cc">#ifdef _WIN32</span></div>
+<div class="line"><span class="ln">25</span><span class="cc">    WSADATA wsaData;</span></div>
+<div class="line"><span class="ln">26</span><span class="cc">    WSAStartup(MAKEWORD(2,2), &amp;wsaData);</span></div>
+<div class="comment-block">💬 <strong>第26行：</strong>Windows 初始化 Winsock</div>
+<div class="line"><span class="ln">27</span><span class="cc">#endif</span></div>
+<div class="line"><span class="ln">28</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">29</span><span class="cc">    // 1. 创建 socket</span></div>
+<div class="line"><span class="ln">30</span><span class="cc">    int serverFd = socket(AF_INET, SOCK_STREAM, 0);</span></div>
+<div class="comment-block">💬 <strong>第30行：</strong>AF_INET=IPv4, SOCK_STREAM=TCP</div>
+<div class="line"><span class="ln">31</span><span class="cc">    if (serverFd &lt; 0) { std::cerr &lt;&lt; &quot;socket failed\n&quot;; return 1; }</span></div>
+<div class="line"><span class="ln">32</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">33</span><span class="cc">    // 2. 设置 SO_REUSEADDR 避免 &quot;Address already in use&quot;</span></div>
+<div class="line"><span class="ln">34</span><span class="cc">    int opt = 1;</span></div>
+<div class="line"><span class="ln">35</span><span class="cc">    setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR,</span></div>
+<div class="comment-block">💬 <strong>第35行：</strong>SO_REUSEADDR 允许重用 TIME_WAIT 状态的端口</div>
+<div class="line"><span class="ln">36</span><span class="cc">               (const char*)&amp;opt, sizeof(opt));</span></div>
+<div class="line"><span class="ln">37</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">38</span><span class="cc">    // 3. bind</span></div>
+<div class="line"><span class="ln">39</span><span class="cc">    sockaddr_in address{};</span></div>
+<div class="comment-block">💬 <strong>第39行：</strong>值初始化清零</div>
+<div class="line"><span class="ln">40</span><span class="cc">    address.sin_family = AF_INET;</span></div>
+<div class="line"><span class="ln">41</span><span class="cc">    address.sin_addr.s_addr = INADDR_ANY;</span></div>
+<div class="comment-block">💬 <strong>第41行：</strong>监听所有网络接口</div>
+<div class="line"><span class="ln">42</span><span class="cc">    address.sin_port = htons(PORT);</span></div>
+<div class="comment-block">💬 <strong>第42行：</strong>htons：主机字节序 → 网络字节序（Host TO Network Short）</div>
+<div class="line"><span class="ln">43</span><span class="cc">    bind(serverFd, (sockaddr*)&amp;address, sizeof(address));</span></div>
+<div class="comment-block">💬 <strong>第43行：</strong>bind 时将通用地址转为 sockaddr*</div>
+<div class="line"><span class="ln">44</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">45</span><span class="cc">    // 4. listen</span></div>
+<div class="line"><span class="ln">46</span><span class="cc">    listen(serverFd, 3);</span></div>
+<div class="comment-block">💬 <strong>第46行：</strong>backlog=3，等待队列最大长度</div>
+<div class="line"><span class="ln">47</span><span class="cc">    std::cout &lt;&lt; &quot;Server listening on port &quot; &lt;&lt; PORT &lt;&lt; std::endl;</span></div>
+<div class="line"><span class="ln">48</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">49</span><span class="cc">    std::vector&lt;int&gt; clients;</span></div>
+<div class="comment-block">💬 <strong>第49行：</strong>客户端 socket 列表</div>
+<div class="line"><span class="ln">50</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">51</span><span class="cc">    while (true) {</span></div>
+<div class="comment-block">💬 <strong>第51行：</strong>服务端主循环</div>
+<div class="line"><span class="ln">52</span><span class="cc">        fd_set readfds;</span></div>
+<div class="comment-block">💬 <strong>第52行：</strong>文件描述符集合</div>
+<div class="line"><span class="ln">53</span><span class="cc">        FD_ZERO(&amp;readfds);</span></div>
+<div class="comment-block">💬 <strong>第53行：</strong>清空集合</div>
+<div class="line"><span class="ln">54</span><span class="cc">        FD_SET(serverFd, &amp;readfds);</span></div>
+<div class="comment-block">💬 <strong>第54行：</strong>添加服务端 socket</div>
+<div class="line"><span class="ln">55</span><span class="cc">        int maxFd = serverFd;</span></div>
+<div class="comment-block">💬 <strong>第55行：</strong>select 需要知道最大 fd+1</div>
+<div class="line"><span class="ln">56</span><span class="cc">        for (int client : clients) {</span></div>
+<div class="line"><span class="ln">57</span><span class="cc">            FD_SET(client, &amp;readfds);</span></div>
+<div class="comment-block">💬 <strong>第57行：</strong>添加所有客户端 socket</div>
+<div class="line"><span class="ln">58</span><span class="cc">            if (client &gt; maxFd) maxFd = client;</span></div>
+<div class="comment-block">💬 <strong>第58行：</strong>更新最大 fd</div>
+<div class="line"><span class="ln">59</span><span class="cc">        }</span></div>
+<div class="line"><span class="ln">60</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">61</span><span class="cc">        // 5. select 等待可读事件</span></div>
+<div class="line"><span class="ln">62</span><span class="cc">        int activity = select(maxFd + 1, &amp;readfds, nullptr, nullptr, nullptr);</span></div>
+<div class="comment-block">💬 <strong>第62行：</strong>阻塞等待直到有 fd 可读</div>
+<div class="line"><span class="ln">63</span><span class="cc">        if (activity &lt; 0) { std::cerr &lt;&lt; &quot;select error\n&quot;; break; }</span></div>
+<div class="line"><span class="ln">64</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">65</span><span class="cc">        // 6. 处理新连接</span></div>
+<div class="line"><span class="ln">66</span><span class="cc">        if (FD_ISSET(serverFd, &amp;readfds)) {</span></div>
+<div class="comment-block">💬 <strong>第66行：</strong>服务端 socket 可读 = 有新连接</div>
+<div class="line"><span class="ln">67</span><span class="cc">            sockaddr_in clientAddr{};</span></div>
+<div class="line"><span class="ln">68</span><span class="cc">            socklen_t addrLen = sizeof(clientAddr);</span></div>
+<div class="line"><span class="ln">69</span><span class="cc">            int clientFd = accept(serverFd, (sockaddr*)&amp;clientAddr, &amp;addrLen);</span></div>
+<div class="comment-block">💬 <strong>第69行：</strong>accept 返回新 socket</div>
+<div class="line"><span class="ln">70</span><span class="cc">            if (clients.size() &lt; MAX_CLIENTS) {</span></div>
+<div class="line"><span class="ln">71</span><span class="cc">                clients.push_back(clientFd);</span></div>
+<div class="line"><span class="ln">72</span><span class="cc">                std::cout &lt;&lt; &quot;New client: &quot; &lt;&lt; inet_ntoa(clientAddr.sin_addr)</span></div>
+<div class="comment-block">💬 <strong>第72行：</strong>inet_ntoa 网络地址转字符串</div>
+<div class="line"><span class="ln">73</span><span class="cc">                          &lt;&lt; &quot;:&quot; &lt;&lt; ntohs(clientAddr.sin_port) &lt;&lt; std::endl;</span></div>
+<div class="comment-block">💬 <strong>第73行：</strong>ntohs 网络字节序转主机字节序</div>
+<div class="line"><span class="ln">74</span><span class="cc">            } else {</span></div>
+<div class="line"><span class="ln">75</span><span class="cc">                close(clientFd);</span></div>
+<div class="comment-block">💬 <strong>第75行：</strong>超过上限直接关闭</div>
+<div class="line"><span class="ln">76</span><span class="cc">            }</span></div>
+<div class="line"><span class="ln">77</span><span class="cc">        }</span></div>
+<div class="line"><span class="ln">78</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">79</span><span class="cc">        // 7. 处理客户端消息</span></div>
+<div class="line"><span class="ln">80</span><span class="cc">        char buffer[BUFFER_SIZE];</span></div>
+<div class="line"><span class="ln">81</span><span class="cc">        for (auto it = clients.begin(); it != clients.end(); ) {</span></div>
+<div class="line"><span class="ln">82</span><span class="cc">            if (FD_ISSET(*it, &amp;readfds)) {</span></div>
+<div class="comment-block">💬 <strong>第82行：</strong>该客户端有数据到达</div>
+<div class="line"><span class="ln">83</span><span class="cc">                int bytes = recv(*it, buffer, sizeof(buffer) - 1, 0);</span></div>
+<div class="line"><span class="ln">84</span><span class="cc">                if (bytes &lt;= 0) {</span></div>
+<div class="comment-block">💬 <strong>第84行：</strong>bytes=0 表示连接关闭，<0 表示错误</div>
+<div class="line"><span class="ln">85</span><span class="cc">                    std::cout &lt;&lt; &quot;Client disconnected\n&quot;;</span></div>
+<div class="line"><span class="ln">86</span><span class="cc">                    close(*it);</span></div>
+<div class="line"><span class="ln">87</span><span class="cc">                    it = clients.erase(it);</span></div>
+<div class="comment-block">💬 <strong>第87行：</strong>erase 返回下一个迭代器</div>
+<div class="line"><span class="ln">88</span><span class="cc">                    continue;</span></div>
+<div class="line"><span class="ln">89</span><span class="cc">                }</span></div>
+<div class="line"><span class="ln">90</span><span class="cc">                buffer[bytes] = '\0';</span></div>
+<div class="comment-block">💬 <strong>第90行：</strong>字符串尾零</div>
+<div class="line"><span class="ln">91</span><span class="cc">                std::cout &lt;&lt; &quot;Received: &quot; &lt;&lt; buffer &lt;&lt; std::endl;</span></div>
+<div class="line"><span class="ln">92</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">93</span><span class="cc">                // 8. 广播给所有其他客户端</span></div>
+<div class="line"><span class="ln">94</span><span class="cc">                for (int other : clients) {</span></div>
+<div class="line"><span class="ln">95</span><span class="cc">                    if (other != *it) {</span></div>
+<div class="comment-block">💬 <strong>第95行：</strong>不发给发送者自己</div>
+<div class="line"><span class="ln">96</span><span class="cc">                        send(other, buffer, bytes, 0);</span></div>
+<div class="line"><span class="ln">97</span><span class="cc">                    }</span></div>
+<div class="line"><span class="ln">98</span><span class="cc">                }</span></div>
+<div class="line"><span class="ln">99</span><span class="cc">            }</span></div>
+<div class="line"><span class="ln">100</span><span class="cc">            ++it;</span></div>
+<div class="line"><span class="ln">101</span><span class="cc">        }</span></div>
+<div class="line"><span class="ln">102</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">103</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">104</span><span class="cc">    close(serverFd);</span></div>
+<div class="line"><span class="ln">105</span><span class="cc">#ifdef _WIN32</span></div>
+<div class="line"><span class="ln">106</span><span class="cc">    WSACleanup();</span></div>
+<div class="comment-block">💬 <strong>第106行：</strong>Windows 清理 Winsock</div>
+<div class="line"><span class="ln">107</span><span class="cc">#endif</span></div>
+<div class="line"><span class="ln">108</span><span class="cc">    return 0;</span></div>
+<div class="line"><span class="ln">109</span><span class="cc">}</span></div></code></pre>
+</div>
+
+<div class="grammar-box">
+<div class="grammar-title">📖 语法规则：BSD Socket API 流程</div>
+<div class="grammar-rule"><code>socket() → bind() → listen() → accept() → send()/recv() → close()</code></div>
+<div class="grammar-example">
+<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
+<pre><code>int fd = socket(AF_INET, SOCK_STREAM, 0);
+bind(fd, (sockaddr*)&addr, sizeof(addr));
+listen(fd, 5);
+int client = accept(fd, nullptr, nullptr);
+send(client, msg, len, 0);
+recv(client, buf, sizeof(buf), 0);
+closesocket(client); closesocket(fd);</code></pre>
+</div>
+<div class="grammar-tips">
+<p>💡 举一反三：</p>
+<ul><li>Windows 需要 WSAStartup/WSACleanup，Linux 不需要</li><li>send/recv 返回值可能是部分发送/接收，要循环处理</li><li>TCP 是流式协议，消息边界需要在应用层定义（如长度前缀）</li></ul>
+</div>
+</div>
+
+<div class="grammar-box">
+<div class="grammar-title">📖 语法规则：select 多路复用</div>
+<div class="grammar-rule"><code>select(maxfd+1, &readfds, NULL, NULL, &timeout);</code></div>
+<div class="grammar-example">
+<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
+<pre><code>fd_set readfds;
+FD_ZERO(&readfds);
+FD_SET(fd, &readfds);
+int n = select(maxfd+1, &readfds, NULL, NULL, NULL);
+if (FD_ISSET(fd, &readfds)) { /* readable */ }</code></pre>
+</div>
+<div class="grammar-tips">
+<p>💡 举一反三：</p>
+<ul><li>select 有 fd 数量上限（默认 1024），Windows 上无此限制但对 socket 有效</li><li>Linux 上 epoll / Windows 上 IOCP 是 select 的升级替代</li><li>select 每次调用都要重新设置 fd_set（因为会被修改）</li></ul>
+</div>
+</div>
+
+<div class="bottom-nav">
+<a href='case_064.html'>← 案例 64</a>
+<a href='case_066.html'>案例 66 →</a>
+</div>
+</main>
+</body>
+</html>

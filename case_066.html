@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 66：HTTP 静态文件服务器</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-phase">
+            <span class="phase-label">Phase 4:</span>
+            <a href="case_061.html">线程池</a>
+            <a href="case_062.html">内存池</a>
+            <a href="case_063.html">无锁队列</a>
+            <a href="case_064.html">对象池</a>
+            <a href="case_065.html">TCP聊天</a>
+            <a href="case_066.html">HTTP服务</a>
+            <a href="case_067.html">REST客户端</a>
+            <a href="case_068.html">gRPC</a>
+            <a href="case_069.html">观察者</a>
+            <a href="case_070.html">策略</a>
+        </div>
+        <div class="nav-links">
+            <a href="case_065.html"><a href="case_065.html">← 上一案例</a></a>
+            <span class="sep">|</span>
+            <a href="case_067.html"><a href="case_067.html">下一案例 →</a></a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>案例 66：HTTP 静态文件服务器</h1>
+        <section class="intro">
+            <p>基于原生 socket API 实现一个能够处理 GET 请求的 HTTP/1.1 服务器，返回本地文件并附带正确的 MIME 类型。</p>
+            <p><strong>核心知识点：</strong>socket 编程、HTTP 协议、MIME 类型、多线程并发处理</p>
+        </section>
+        <section class="code-section">
+            <h2>完整代码（含逐行注释）</h2>
+            <pre class="code-block"><code class="language-cpp">// 案例 66：HTTP 静态文件服务器（基于 TCP socket）
+// 实现一个极简的 HTTP/1.1 静态文件服务器，支持 GET 请求
+// 访问 http://localhost:8080/index.html 会返回对应文件内容
+
+#include &lt;iostream&gt;      // std::cout, std::cerr
+#include &lt;string&gt;        // std::string
+#include &lt;fstream&gt;       // 文件读取：std::ifstream
+#include &lt;sstream&gt;       // 字符串流：std::ostringstream
+#include &lt;thread&gt;        // 多线程：std::thread
+#include &lt;vector&gt;        // std::vector
+#include &lt;cstring&gt;       // memset, strlen
+
+/* ── 语法规则：POSIX socket API 入门 ──
+   Windows 使用 Winsock2，需链接 ws2_32.lib；Linux 直接用 &lt;sys/socket.h&gt;
+
+   socket(domain, type, protocol)
+     domain: AF_INET(IPv4) / AF_INET6(IPv6)
+     type: SOCK_STREAM(TCP) / SOCK_DGRAM(UDP)
+     protocol: 0(自动) / IPPROTO_TCP
+     返回：失败 -1，成功返回文件描述符(fd)
+
+   bind(fd, addr, addrlen)  → 将 socket 绑定到地址端口
+   listen(fd, backlog)      → 开始监听，backlog 为等待队列长度
+   accept(fd, addr, addrlen)→ 阻塞等待客户端连接，返回新 fd
+
+   recv(fd, buf, len, flags)→ 接收数据
+   send(fd, buf, len, flags)→ 发送数据
+   close(fd)                → 关闭连接
+
+   示例：创建一个简单 TCP echo 服务器
+     int fd = socket(AF_INET, SOCK_STREAM, 0);
+     sockaddr_in addr{AF_INET, htons(8080), INADDR_ANY};
+     bind(fd, (sockaddr*)&amp;addr, sizeof(addr));
+     listen(fd, 5);
+     int client = accept(fd, nullptr, nullptr);
+     char buf[1024]; recv(client, buf, 1024, 0);
+     send(client, buf, strlen(buf), 0);
+     close(client); close(fd);
+
+   举一反三：socket 是所有网络编程的基石——Web服务器、数据库驱动、
+   即时通讯、游戏服务器全部建立在这组 API 之上。
+*/
+
+#ifdef _WIN32
+    #include &lt;winsock2.h&gt;   // Windows socket API
+    #include &lt;ws2tcpip.h&gt;   // inet_ntop 等
+    #pragma comment(lib, &quot;ws2_32.lib&quot;)  // 链接 Winsock 库
+    using socklen_t = int;
+    #define CLOSE_SOCK closesocket  // Windows 用 closesocket 关闭
+#else
+    #include &lt;sys/socket.h&gt;  // socket/bind/listen/accept
+    #include &lt;netinet/in.h&gt;  // sockaddr_in
+    #include &lt;arpa/inet.h&gt;   // inet_ntop
+    #include &lt;unistd.h&gt;      // close
+    #define CLOSE_SOCK close
+#endif
+
+// 读取文件内容，返回字符串
+std::string readFile(const std::string&amp; path) {
+    // 打开文件，std::ios::binary 防止文本模式自动转换换行符
+    std::ifstream file(path, std::ios::binary);
+    if (!file) return &quot;&quot;;  // 文件不存在返回空串
+
+    // ostringstream 把文件内容全部读入内存
+    std::ostringstream oss;
+    oss &lt;&lt; file.rdbuf();
+    return oss.str();
+}
+
+// 根据文件扩展名返回 MIME 类型
+std::string getMimeType(const std::string&amp; path) {
+    // 找到最后一个 '.' 的位置
+    size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos) return &quot;application/octet-stream&quot;;
+
+    std::string ext = path.substr(dot);  // 提取扩展名
+    if (ext == &quot;.html&quot;) return &quot;text/html; charset=utf-8&quot;;
+    if (ext == &quot;.css&quot;)  return &quot;text/css&quot;;
+    if (ext == &quot;.js&quot;)   return &quot;application/javascript&quot;;
+    if (ext == &quot;.json&quot;) return &quot;application/json&quot;;
+    if (ext == &quot;.png&quot;)  return &quot;image/png&quot;;
+    if (ext == &quot;.jpg&quot; || ext == &quot;.jpeg&quot;) return &quot;image/jpeg&quot;;
+    if (ext == &quot;.svg&quot;)  return &quot;image/svg+xml&quot;;
+    return &quot;text/plain; charset=utf-8&quot;;  // 默认纯文本
+}
+
+// 处理单个 HTTP 请求
+void handleClient(int clientFd) {
+    char buffer[4096] = {0};                       // 接收缓冲区，4KB 足够解析请求头
+    int bytesRead = recv(clientFd, buffer, 4096, 0); // 从客户端读取数据
+
+    if (bytesRead &lt;= 0) {                          // 连接断开或读取失败
+        CLOSE_SOCK(clientFd);
+        return;
+    }
+
+    // 解析 HTTP 请求行：GET /path HTTP/1.1
+    std::string request(buffer, bytesRead);
+    std::istringstream iss(request);
+    std::string method, path, version;
+    iss &gt;&gt; method &gt;&gt; path &gt;&gt; version;              // 提取三个字段
+
+    std::cout &lt;&lt; &quot;[请求] &quot; &lt;&lt; method &lt;&lt; &quot; &quot; &lt;&lt; path &lt;&lt; std::endl;
+
+    // 只处理 GET 方法
+    if (method != &quot;GET&quot;) {
+        std::string response = &quot;HTTP/1.1 405 Method Not Allowed\r\n\r\n&quot;;
+        send(clientFd, response.c_str(), response.size(), 0);
+        CLOSE_SOCK(clientFd);
+        return;
+    }
+
+    // 默认首页 index.html
+    if (path == &quot;/&quot;) path = &quot;/index.html&quot;;
+
+    // 路径安全：防止目录穿越攻击（如 GET /../../../etc/passwd）
+    if (path.find(&quot;..&quot;) != std::string::npos) {
+        std::string response = &quot;HTTP/1.1 403 Forbidden\r\n\r\n&quot;;
+        send(clientFd, response.c_str(), response.size(), 0);
+        CLOSE_SOCK(clientFd);
+        return;
+    }
+
+    // 拼接文件路径：当前目录 + 请求路径
+    std::string filePath = &quot;.&quot; + path;
+    std::string content = readFile(filePath);
+
+    std::string response;
+    if (content.empty()) {
+        // 404 Not Found
+        response = &quot;HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\n404 - File Not Found&quot;;
+    } else {
+        // 200 OK + 响应头 + 空行 + 内容
+        std::string mime = getMimeType(path);
+        response = &quot;HTTP/1.1 200 OK\r\n&quot;
+                   &quot;Content-Type: &quot; + mime + &quot;\r\n&quot;
+                   &quot;Content-Length: &quot; + std::to_string(content.size()) + &quot;\r\n&quot;
+                   &quot;Connection: close\r\n&quot;           // 短连接：响应后关闭
+                   &quot;\r\n&quot;                            // 请求头结束空行
+                   + content;
+    }
+
+    send(clientFd, response.c_str(), response.size(), 0); // 发送响应
+    CLOSE_SOCK(clientFd);                                   // 关闭连接
+    std::cout &lt;&lt; &quot;[完成] &quot; &lt;&lt; path &lt;&lt; std::endl;
+}
+
+int main() {
+#ifdef _WIN32
+    // Windows 需要先初始化 Winsock
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,2), &amp;wsa);
+#endif
+
+    // 1. 创建 TCP socket
+    int serverFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverFd &lt; 0) {
+        std::cerr &lt;&lt; &quot;socket 创建失败&quot; &lt;&lt; std::endl;
+        return 1;
+    }
+
+    // 2. 设置地址重用（避免重启时&quot;Address already in use&quot;）
+    int opt = 1;
+    setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR,
+#ifdef _WIN32
+               (const char*)&amp;opt, sizeof(opt));
+#else
+               &amp;opt, sizeof(opt));
+#endif
+
+    // 3. 绑定到 8080 端口
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;              // IPv4
+    addr.sin_port = htons(8080);            // 端口 8080，htons 将主机字节序转为网络字节序
+    addr.sin_addr.s_addr = INADDR_ANY;      // 监听所有网络接口
+
+    if (bind(serverFd, (sockaddr*)&amp;addr, sizeof(addr)) &lt; 0) {
+        std::cerr &lt;&lt; &quot;bind 失败&quot; &lt;&lt; std::endl;
+        return 1;
+    }
+
+    // 4. 开始监听，backlog=10
+    if (listen(serverFd, 10) &lt; 0) {
+        std::cerr &lt;&lt; &quot;listen 失败&quot; &lt;&lt; std::endl;
+        return 1;
+    }
+
+    std::cout &lt;&lt; &quot;HTTP 服务器运行在 http://localhost:8080/&quot; &lt;&lt; std::endl;
+
+    // 5. 主循环：接受连接，每个连接分配一个线程
+    while (true) {
+        sockaddr_in clientAddr{};
+        socklen_t addrLen = sizeof(clientAddr);
+        int clientFd = accept(serverFd, (sockaddr*)&amp;clientAddr, &amp;addrLen);
+
+        if (clientFd &lt; 0) continue;
+
+        // detach 让线程独立运行，主线程继续 accept
+        std::thread(handleClient, clientFd).detach();
+    }
+
+    CLOSE_SOCK(serverFd);
+    return 0;
+}</code></pre>
+        </section>
+        <section class="grammar-section">
+            <h3>语法规则：HTTP 协议基础</h3>
+            <pre class="code-block"><code class="language-cpp">请求格式：  METHOD /path HTTP/1.1\r\nHeader: value\r\n\r\nBODY
+响应格式：  HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nBODY</code></pre>
+            <p class="tip">💡 举一反三：HTTP 是文本协议，\r\n 换行，请求头与 Body 之间空一行。所有 Web 框架（Express/Spring/Flask）底层都是这样构建响应的。</p>
+            <h3>语法规则：htons() / htonl() 网络字节序</h3>
+            <pre class="code-block"><code class="language-cpp">uint16_t port = htons(8080);  // 主机→网络(大端)
+uint16_t local = ntohs(port);   // 网络→主机
+// x86 是小端，网络是大端，必须转换！</code></pre>
+            <p class="tip">💡 举一反三：所有多字节字段（端口、IP、数据长度）在 socket 编程中都必须考虑字节序。htons=Host TO Network Short，htonl=Host TO Network Long。</p>
+            <h3>语法规则：setsockopt 设置 socket 选项</h3>
+            <pre class="code-block"><code class="language-cpp">int opt = 1;
+setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &amp;opt, sizeof(opt));
+// SO_REUSEADDR 允许重用 TIME_WAIT 状态的地址</code></pre>
+            <p class="tip">💡 举一反三：开发调试时必须加 SO_REUSEADDR，否则按 Ctrl+C 重启服务会报 'Address already in use'。其他常用选项：SO_KEEPALIVE（心跳）、SO_RCVBUF（接收缓冲区大小）。</p>
+        </section>
+    </main>
+</body>
+</html>

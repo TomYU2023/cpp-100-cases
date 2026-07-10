@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 39: condition_variable 生产者消费者 | C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="index.html"><h2>C++ 100 案例</h2></a>
+            </div>
+            <div class="sidebar-nav">
+<div class="section-title">阶段一：语法练兵场</div>
+<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
+<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
+<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
+<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
+<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
+<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
+<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
+<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
+<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
+<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
+<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
+<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
+<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
+<a href="case_014.html" class="nav-item ">14. 模板函数</a>
+<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
+<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
+<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
+<a href="case_018.html" class="nav-item ">18. 移动语义</a>
+<a href="case_019.html" class="nav-item ">19. 智能指针</a>
+<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
+<div class="section-title">阶段二：STL 熟练工</div>
+<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
+<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
+<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
+<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
+<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
+<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
+<a href="case_027.html" class="nav-item ">27. sort 对比实验</a>
+<a href="case_028.html" class="nav-item ">28. find_if 条件筛选</a>
+<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
+<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
+<a href="case_031.html" class="nav-item ">31. partition 分区</a>
+<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
+<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
+<a href="case_034.html" class="nav-item ">34. chrono 计时器</a>
+<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
+<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
+<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
+<a href="case_038.html" class="nav-item ">38. mutex 线程安全</a>
+<a href="case_039.html" class="nav-item active">39. condition_variable 生产者消费者</a>
+<a href="case_040.html" class="nav-item ">40. future/async 异步任务</a>
+<div class="section-title">阶段三：实用小工具</div>
+<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
+<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
+<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
+<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
+<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
+<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
+<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
+<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
+<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
+<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
+<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
+<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
+<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
+<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
+<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
+<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
+<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
+<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
+<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
+<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
+<div class="section-title">阶段四：工程能力锻造</div>
+<a href="case_061.html" class="nav-item ">61. 线程池</a>
+<a href="case_062.html" class="nav-item ">62. 内存池</a>
+<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
+<a href="case_064.html" class="nav-item ">64. 对象池</a>
+<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
+<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
+<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
+<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
+<a href="case_069.html" class="nav-item ">69. 事件总线</a>
+<a href="case_070.html" class="nav-item ">70. 策略模式</a>
+<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
+<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
+<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
+<a href="case_074.html" class="nav-item ">74. 状态机</a>
+<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
+<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
+<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
+<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
+<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
+<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
+<a href="case_081.html" class="nav-item ">81. 插件系统</a>
+<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
+<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
+<a href="case_084.html" class="nav-item ">84. 连接池</a>
+<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
+<div class="section-title">阶段五：综合项目</div>
+<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
+<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
+<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
+<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
+<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
+<a href="case_091.html" class="nav-item ">91. 协程库</a>
+<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
+<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
+<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
+<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
+<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
+<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
+<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
+<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
+<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
+            </div>
+        </nav>
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <main class="content">
+            <header class="case-header">
+                <span class="case-badge">案例 039</span>
+                <h1>condition_variable 生产者消费者</h1>
+            </header>
+
+            <section class="code-section">
+                <h2>完整代码（逐行注释）</h2>
+                <div class="code-container">
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include &lt;thread&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>#include &lt;mutex&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code>#include &lt;condition_variable&gt;</code></span>
+                        <span class="line-comment">条件变量</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code>#include &lt;queue&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>#include &lt;string&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>#include &lt;chrono&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>// 线程安全的生产者-消费者队列</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>template&lt;typename T&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code>class ProducerConsumerQueue {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>    queue&lt;T&gt; q_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>    mutable mutex mtx_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>    condition_variable cv_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code>    size_t maxSize_;</code></span>
+                        <span class="line-comment">队列容量上限</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>public:</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>    ProducerConsumerQueue(size_t maxSize = 10) : maxSize_(maxSize) {}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>    void produce(T item) {</code></span>
+                        <span class="line-comment">生产者</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code>        unique_lock&lt;mutex&gt; lock(mtx_);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>        cv_.wait(lock, [this]() { return q_.size() &lt; maxSize_; });</code></span>
+                        <span class="line-comment">队列未满才生产</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>        q_.push(item);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "生产: " &lt;&lt; item &lt;&lt; " (队列大小: " &lt;&lt; q_.size() &lt;&lt; ")\n";</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>        cv_.notify_one();</code></span>
+                        <span class="line-comment">通知一个消费者</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code>    T consume() {</code></span>
+                        <span class="line-comment">消费者</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>        unique_lock&lt;mutex&gt; lock(mtx_);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>        cv_.wait(lock, [this]() { return !q_.empty(); });</code></span>
+                        <span class="line-comment">队列非空才消费</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>        T item = q_.front();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>        q_.pop();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>        cout &lt;&lt; "消费: " &lt;&lt; item &lt;&lt; " (队列大小: " &lt;&lt; q_.size() &lt;&lt; ")\n";</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>        cv_.notify_one();</code></span>
+                        <span class="line-comment">通知一个生产者（有空位了）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>        return item;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>};</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>    ProducerConsumerQueue&lt;int&gt; pcq(5);</code></span>
+                        <span class="line-comment">容量为 5</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">41</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">42</span>
+                        <span class="line-code"><code>    // 生产者线程</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">43</span>
+                        <span class="line-code"><code>    thread producer([&amp;]() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">44</span>
+                        <span class="line-code"><code>        for (int i = 1; i &lt;= 20; i++) {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">45</span>
+                        <span class="line-code"><code>            pcq.produce(i);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">46</span>
+                        <span class="line-code"><code>            this_thread::sleep_for(100ms);</code></span>
+                        <span class="line-comment">生产速度</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">47</span>
+                        <span class="line-code"><code>        }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">48</span>
+                        <span class="line-code"><code>    });</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">49</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">50</span>
+                        <span class="line-code"><code>    // 消费者线程</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">51</span>
+                        <span class="line-code"><code>    thread consumer([&amp;]() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">52</span>
+                        <span class="line-code"><code>        for (int i = 0; i &lt; 20; i++) {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">53</span>
+                        <span class="line-code"><code>            int val = pcq.consume();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">54</span>
+                        <span class="line-code"><code>            this_thread::sleep_for(150ms);</code></span>
+                        <span class="line-comment">消费速度慢于生产，队列会填满</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">55</span>
+                        <span class="line-code"><code>        }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">56</span>
+                        <span class="line-code"><code>    });</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">57</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">58</span>
+                        <span class="line-code"><code>    producer.join();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">59</span>
+                        <span class="line-code"><code>    consumer.join();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">60</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "处理完毕!" &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">61</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">62</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                </div>
+                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
+            </section>
+
+            <section class="grammar-section">
+                <h2>新语法讲解</h2>
+            <div class="grammar-card">
+                <h3>condition_variable 条件变量</h3>
+                <div class="grammar-rule">解决<strong>线程间的等待/通知</strong>问题。消费者在队列空时等待，生产者在放入数据后通知。关键模式：<code>cv.wait(lock, predicate)</code>——等价于 <code>while(!predicate()) cv.wait(lock)</code>，自动处理<strong>虚假唤醒</strong>。</div>
+                <div class="grammar-example">
+                    <h4>举一反三</h4>
+                    <pre><code>// 标准模式
+unique_lock<mutex> lock(mtx);
+cv.wait(lock, []{ return condition; });
+// 等价于:
+// while(!condition) cv.wait(lock);
+// 带谓词的 wait 更安全，自动处理虚假唤醒</code></pre>
+                </div>
+            </div>
+            <div class="grammar-card">
+                <h3>notify_one vs notify_all</h3>
+                <div class="grammar-rule"><strong>notify_one()</strong>：唤醒一个等待线程（随机），适合只生产一个数据时用。<strong>notify_all()</strong>：唤醒所有等待线程，适合状态变化可能满足多个线程时用（如析构时通知所有线程退出）。</div>
+                <div class="grammar-example">
+                    <h4>举一反三</h4>
+                    <pre><code>// 修改共享状态后通知
+{
+    lock_guard<mutex> lock(mtx_);
+    ready_ = true;
+}
+cv_.notify_all(); // 通知所有等待 ready_==true 的线程</code></pre>
+                </div>
+            </div>
+            </section>
+
+            <section class="extend-section">
+                <h2>举一反三</h2>
+            <div class="extend-card">
+                <h3>带超时的 wait (避免永久阻塞)</h3>
+                <pre><code>if (cv_.wait_for(lock, 5s, []{ return !q_.empty(); })) {
+  // 有数据
+} else {
+  // 超时，做清理或退出
+}</code></pre>
+                <p>wait_for / wait_until 设置最大等待时间</p>
+            </div>
+            <div class="extend-card">
+                <h3>用原子变量替代条件变量（简单场景）</h3>
+                <pre><code>atomic<bool> ready{false};
+// 消费者: while(!ready.load()) this_thread::yield();
+// 生产者: ready.store(true);
+// 简单但浪费 CPU（忙等待）</code></pre>
+                <p>简单标志用 atomic，复杂条件用 condition_variable</p>
+            </div>
+            <div class="extend-card">
+                <h3>实现线程安全的阻塞队列（BlockingQueue）</h3>
+                <pre><code>// 结合上面的模式，封装为:
+// BlockingQueue<T> 有阻塞的 push/pop
+// 支持超时和非阻塞 tryPush/tryPop
+// 是很多线程池的基础组件</code></pre>
+                <p>阻塞队列是并发编程中最常用的数据结构之一</p>
+            </div>
+            </section>
+
+            <nav class="case-nav">
+                <a href="case_038.html" class="nav-prev">← 上一案例</a>
+                <a href="index.html" class="nav-home">回首页</a>
+                <a href="case_040.html" class="nav-next">下一案例 →</a>
+            </nav>
+        </main>
+    </div>
+    <script>
+    function copyCode(container) {
+        const lines = container.querySelectorAll('.line-code code');
+        let code = '';
+        lines.forEach(l => code += l.textContent + '\n');
+        navigator.clipboard.writeText(code);
+    }
+    </script>
+</body>
+</html>

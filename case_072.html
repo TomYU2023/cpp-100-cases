@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 72：装饰器模式</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-phase">
+            <span class="phase-label">Phase 4:</span>
+            <a href="case_061.html">线程池</a>
+            <a href="case_062.html">内存池</a>
+            <a href="case_063.html">无锁队列</a>
+            <a href="case_064.html">对象池</a>
+            <a href="case_065.html">TCP聊天</a>
+            <a href="case_066.html">HTTP服务</a>
+            <a href="case_067.html">REST客户端</a>
+            <a href="case_068.html">gRPC</a>
+            <a href="case_069.html">观察者</a>
+            <a href="case_070.html">策略</a>
+        </div>
+        <div class="nav-links">
+            <a href="case_065.html"><a href="case_071.html">← 上一案例</a></a>
+            <span class="sep">|</span>
+            <a href="case_067.html"><a href="case_073.html">下一案例 →</a></a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>案例 72：装饰器模式</h1>
+        <section class="intro">
+            <p>实现数据处理器管道：原始→加密→压缩→计时，装饰器可以任意嵌套组合，展示组合优于继承的设计原则。</p>
+            <p><strong>核心知识点：</strong>装饰器模式、组合优于继承、继承构造函数 using、explicit、chrono 高精度计时</p>
+        </section>
+        <section class="code-section">
+            <h2>完整代码（含逐行注释）</h2>
+            <pre class="code-block"><code class="language-cpp">// 案例 72：装饰器模式（Decorator Pattern）
+// 装饰器模式：动态地给对象添加额外职责，比继承更灵活。
+// 典型场景：咖啡加糖/加奶、日志包装器、性能计时、数据流加密/压缩。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;memory&gt;
+#include &lt;chrono&gt;
+
+/* ── 语法规则：装饰器模式结构 ──
+   Component（组件接口）：定义核心操作
+   ConcreteComponent（具体组件）：实现核心功能
+   Decorator（装饰器基类）：持有 Component 引用，转发调用
+   ConcreteDecorator（具体装饰器）：在转发前后添加额外行为
+
+   UML 示意：
+     Component
+        ▲
+   ┌────┴────────┐
+   │             │
+   ConcreteComp  Decorator (has-a Component)
+                     ▲
+               ┌─────┴──────┐
+               │            │
+           DecoratorA    DecoratorB
+
+   示例（咖啡）：
+     Coffee 接口           ← cost() / description()
+     SimpleCoffee          ← 基础咖啡，10元
+     MilkDecorator         ← 加牛奶，+3元
+     SugarDecorator        ← 加糖，+1元
+     auto c = make_unique&lt;SugarDecorator&gt;(
+              make_unique&lt;MilkDecorator&gt;(
+              make_unique&lt;SimpleCoffee&gt;()));  // 嵌套装饰
+     c-&gt;cost();  // 14元
+
+   举一反三：装饰器组合比继承灵活得多。想加奶加糖用继承需要
+   3 个子类（MilkCoffee/SugarCoffee/MilkSugarCoffee），
+   装饰器只要组合即可。Python 的 @ 装饰器、Java 的 InputStream 包装都是这个模式。
+*/
+
+// 步骤 1：组件接口 — 数据处理
+class DataProcessor {
+public:
+    virtual ~DataProcessor() = default;
+    virtual std::string process(const std::string&amp; data) = 0;
+    virtual std::string description() const = 0;
+};
+
+// 步骤 2：具体组件 — 原始数据处理（什么都不做）
+class RawProcessor : public DataProcessor {
+public:
+    std::string process(const std::string&amp; data) override {
+        return data;  // 原样返回
+    }
+    std::string description() const override {
+        return &quot;原始数据&quot;;
+    }
+};
+
+// 步骤 3：装饰器基类 — 持有被装饰对象
+class ProcessorDecorator : public DataProcessor {
+protected:
+    std::unique_ptr&lt;DataProcessor&gt; wrappee;  // 被装饰的对象
+
+public:
+    explicit ProcessorDecorator(std::unique_ptr&lt;DataProcessor&gt; p)
+        : wrappee(std::move(p)) {}
+
+    // 默认转发
+    std::string process(const std::string&amp; data) override {
+        return wrappee-&gt;process(data);
+    }
+    std::string description() const override {
+        return wrappee-&gt;description();
+    }
+};
+
+// 步骤 4：具体装饰器 1 — 加密（Base64 风格编码）
+class EncryptDecorator : public ProcessorDecorator {
+public:
+    using ProcessorDecorator::ProcessorDecorator;  // 继承构造函数
+
+    std::string process(const std::string&amp; data) override {
+        std::string raw = wrappee-&gt;process(data);  // 先让下层处理
+        // 简单&quot;加密&quot;：每个字符加 1
+        std::string encrypted;
+        for (char c : raw) encrypted += static_cast&lt;char&gt;(c + 1);
+        return encrypted;
+    }
+
+    std::string description() const override {
+        return wrappee-&gt;description() + &quot; → 加密&quot;;
+    }
+};
+
+// 步骤 4：具体装饰器 2 — 压缩（模拟：移除空格）
+class CompressDecorator : public ProcessorDecorator {
+public:
+    using ProcessorDecorator::ProcessorDecorator;
+
+    std::string process(const std::string&amp; data) override {
+        std::string raw = wrappee-&gt;process(data);
+        std::string compressed;
+        for (char c : raw) {
+            if (c != ' ') compressed += c;  // 移除空格
+        }
+        return compressed;
+    }
+
+    std::string description() const override {
+        return wrappee-&gt;description() + &quot; → 压缩&quot;;
+    }
+};
+
+// 步骤 4：具体装饰器 3 — 性能计时（不修改数据，只记录时间）
+class TimerDecorator : public ProcessorDecorator {
+public:
+    using ProcessorDecorator::ProcessorDecorator;
+
+    std::string process(const std::string&amp; data) override {
+        auto start = std::chrono::high_resolution_clock::now();  // 记录开始时间
+
+        std::string result = wrappee-&gt;process(data);             // 执行实际处理
+
+        auto end = std::chrono::high_resolution_clock::now();    // 记录结束时间
+        auto duration = std::chrono::duration_cast&lt;
+            std::chrono::microseconds&gt;(end - start).count();      // 计算耗时(微秒)
+
+        std::cout &lt;&lt; &quot;[计时] 处理耗时: &quot; &lt;&lt; duration &lt;&lt; &quot; μs&quot; &lt;&lt; std::endl;
+        return result;
+    }
+
+    std::string description() const override {
+        return wrappee-&gt;description() + &quot; → 计时&quot;;
+    }
+};
+
+int main() {
+    std::string input = &quot;Hello World from C++&quot;;
+
+    // 场景 1：原始处理
+    auto raw = std::make_unique&lt;RawProcessor&gt;();
+    std::cout &lt;&lt; &quot;[&quot; &lt;&lt; raw-&gt;description() &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;输入 : &quot; &lt;&lt; input &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;输出 : &quot; &lt;&lt; raw-&gt;process(input) &lt;&lt; &quot;\n\n&quot;;
+
+    // 场景 2：加密 + 压缩（装饰器嵌套）
+    // 处理顺序：压缩 → 加密（从内到外）
+    auto pipeline = std::make_unique&lt;EncryptDecorator&gt;(
+                        std::make_unique&lt;CompressDecorator&gt;(
+                            std::make_unique&lt;RawProcessor&gt;()));
+
+    std::cout &lt;&lt; &quot;[&quot; &lt;&lt; pipeline-&gt;description() &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;输入 : &quot; &lt;&lt; input &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;输出 : &quot; &lt;&lt; pipeline-&gt;process(input) &lt;&lt; &quot;\n\n&quot;;
+
+    // 场景 3：计时 + 原始处理（监控性能）
+    auto monitored = std::make_unique&lt;TimerDecorator&gt;(
+                         std::make_unique&lt;RawProcessor&gt;());
+
+    std::cout &lt;&lt; &quot;[&quot; &lt;&lt; monitored-&gt;description() &lt;&lt; &quot;]&quot; &lt;&lt; std::endl;
+    monitored-&gt;process(&quot;Benchmark test string&quot;);
+
+    return 0;
+}</code></pre>
+        </section>
+        <section class="grammar-section">
+            <h3>语法规则：继承构造函数 using</h3>
+            <pre class="code-block"><code class="language-cpp">class Base {
+public:
+  Base(int x, int y);
+};
+class Derived : public Base {
+public:
+  using Base::Base;  // 继承基类所有构造函数,不用手写转发
+};</code></pre>
+            <p class="tip">💡 举一反三：C++11 引入 using 继承构造函数，省去写大量转发代码。注意：继承构造函数不会自动初始化派生类自己的成员</p>
+            <h3>语法规则：explicit 防止隐式转换</h3>
+            <pre class="code-block"><code class="language-cpp">class MyClass {
+public:
+  explicit MyClass(int x);  // 禁止 MyClass obj = 5; 这种隐式转换
+};
+// 必须写成 MyClass obj(5); 或 MyClass obj{5};</code></pre>
+            <p class="tip">💡 举一反三：explicit 写在单参数构造函数前，防止意外的隐式类型转换。C++ 核心指南建议：所有单参数构造函数都应加 explicit。</p>
+            <h3>语法规则：chrono 高精度计时</h3>
+            <pre class="code-block"><code class="language-cpp">auto start = std::chrono::high_resolution_clock::now();
+// ... 被测代码 ...
+auto end = std::chrono::high_resolution_clock::now();
+auto us = duration_cast&lt;microseconds&gt;(end - start).count();</code></pre>
+            <p class="tip">💡 举一反三：chrono 是 C++11 引入的类型安全时间库。duration_cast 做精度转换，count() 返回数值。steady_clock 适合测量时间间隔（不受系统时间调整影响）。</p>
+        </section>
+    </main>
+</body>
+</html>

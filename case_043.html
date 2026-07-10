@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 43：文件 MD5 校验工具 - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 43：文件 MD5 校验工具</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd">#include &lt;iostream&gt;</td><td class="cmt">标准 IO</td></tr>
+<tr><td class="ln">2</td><td class="cd">#include &lt;fstream&gt;</td><td class="cmt">文件流</td></tr>
+<tr><td class="ln">3</td><td class="cd">#include &lt;iomanip&gt;</td><td class="cmt">std::hex / std::setw / std::setfill 格式化</td></tr>
+<tr><td class="ln">4</td><td class="cd">#include &lt;vector&gt;</td><td class="cmt">std::vector</td></tr>
+<tr><td class="ln">5</td><td class="cd">#include &lt;string&gt;</td><td class="cmt">std::string</td></tr>
+<tr><td class="ln">6</td><td class="cd">#include &lt;cstdint&gt;</td><td class="cmt">uint8_t / uint32_t 定宽整数类型</td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">8</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">// MD5 哈希算法（RFC 1321 教学实现版）</td></tr>
+<tr><td class="ln">11</td><td class="cd">class MD5 {</td><td class="cmt">MD5 哈希计算类</td></tr>
+<tr><td class="ln">12</td><td class="cd" colspan="2">    // 四个 32 位寄存器的初始值（幻数）</td></tr>
+<tr><td class="ln">13</td><td class="cd">    uint32_t A = 0x67452301;</td><td class="cmt">标准 MD5 初始值 A</td></tr>
+<tr><td class="ln">14</td><td class="cd">    uint32_t B = 0xefcdab89;</td><td class="cmt">标准 MD5 初始值 B</td></tr>
+<tr><td class="ln">15</td><td class="cd">    uint32_t C = 0x98badcfe;</td><td class="cmt">标准 MD5 初始值 C</td></tr>
+<tr><td class="ln">16</td><td class="cd">    uint32_t D = 0x10325476;</td><td class="cmt">标准 MD5 初始值 D</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">    // 64 步每步的循环左移位数</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">    const uint32_t S[64] = {</td></tr>
+<tr><td class="ln">20</td><td class="cd">        7,12,17,22, 7,12,17,22, 7,12,17,22, 7,12,17,22,</td><td class="cmt">第 1 轮：7/12/17/22</td></tr>
+<tr><td class="ln">21</td><td class="cd">        5, 9,14,20, 5, 9,14,20, 5, 9,14,20, 5, 9,14,20,</td><td class="cmt">第 2 轮：5/9/14/20</td></tr>
+<tr><td class="ln">22</td><td class="cd">        4,11,16,23, 4,11,16,23, 4,11,16,23, 4,11,16,23,</td><td class="cmt">第 3 轮：4/11/16/23</td></tr>
+<tr><td class="ln">23</td><td class="cd">        6,10,15,21, 6,10,15,21, 6,10,15,21, 6,10,15,21</td><td class="cmt">第 4 轮：6/10/15/21</td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2">    };</td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2">    // 64 步常数表：K[i] = floor(2^32 * |sin(i+1)|)</td></tr>
+<tr><td class="ln">27</td><td class="cd" colspan="2">    const uint32_t K[64] = {</td></tr>
+<tr><td class="ln">28</td><td class="cd">        0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,</td><td class="cmt">K[0]-K[3]</td></tr>
+<tr><td class="ln">29</td><td class="cd">        0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,</td><td class="cmt">K[4]-K[7]</td></tr>
+<tr><td class="ln">30</td><td class="cd">        0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,</td><td class="cmt">K[8]-K[11]</td></tr>
+<tr><td class="ln">31</td><td class="cd">        0x6b901122,0xfd987193,0xa679438e,0x49b40821,</td><td class="cmt">K[12]-K[15]</td></tr>
+<tr><td class="ln">32</td><td class="cd">        0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,</td><td class="cmt">K[16]-K[19]</td></tr>
+<tr><td class="ln">33</td><td class="cd">        0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,</td><td class="cmt">K[20]-K[23]</td></tr>
+<tr><td class="ln">34</td><td class="cd">        0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,</td><td class="cmt">K[24]-K[27]</td></tr>
+<tr><td class="ln">35</td><td class="cd">        0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,</td><td class="cmt">K[28]-K[31]</td></tr>
+<tr><td class="ln">36</td><td class="cd">        0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,</td><td class="cmt">K[32]-K[35]</td></tr>
+<tr><td class="ln">37</td><td class="cd">        0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,</td><td class="cmt">K[36]-K[39]</td></tr>
+<tr><td class="ln">38</td><td class="cd">        0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,</td><td class="cmt">K[40]-K[43]</td></tr>
+<tr><td class="ln">39</td><td class="cd">        0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,</td><td class="cmt">K[44]-K[47]</td></tr>
+<tr><td class="ln">40</td><td class="cd">        0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,</td><td class="cmt">K[48]-K[51]</td></tr>
+<tr><td class="ln">41</td><td class="cd">        0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,</td><td class="cmt">K[52]-K[55]</td></tr>
+<tr><td class="ln">42</td><td class="cd">        0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,</td><td class="cmt">K[56]-K[59]</td></tr>
+<tr><td class="ln">43</td><td class="cd">        0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391</td><td class="cmt">K[60]-K[63]</td></tr>
+<tr><td class="ln">44</td><td class="cd" colspan="2">    };</td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">46</td><td class="cd">    uint32_t leftRotate(uint32_t x, uint32_t n) {</td><td class="cmt">32 位循环左移</td></tr>
+<tr><td class="ln">47</td><td class="cd">        return (x &lt;&lt; n) | (x &gt;&gt; (32 - n));</td><td class="cmt">左移 n 位 + 右移 32-n 位 OR 合并</td></tr>
+<tr><td class="ln">48</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">50</td><td class="cd">    void transform(const uint8_t block[64]) {</td><td class="cmt">处理一个 64 字节块</td></tr>
+<tr><td class="ln">51</td><td class="cd">        uint32_t M[16];</td><td class="cmt">将 64 字节分解为 16 个 32 位字</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">        for (int i = 0; i &lt; 16; i++)</td></tr>
+<tr><td class="ln">53</td><td class="cd">            M[i] = block[i*4] | (block[i*4+1] &lt;&lt; 8) |</td><td class="cmt">小端序解码：低字节在前</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">                   (block[i*4+2] &lt;&lt; 16) | (block[i*4+3] &lt;&lt; 24);</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">56</td><td class="cd">        uint32_t a = A, b = B, c = C, d = D;</td><td class="cmt">保存当前寄存器值</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">        // 主循环 64 步</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">        for (int i = 0; i &lt; 64; i++) {</td></tr>
+<tr><td class="ln">60</td><td class="cd">            uint32_t f, g;</td><td class="cmt">f = 非线性函数结果，g = 输入字索引</td></tr>
+<tr><td class="ln">61</td><td class="cd">            if (i &lt; 16) {</td><td class="cmt">第 1 轮</td></tr>
+<tr><td class="ln">62</td><td class="cd">                f = (b &amp; c) | (~b &amp; d);</td><td class="cmt">F 函数：条件选择</td></tr>
+<tr><td class="ln">63</td><td class="cd">                g = i;</td><td class="cmt">直接映射</td></tr>
+<tr><td class="ln">64</td><td class="cd">            } else if (i &lt; 32) {</td><td class="cmt">第 2 轮</td></tr>
+<tr><td class="ln">65</td><td class="cd">                f = (d &amp; b) | (~d &amp; c);</td><td class="cmt">G 函数：条件选择变体</td></tr>
+<tr><td class="ln">66</td><td class="cd" colspan="2">                g = (5 * i + 1) % 16;</td></tr>
+<tr><td class="ln">67</td><td class="cd">            } else if (i &lt; 48) {</td><td class="cmt">第 3 轮</td></tr>
+<tr><td class="ln">68</td><td class="cd">                f = b ^ c ^ d;</td><td class="cmt">H 函数：纯 XOR</td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2">                g = (3 * i + 5) % 16;</td></tr>
+<tr><td class="ln">70</td><td class="cd">            } else {</td><td class="cmt">第 4 轮</td></tr>
+<tr><td class="ln">71</td><td class="cd">                f = c ^ (b | ~d);</td><td class="cmt">I 函数</td></tr>
+<tr><td class="ln">72</td><td class="cd" colspan="2">                g = (7 * i) % 16;</td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">74</td><td class="cd">            uint32_t temp = d;</td><td class="cmt">旋转寄存器</td></tr>
+<tr><td class="ln">75</td><td class="cd" colspan="2">            d = c;</td></tr>
+<tr><td class="ln">76</td><td class="cd" colspan="2">            c = b;</td></tr>
+<tr><td class="ln">77</td><td class="cd">            b = b + leftRotate(a + f + K[i] + M[g], S[i]);</td><td class="cmt">核心公式：加法+旋转+移位</td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2">            a = temp;</td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">80</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">81</td><td class="cd">        A += a; B += b; C += c; D += d;</td><td class="cmt">累加回寄存器（Merkle-Damgard 结构）</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">83</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">84</td><td class="cd" colspan="2">public:</td></tr>
+<tr><td class="ln">85</td><td class="cd">    string digest(const string&amp; data) {</td><td class="cmt">计算字符串的 MD5 哈希</td></tr>
+<tr><td class="ln">86</td><td class="cd">        vector&lt;uint8_t&gt; msg(data.begin(), data.end());</td><td class="cmt">转为字节数组</td></tr>
+<tr><td class="ln">87</td><td class="cd">        uint64_t bitLen = data.size() * 8;</td><td class="cmt">原始消息长度（比特数）</td></tr>
+<tr><td class="ln">88</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">89</td><td class="cd" colspan="2">        // 填充步骤 1：追加 1 比特（0x80 = 10000000）</td></tr>
+<tr><td class="ln">90</td><td class="cd">        msg.push_back(0x80);</td><td class="cmt">追加填充标志字节</td></tr>
+<tr><td class="ln">91</td><td class="cd" colspan="2">        // 填充步骤 2：补零直到长度 mod 64 = 56</td></tr>
+<tr><td class="ln">92</td><td class="cd">        while (msg.size() % 64 != 56) msg.push_back(0);</td><td class="cmt">填充零字节</td></tr>
+<tr><td class="ln">93</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">94</td><td class="cd" colspan="2">        // 填充步骤 3：追加 64 位原始长度（小端序）</td></tr>
+<tr><td class="ln">95</td><td class="cd" colspan="2">        for (int i = 0; i &lt; 8; i++)</td></tr>
+<tr><td class="ln">96</td><td class="cd">            msg.push_back((bitLen &gt;&gt; (i * 8)) &amp; 0xFF);</td><td class="cmt">逐字节写入长度</td></tr>
+<tr><td class="ln">97</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">98</td><td class="cd" colspan="2">        // 逐个 64 字节块处理</td></tr>
+<tr><td class="ln">99</td><td class="cd" colspan="2">        for (size_t i = 0; i &lt; msg.size(); i += 64)</td></tr>
+<tr><td class="ln">100</td><td class="cd">            transform(&amp;msg[i]);</td><td class="cmt">传递块首地址</td></tr>
+<tr><td class="ln">101</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">102</td><td class="cd" colspan="2">        // 将四个 32 位寄存器输出为 32 字符十六进制字符串</td></tr>
+<tr><td class="ln">103</td><td class="cd" colspan="2">        ostringstream oss;</td></tr>
+<tr><td class="ln">104</td><td class="cd" colspan="2">        uint32_t result[4] = {A, B, C, D};</td></tr>
+<tr><td class="ln">105</td><td class="cd" colspan="2">        for (auto&amp; r : result)</td></tr>
+<tr><td class="ln">106</td><td class="cd">            for (int i = 0; i &lt; 4; i++)</td><td class="cmt">每个 uint32_t 输出 4 字节</td></tr>
+<tr><td class="ln">107</td><td class="cd">                oss &lt;&lt; hex &lt;&lt; setw(2) &lt;&lt; setfill('0')</td><td class="cmt">hex=十六进制，setw=宽度2，setfill=填充0</td></tr>
+<tr><td class="ln">108</td><td class="cd">                    &lt;&lt; ((r &gt;&gt; (i * 8)) &amp; 0xFF);</td><td class="cmt">逐字节提取</td></tr>
+<tr><td class="ln">109</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">110</td><td class="cd">        return oss.str();</td><td class="cmt">返回 32 字符十六进制字符串</td></tr>
+<tr><td class="ln">111</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">112</td><td class="cd" colspan="2">};</td></tr>
+<tr><td class="ln">113</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">114</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">115</td><td class="cd" colspan="2">    MD5 md5;</td></tr>
+<tr><td class="ln">116</td><td class="cd" colspan="2">    string msg = "Hello, C++ World!";</td></tr>
+<tr><td class="ln">117</td><td class="cd" colspan="2">    cout &lt;&lt; "原文: " &lt;&lt; msg &lt;&lt; endl;</td></tr>
+<tr><td class="ln">118</td><td class="cd" colspan="2">    cout &lt;&lt; "MD5:  " &lt;&lt; md5.digest(msg) &lt;&lt; endl;</td></tr>
+<tr><td class="ln">119</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">120</td><td class="cd" colspan="2">    // 验证：空字符串的 MD5 应为 d41d8cd98f00b204e9800998ecf8427e</td></tr>
+<tr><td class="ln">121</td><td class="cd" colspan="2">    cout &lt;&lt; "空串: " &lt;&lt; md5.digest("") &lt;&lt; endl;</td></tr>
+<tr><td class="ln">122</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">123</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">124</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>定宽整数类型（cstdint）</h3>
+<div class="rule"><strong>语法规则：</strong><code>uint8_t</code>（1 字节无符号）、<code>uint32_t</code>（4 字节）、<code>uint64_t</code>（8 字节）等类型保证固定宽度，不依赖任何平台。在协议实现、哈希算法、网络通信等对宽度敏感的场景必须使用定宽类型，不能用普通的 <code>int</code>。</div>
+<pre class="example"><code>uint8_t  byte  = 0xFF;     // 必定 1 字节
+uint16_t word  = 0xFFFF;   // 必定 2 字节
+uint32_t dword = 0xFFFFFFFF; // 必定 4 字节
+// 普通 int 在 16/32/64 位平台上宽度不同！</code></pre>
+</div>
+<div class="grammar-item">
+<h3>hex + setw + setfill 格式化</h3>
+<div class="rule"><strong>语法规则：</strong><code>std::hex</code> 切换为十六进制输出模式，<code>std::setw(n)</code> 设置最小输出宽度，<code>std::setfill('0')</code> 不足宽度时填充的字符。重点是：<code>setw</code> 是一次性的，每次输出后自动重置，需要反复设置。</div>
+<pre class="example"><code>int n = 15;
+cout << hex << setw(4) << setfill('0') << n;
+// 输出: 000f
+cout << " " << n;
+// 输出: f（setw 已重置！）
+// 正确做法：每次都设置 setw
+cout << setw(4) << a << setw(4) << b;</code></pre>
+</div>
+<div class="grammar-item">
+<h3>位运算：循环左移（Rotate Left）</h3>
+<div class="rule"><strong>语法规则：</strong>循环左移：把高位溢出的比特移回低位。<code>(x << n) | (x >> (32-n))</code>。左移 n 位得到高位部分，右移 32-n 位得到溢出的低位部分，两者 OR 合并。</div>
+<pre class="example"><code>uint32_t x = 0x80000001;  // 1000...0001
+uint32_t y = (x << 1) | (x >> 31);
+// x << 1  = 0x00000002
+// x >> 31 = 0x00000001
+// y = 0x00000003  (正确循环左移)</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>使用 OpenSSL 计算 MD5/SHA256：</strong><pre><code>#include <openssl/md5.h>
+unsigned char digest[MD5_DIGEST_LENGTH];
+MD5((unsigned char*)data.c_str(), data.size(), digest);</code></pre><p>实际项目中不要自己实现 MD5，使用 OpenSSL 或 Crypto++ 等成熟库。MD5 已不安全，新项目应使用 SHA-256。</p></li>
+<li><strong>文件 MD5 校验（读取大文件）：</strong><pre><code>ifstream file("data.bin", ios::binary);
+string content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+cout << md5.digest(content);</code></pre><p>结合文件流读取整个文件内容再计算哈希，实现完整的文件完整性校验工具。注意：大文件应分块读取以节省内存。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_042.html">← 案例 42</a><a href="case_044.html">案例 44 →</a>
+</nav>
+</main>
+</body>
+</html>

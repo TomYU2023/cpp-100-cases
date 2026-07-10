@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 97：LLVM Pass 插件</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_096.html">&#8592; 上一案例</a>    <span class="sep">|</span>
+            <a href="case_098.html">下一案例 &#8594;</a>
+        </div>
+    </nav><main class="container"><h1>案例 97：LLVM Pass 插件</h1><section class="intro"><p>编写一个 LLVM Function Pass，在编译期统计每个函数的 IR 指令数量，理解编译器插件化和 IR 遍历机制。</p><p><strong>核心知识点：</strong>LLVM Pass 架构、FunctionPass 继承、IR 遍历（BB->Inst）、RegisterPass 注册</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 97：LLVM Pass 插件 —— 编译器插件的入门
+// LLVM Pass 可以插入到编译流水线中，分析和转换 IR（中间表示）。
+// 本案例实现 Function Pass：统计每个函数的指令数量。
+//
+// 编译: clang++ -shared -fPIC FunctionCounter.cpp
+//       $(llvm-config --cxxflags --ldflags --libs) -o FunctionCounter.so
+// 运行: clang -Xclang -load -Xclang ./FunctionCounter.so test.c
+
+#include &quot;llvm/Pass.h&quot;
+#include &quot;llvm/IR/Function.h&quot;
+#include &quot;llvm/IR/BasicBlock.h&quot;
+#include &quot;llvm/IR/Instructions.h&quot;
+#include &quot;llvm/Support/raw_ostream.h&quot;
+#include &quot;llvm/IR/LegacyPassManager.h&quot;
+#include &quot;llvm/Transforms/IPO/PassManagerBuilder.h&quot;
+
+using namespace llvm;
+
+namespace {
+
+// Function Pass 定义：统计每个函数的指令数
+struct FunctionCounter : public FunctionPass {
+    static char ID;  // LLVM 用 ID 唯一标识每个 Pass
+    FunctionCounter() : FunctionPass(ID) {}
+
+    // 每个函数调用一次，返回 true 表示修改了 IR
+    bool runOnFunction(Function &amp;F) override {
+        int instCount = 0;
+
+        // 遍历函数中所有基本块
+        for (BasicBlock &amp;BB : F)
+            // 遍历基本块中所有指令
+            for (Instruction &amp;I : BB)
+                instCount++;
+
+        errs() &lt;&lt; &quot;函数 &quot; &lt;&lt; F.getName() &lt;&lt; &quot; 包含 &quot; &lt;&lt; instCount &lt;&lt; &quot; 条指令\n&quot;;
+        return false;  // 未修改 IR（纯分析型 Pass）
+    }
+};
+
+// 注册 Pass
+char FunctionCounter::ID = 0;
+static RegisterPass&lt;FunctionCounter&gt; X(&quot;func-counter&quot;,
+    &quot;统计每个函数包含的指令数量&quot;, false, false);
+
+// 自动注册到 PassManager
+static RegisterStandardPasses Y(
+    PassManagerBuilder::EP_EarlyAsPossible,
+    [](const PassManagerBuilder &amp;Builder, legacy::PassManagerBase &amp;PM) {
+        PM.add(new FunctionCounter());
+    });
+
+} // anonymous namespace</code></pre></section>
+<section class="grammar-section"><h3>语法规则：LLVM Pass 的结构继承模式</h3><pre class="code-block"><code class="language-cpp">struct MyPass : public FunctionPass {
+    static char ID;
+    MyPass() : FunctionPass(ID) {}
+    bool runOnFunction(Function &amp;F) override {
+        // 分析/转换 F 的 IR
+        return false;  // false = 未修改
+    }
+};
+char MyPass::ID = 0;
+static RegisterPass&lt;MyPass&gt; X(&quot;mypass&quot;, &quot;描述&quot;, false, false);</code></pre><p class="tip">举一反三：LLVM 的 Pass 系统是编译器插件化的核心。每种 Pass 类型（Function/Module/Loop）对应不同粒度的 IR 遍历。runOnFunction 在每个函数上调用一次，返回 true 时 PassManager 知道 IR 变了需要重跑分析。</p>
+<h3>语法规则：LLVM IR 层级遍历（Function -> BasicBlock -> Instruction）</h3><pre class="code-block"><code class="language-cpp">for (Function &amp;F : M)           // 遍历模块中所有函数
+    for (BasicBlock &amp;BB : F)      // 遍历函数中所有基本块
+        for (Instruction &amp;I : BB) // 遍历基本块中所有指令
+            /* 处理 I */</code></pre><p class="tip">举一反三：LLVM IR 的层级结构：Module > Function > BasicBlock > Instruction。每条指令有 opcode（add/sub/call/br 等）和 operand（操作数）。这是编写编译器优化、静态分析工具、代码插桩的基础。</p>
+<h3>语法规则：RegisterStandardPasses 自动注入 Pass</h3><pre class="code-block"><code class="language-cpp">static RegisterStandardPasses Y(
+    PassManagerBuilder::EP_EarlyAsPossible,
+    [](const PassManagerBuilder &amp;B, legacy::PassManagerBase &amp;PM) {
+        PM.add(new MyPass());
+    });</code></pre><p class="tip">举一反三：RegisterStandardPasses 让 Pass 在编译时自动执行，无需 -load 显式指定。ExtensionPoint 决定 Pass 的插入位置：EP_EarlyAsPossible（最早）、EP_OptimizerLast（优化最后）等。</p></section></main></body></html>

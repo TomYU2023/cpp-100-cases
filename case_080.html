@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 80：序列化/反序列化框架</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_079.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_081.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 80：序列化/反序列化框架</h1><section class="intro"><p>实现一个简单的二进制序列化框架，支持整数和字符串的写入与读取，理解数据如何从内存变成字节流再变回来。</p><p><strong>核心知识点：</strong>ostringstream、reinterpret_cast、if constexpr、memcpy、模板类型派发</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;type_traits&gt;
+#include &lt;memory&gt;
+
+// ========== 1. 基础类型序列化 ==========
+// 语法规则：std::ostringstream — 内存中的输出流，用于构建字符串
+// std::ostringstream oss; oss &lt;&lt; &quot;hello&quot; &lt;&lt; 42;
+// std::string result = oss.str(); // &quot;hello42&quot;
+// 与之对应的是 std::istringstream（输入）和 std::stringstream（双向）。
+
+class Serializer {
+    std::ostringstream oss; // 输出字符串流，所有数据串行写入
+public:
+    // 整数序列化：写入4字节原始二进制（小端序）
+    // 语法规则：reinterpret_cast&lt;const char*&gt;(&amp;val)
+    // reinterpret_cast 是最危险的类型转换，将一种类型的二进制表示重新解释为另一种类型。
+    // 仅用于底层字节操作，不能用于对象转换。
+    void writeInt(int val) {
+        // reinterpret_cast：将 int* 强制转成 const char* 以逐字节写入
+        oss.write(reinterpret_cast&lt;const char*&gt;(&amp;val), sizeof(val));
+        // 等价写法：
+        // const char* p = reinterpret_cast&lt;const char*&gt;(&amp;val);
+        // oss.write(p, 4); // int 占 4 字节
+    }
+
+    // 字符串序列化：先写长度（4字节），再写内容
+    void writeString(const std::string&amp; s) {
+        writeInt(static_cast&lt;int&gt;(s.size())); // 先写长度
+        oss.write(s.data(), s.size());         // 再写内容
+        // s.data() 返回 const char*，指向字符串内部缓冲区
+        // C++11 起，std::string 内部连续存储，data() == &amp;s[0]
+    }
+
+    // 模板方法：自动选择序列化方式
+    // 语法规则：if constexpr (C++17) — 编译期条件分支
+    // if constexpr(condition) { ... } else { ... }
+    // 条件在编译时求值，不满足的分支不会实例化，避免了 SFINAE 的繁琐。
+    template&lt;typename T&gt;
+    void write(const T&amp; val) {
+        if constexpr (std::is_integral_v&lt;T&gt;) {    // 整数类型
+            writeInt(static_cast&lt;int&gt;(val));
+        } else if constexpr (std::is_same_v&lt;T, std::string&gt;) { // 字符串
+            writeString(val);
+        } else {
+            static_assert(sizeof(T) == 0, &quot;不支持的类型&quot;);
+            // static_assert 在编译时断言，条件失败则编译报错
+        }
+    }
+
+    std::string str() const { return oss.str(); }
+};
+
+// ========== 2. 反序列化 ==========
+class Deserializer {
+    const char* data_; // 指向二进制数据的指针
+    size_t size_;      // 数据总字节数
+    size_t pos_;       // 当前读取位置
+
+public:
+    Deserializer(const std::string&amp; s) : data_(s.data()), size_(s.size()), pos_(0) {}
+
+    int readInt() {
+        if (pos_ + sizeof(int) &gt; size_) throw std::runtime_error(&quot;数据不足&quot;);
+        int val;
+        // memcpy：将原始字节拷贝到 int 变量中
+        // 语法规则：std::memcpy(dest, src, count) — 从 src 拷贝 count 字节到 dest
+        // 头文件 &lt;cstring&gt;。比逐个字节赋值更快，但不会检查类型安全。
+        std::memcpy(&amp;val, data_ + pos_, sizeof(val));
+        pos_ += sizeof(val);
+        return val;
+    }
+
+    std::string readString() {
+        int len = readInt(); // 先读长度
+        if (pos_ + len &gt; size_) throw std::runtime_error(&quot;字符串数据不足&quot;);
+        // std::string 构造函数：string(const char* s, size_t n) — 从 s 取前 n 个字符
+        std::string result(data_ + pos_, len);
+        pos_ += len;
+        return result;
+    }
+
+    // 语法规则：std::is_integral_v&lt;T&gt; — 判断 T 是否为整数类型（C++17）
+    // 定义在 &lt;type_traits&gt;，返回 bool 编译期常量。
+    // 相关：is_floating_point_v, is_same_v, is_pointer_v, is_class_v
+    template&lt;typename T&gt;
+    T read() {
+        if constexpr (std::is_integral_v&lt;T&gt;) {
+            return static_cast&lt;T&gt;(readInt());
+        } else if constexpr (std::is_same_v&lt;T, std::string&gt;) {
+            return readString();
+        } else {
+            static_assert(sizeof(T) == 0, &quot;不支持的类型&quot;);
+        }
+    }
+};
+
+// ========== 3. 使用示例 ==========
+int main() {
+    // 序列化
+    Serializer ser;
+    ser.write(std::string(&quot;Alice&quot;));  // 写姓名
+    ser.write(25);                    // 写年龄
+    ser.write(std::string(&quot;Bob&quot;));
+    ser.write(30);
+
+    std::string data = ser.str();
+    std::cout &lt;&lt; &quot;序列化后 &quot; &lt;&lt; data.size() &lt;&lt; &quot; 字节\n&quot;;
+
+    // 反序列化
+    Deserializer des(data);
+    for (int i = 0; i &lt; 2; i++) {
+        std::string name = des.read&lt;std::string&gt;();
+        int age = des.read&lt;int&gt;();
+        std::cout &lt;&lt; name &lt;&lt; &quot; &quot; &lt;&lt; age &lt;&lt; &quot;岁\n&quot;;
+    }
+
+    // 核心思想：序列化 = 将内存数据按固定格式写入字节流；
+    //         反序列化 = 从字节流按相同格式还原。
+    // 生产环境推荐用 Protobuf/FlatBuffers，但理解原理很重要。
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：std::ostringstream / std::istringstream</h3><pre class="code-block"><code class="language-cpp">#include &lt;sstream&gt;
+std::ostringstream oss;
+oss &lt;&lt; &quot;value=&quot; &lt;&lt; 42;
+std::string s = oss.str(); // &quot;value=42&quot;
+
+std::istringstream iss(&quot;10 20 30&quot;);
+int a, b, c;
+iss &gt;&gt; a &gt;&gt; b &gt;&gt; c; // a=10, b=20, c=30</code></pre><p class="tip">💡 举一反三：stringstream 是内存中的流，和 cin/cout 用同样的 << >> 运算符。适用于字符串拼接、数值转字符串、从字符串解析数值等场景。</p>
+<h3>语法规则：reinterpret_cast<type>(expr)</h3><pre class="code-block"><code class="language-cpp">int x = 42;
+const char* p = reinterpret_cast&lt;const char*&gt;(&amp;x);
+// p 指向 x 的内存表示，逐字节读取
+for (int i = 0; i &lt; 4; i++)
+    printf(&quot;%02x &quot;, (unsigned char)p[i]);</code></pre><p class="tip">💡 举一反三：reinterpret_cast 不做任何类型检查，只是把二进制位重新解释。危险但必要：网络编程、文件IO、序列化都离不开它。不要用在对象继承体系上，用 static_cast/dynamic_cast 替代。</p>
+<h3>语法规则：if constexpr (C++17)</h3><pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
+auto process(T val) {
+    if constexpr (std::is_integral_v&lt;T&gt;)
+        return val * 2;        // 仅整数走这里
+    else if constexpr (std::is_floating_point_v&lt;T&gt;)
+        return val * 2.5;      // 仅浮点走这里
+    else
+        static_assert(sizeof(T)==0, &quot;不支持&quot;);
+}</code></pre><p class="tip">💡 举一反三：if constexpr 在编译期决定走哪个分支。普通 if 的分支即使不执行也必须能编译，if constexpr 不满足条件的分支干脆不实例化。这是实现类型派发的现代方式。</p>
+<h3>语法规则：std::memcpy(dest, src, count)</h3><pre class="code-block"><code class="language-cpp">#include &lt;cstring&gt;
+int src[5] = {1,2,3,4,5};
+int dst[5];
+std::memcpy(dst, src, 5 * sizeof(int));
+// dst 现在是 {1,2,3,4,5}</code></pre><p class="tip">💡 举一反三：memcpy 是 C 标准库函数，按字节拷贝内存。不检查类型、不处理重叠区域（重叠用 memmove）。优点：快；缺点：危险。C++ 中优先用 std::copy 处理对象。</p></section></main></body></html>

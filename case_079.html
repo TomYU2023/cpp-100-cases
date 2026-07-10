@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 79：内存泄漏检测器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_078.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_080.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 79：内存泄漏检测器</h1><section class="intro"><p>重载全局 operator new/delete，在程序退出时报告所有未释放的内存，理解内存检测工具的底层原理。</p><p><strong>核心知识点：</strong>operator new/delete 重载、noexcept、内存泄漏检测、mutex 线程安全、malloc/free</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 79：内存泄漏检测器
+// 通过重载 new/delete 操作符实现轻量级内存泄漏检测。
+
+#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
+#include &lt;cstring&gt;
+#include &lt;map&gt;
+#include &lt;mutex&gt;
+
+/* 语法规则：重载全局 new/delete
+   void* operator new(size_t size) — 分配内存
+   void operator delete(void* ptr) noexcept — 释放内存
+   void operator delete(void* ptr, size_t size) noexcept — C++14 带大小版本
+
+   重载全局 new/delete 时要小心：
+   1. 不能调用 malloc/free 之外的任何可能分配内存的函数（防止无限递归）
+   2. 使用 std::mutex 保护全局状态
+   3. 不要用 std::cout（它自己就用了 new）
+
+   示例：跟踪分配/释放
+     static std::map&lt;void*, size_t&gt; allocs;
+     void* operator new(size_t sz) {
+       void* p = malloc(sz);
+       allocs[p] = sz;
+       return p;
+     }
+     void operator delete(void* p) noexcept {
+       allocs.erase(p);
+       free(p);
+     }
+
+   举一反三：Visual Studio 的 CRT 调试堆（_CrtSetDbgFlag）、
+   Valgrind（Linux）、AddressSanitizer 都是商业化级别的内存检测工具。
+   本案例展示原理，生产环境请用专业工具。
+*/
+
+// 用静态变量存储分配记录（用 printf 避免 cout 递归调用 new）
+struct AllocInfo {
+    size_t size;
+    const char* file;
+    int line;
+};
+
+static std::map&lt;void*, AllocInfo&gt; allocMap;  // 地址 → 分配信息
+static std::mutex allocMutex;                 // 线程安全
+static size_t totalAllocated = 0;
+static size_t totalFreed = 0;
+
+// 重载 operator new
+void* operator new(size_t size) {
+    void* ptr = malloc(size);
+    if (!ptr) throw std::bad_alloc();
+
+    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
+    allocMap[ptr] = {size, nullptr, 0};
+    totalAllocated += size;
+    return ptr;
+}
+
+// 重载 operator delete
+void operator delete(void* ptr) noexcept {
+    if (!ptr) return;
+
+    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
+    auto it = allocMap.find(ptr);
+    if (it != allocMap.end()) {
+        totalFreed += it-&gt;second.size;
+        allocMap.erase(it);
+    }
+    free(ptr);
+}
+
+// 带大小版本的 delete（C++14）
+void operator delete(void* ptr, size_t size) noexcept {
+    if (!ptr) return;
+    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
+    allocMap.erase(ptr);
+    totalFreed += size;
+    free(ptr);
+}
+
+// 重载 new[] 和 delete[]
+void* operator new[](size_t size) {
+    return operator new(size);
+}
+void operator delete[](void* ptr) noexcept {
+    operator delete(ptr);
+}
+
+// 泄漏报告
+void reportLeaks() {
+    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
+    if (allocMap.empty()) {
+        printf(&quot;\n[内存检测] 没有内存泄漏！\n&quot;);
+    } else {
+        printf(&quot;\n[内存检测] 发现 %zu 处内存泄漏:\n&quot;, allocMap.size());
+        for (auto&amp; [ptr, info] : allocMap) {
+            printf(&quot;  地址 %p: %zu 字节\n&quot;, ptr, info.size);
+        }
+    }
+    printf(&quot;总分配: %zu 字节 | 总释放: %zu 字节 | 泄漏: %zu 字节\n&quot;,
+           totalAllocated, totalFreed, totalAllocated - totalFreed);
+}
+
+// ============ 测试代码 ============
+class Widget {
+    int data[100];  // 占用一定内存
+public:
+    Widget() { /*printf(&quot;Widget 构造\n&quot;);*/ }
+    ~Widget() { /*printf(&quot;Widget 析构\n&quot;);*/ }
+};
+
+int main() {
+    printf(&quot;案例 79：内存泄漏检测器\n&quot;);
+    printf(&quot;========================\n&quot;);
+
+    // 正常分配并释放
+    int* a = new int(42);
+    delete a;
+
+    // 故意泄漏（注释掉 delete）
+    int* leaked = new int[100];
+
+    // Widget 数组
+    auto* w1 = new Widget();
+    auto* w2 = new Widget();
+    delete w1;
+    // delete w2;  ← 故意不释放，模拟泄漏
+
+    printf(&quot;\n程序即将退出，运行泄漏检测...\n&quot;);
+    reportLeaks();
+
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：operator new/delete 重载</h3><pre class="code-block"><code class="language-cpp">// 全局 operator new 的三个参数版本
+void* operator new(size_t count);              // 基本版
+void* operator new(size_t count, std::align_val_t al);  // C++17 对齐
+// 类内也可以重载 new/delete（仅影响该类的分配）</code></pre><p class="tip">💡 举一反三：重载 new/delete 的正当用途：内存池、泄漏检测、对齐控制、调试日志。注意：重载后必须调用 malloc/free，不能再用 new 分配内存（无限递归）。</p>
+<h3>语法规则：noexcept 说明符</h3><pre class="code-block"><code class="language-cpp">void func() noexcept;         // 承诺不抛异常
+void func() noexcept(true);    // 等价
+void func() noexcept(false);   // 可能抛异常
+// delete 必须是 noexcept 的，这是语言规定</code></pre><p class="tip">💡 举一反三：noexcept 让编译器做优化（如用 move 代替 copy）。析构函数默认 noexcept(true)。移动构造函数应尽可能 noexcept。</p></section></main></body></html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 69：观察者模式 — 事件总线</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-phase">
+            <span class="phase-label">Phase 4:</span>
+            <a href="case_061.html">线程池</a>
+            <a href="case_062.html">内存池</a>
+            <a href="case_063.html">无锁队列</a>
+            <a href="case_064.html">对象池</a>
+            <a href="case_065.html">TCP聊天</a>
+            <a href="case_066.html">HTTP服务</a>
+            <a href="case_067.html">REST客户端</a>
+            <a href="case_068.html">gRPC</a>
+            <a href="case_069.html">观察者</a>
+            <a href="case_070.html">策略</a>
+        </div>
+        <div class="nav-links">
+            <a href="case_065.html"><a href="case_068.html">← 上一案例</a></a>
+            <span class="sep">|</span>
+            <a href="case_067.html"><a href="case_070.html">下一案例 →</a></a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>案例 69：观察者模式 — 事件总线</h1>
+        <section class="intro">
+            <p>实现经典的观察者模式（接口式）和现代 C++ 事件总线（基于 std::function），对比两种方式的差异。</p>
+            <p><strong>核心知识点：</strong>观察者模式、抽象类、erase-remove 惯用法、std::function 类型擦除、事件驱动架构</p>
+        </section>
+        <section class="code-section">
+            <h2>完整代码（含逐行注释）</h2>
+            <pre class="code-block"><code class="language-cpp">// 案例 69：观察者模式（Observer Pattern）— 事件总线实现
+// 观察者模式：定义一对多依赖关系，当一个对象（Subject）状态变化时，
+// 所有依赖它的对象（Observer）自动收到通知并更新。
+// 典型场景：GUI 按钮点击、消息订阅、股票行情推送、数据绑定。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;functional&gt;
+#include &lt;memory&gt;
+
+/* ── 语法规则：观察者模式结构 ──
+   Subject（被观察者/主题）：维护观察者列表，状态变化时调用 notify()
+   Observer（观察者）：定义 update() 接口，收到通知后执行自己的逻辑
+
+   经典 UML：
+     Subject ◇──► Observer (接口)
+       │              ▲
+       │              │
+     ConcreteSubject  ConcreteObserver
+
+   示例（股票行情）：
+     StockMarket subject;       // 被观察者：股市数据源
+     Investor alice, bob;      // 观察者：两个投资者
+     subject.attach(&amp;alice);   // alice 订阅
+     subject.attach(&amp;bob);     // bob 订阅
+     subject.setPrice(&quot;AAPL&quot;, 150.0); // 价格变动 → 自动通知两人
+     subject.detach(&amp;bob);     // bob 取消订阅
+
+   举一反三：观察者模式是 MVC 架构的核心——Model 变化自动通知 View 更新。
+   现代 C++ 常用 std::function 替代纯虚接口，更灵活（见本案例的事件总线实现）。
+*/
+
+// 方式一：经典接口式（纯虚函数）
+class IObserver {                    // 观察者接口
+public:
+    virtual ~IObserver() = default;  // 虚析构：保证子类正确析构
+    virtual void update(const std::string&amp; msg) = 0;  // 纯虚函数：子类必须实现
+};
+
+class Subject {                      // 被观察者
+    std::vector&lt;IObserver*&gt; observers;  // 裸指针列表（实际项目用 weak_ptr 更安全）
+
+public:
+    void attach(IObserver* obs) {    // 订阅
+        observers.push_back(obs);
+    }
+
+    void detach(IObserver* obs) {    // 取消订阅
+        // erase-remove 惯用法：remove 把目标元素移到末尾，erase 真正删除
+        observers.erase(
+            std::remove(observers.begin(), observers.end(), obs),
+            observers.end()
+        );
+    }
+
+    void notify(const std::string&amp; msg) {  // 通知所有观察者
+        for (auto* obs : observers) {
+            obs-&gt;update(msg);              // 调用每个观察者的 update
+        }
+    }
+};
+
+// 具体观察者：打印消息
+class ConsoleLogger : public IObserver {
+    std::string name;
+public:
+    ConsoleLogger(const std::string&amp; n) : name(n) {}
+    void update(const std::string&amp; msg) override {
+        std::cout &lt;&lt; &quot;[&quot; &lt;&lt; name &lt;&lt; &quot;] 收到: &quot; &lt;&lt; msg &lt;&lt; std::endl;
+    }
+};
+
+// ============ 方式二：现代 C++ 事件总线（std::function） ============
+// 更灵活：不需要继承接口，lambda / 函数指针 / 成员函数都能当观察者
+class EventBus {
+public:
+    // 定义回调类型：接受 string 参数，无返回值
+    using Callback = std::function&lt;void(const std::string&amp;)&gt;;
+
+private:
+    // 存储所有回调函数及其 ID
+    struct Entry {
+        int id;
+        Callback callback;
+    };
+    std::vector&lt;Entry&gt; handlers;
+    int nextId = 0;
+
+public:
+    // 订阅：返回订阅 ID 用于取消
+    int subscribe(Callback cb) {
+        handlers.push_back({nextId, std::move(cb)});
+        return nextId++;       // 返回当前 ID，然后自增
+    }
+
+    // 取消订阅：根据 ID 移除
+    void unsubscribe(int id) {
+        handlers.erase(
+            std::remove_if(handlers.begin(), handlers.end(),
+                [id](const Entry&amp; e) { return e.id == id; }),  // 按 ID 匹配
+            handlers.end()
+        );
+    }
+
+    // 发布事件：触发所有回调
+    void publish(const std::string&amp; event) {
+        for (auto&amp; h : handlers) {
+            h.callback(event);  // 执行回调
+        }
+    }
+};
+
+int main() {
+    // ===== 测试经典观察者模式 =====
+    std::cout &lt;&lt; &quot;=== 经典观察者模式 ===&quot; &lt;&lt; std::endl;
+    Subject subject;
+    ConsoleLogger alice(&quot;Alice&quot;);
+    ConsoleLogger bob(&quot;Bob&quot;);
+
+    subject.attach(&amp;alice);
+    subject.attach(&amp;bob);
+    subject.notify(&quot;AAPL 涨到 $150&quot;);   // 两人都收到通知
+
+    subject.detach(&amp;bob);               // Bob 退订
+    subject.notify(&quot;TSLA 跌到 $200&quot;);   // 只有 Alice 收到
+
+    // ===== 测试事件总线 =====
+    std::cout &lt;&lt; &quot;\n=== 事件总线 (std::function) ===&quot; &lt;&lt; std::endl;
+    EventBus bus;
+
+    // 订阅 1：lambda 表达式
+    int id1 = bus.subscribe([](const std::string&amp; e) {
+        std::cout &lt;&lt; &quot;Lambda 收到: &quot; &lt;&lt; e &lt;&lt; std::endl;
+    });
+
+    // 订阅 2：函数指针
+    auto handler = [](const std::string&amp; e) {
+        std::cout &lt;&lt; &quot;Handler 收到: &quot; &lt;&lt; e &lt;&lt; std::endl;
+    };
+    int id2 = bus.subscribe(handler);
+
+    bus.publish(&quot;系统启动完成&quot;);   // 两个回调都触发
+    bus.unsubscribe(id1);          // 取消第一个
+    bus.publish(&quot;日志已清理&quot;);     // 只有第二个收到
+
+    return 0;
+}</code></pre>
+        </section>
+        <section class="grammar-section">
+            <h3>语法规则：erase-remove 惯用法</h3>
+            <pre class="code-block"><code class="language-cpp">// 删除 vector 中所有值为 target 的元素
+vec.erase(std::remove(vec.begin(), vec.end(), target), vec.end());
+// remove 把匹配元素移到末尾，返回新末尾迭代器；erase 真正删除</code></pre>
+            <p class="tip">💡 举一反三：这是 C++ 中 O(n) 删除元素的惯用法。remove_if 用法相同但接受谓词。C++20 引入 std::erase(vec, target) 简化。</p>
+            <h3>语法规则：std::function 类型擦除</h3>
+            <pre class="code-block"><code class="language-cpp">std::function&lt;int(int, int)&gt; fn;
+fn = [](int a, int b) { return a + b; };  // lambda
+fn = std::multiplies&lt;int&gt;();                // 函数对象
+fn = &amp;someFunction;                         // 函数指针
+int result = fn(3, 4);  // 调用</code></pre>
+            <p class="tip">💡 举一反三：std::function 是万能函数包装器，能够存储任意可调用对象（lambda/函数指针/成员函数/bind）。代价是虚函数调用的微小开销。</p>
+            <h3>语法规则：纯虚函数与抽象类</h3>
+            <pre class="code-block"><code class="language-cpp">class Interface {
+  virtual void method() = 0;  // =0 表示纯虚函数
+};  // Interface 是抽象类，不能直接实例化
+// 子类必须实现所有纯虚函数才能被实例化</code></pre>
+            <p class="tip">💡 举一反三：纯虚函数用来定义接口契约。类似 Java 的 interface、Go 的 interface、Rust 的 trait。析构函数也应 virtual，保证 delete 基类指针时调用子类析构。</p>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 86：命令行 TODO 管理器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_085.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_087.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 86：命令行 TODO 管理器</h1><section class="intro"><p>一个完整的命令行 TODO 工具，支持添加、查看、完成、删除和持久化存储，涵盖文件 IO、CRUD、交互式菜单。</p><p><strong>核心知识点：</strong>文件流 ofstream/ifstream、find_if+lambda、cin.ignore 缓冲区处理、struct 数据建模</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 86：命令行 TODO 管理器
+// 一个完整的交互式命令行 TODO 工具，支持增删改查、标记完成、持久化存储。
+// 涵盖文件 IO、CRUD 操作、交互式菜单、JSON 序列化等实战技能。
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+#include &lt;iomanip&gt;
+
+// ─── 数据结构 ────────────────────────────────────
+// 每条 TODO 记录的核心字段
+struct Todo {
+    int id;              // 唯一标识
+    std::string task;    // 任务内容
+    bool completed;      // 是否完成
+
+    // 格式化打印单条记录（宽度对齐）
+    void print() const {
+        std::cout &lt;&lt; std::setw(3) &lt;&lt; id &lt;&lt; &quot;. &quot;
+                  &lt;&lt; (completed ? &quot;[✓]&quot; : &quot;[ ]&quot;) &lt;&lt; &quot; &quot;
+                  &lt;&lt; task &lt;&lt; std::endl;
+    }
+};
+
+// ─── 全局状态 ────────────────────────────────────
+std::vector&lt;Todo&gt; todos;          // 内存中的 TODO 列表
+int nextId = 1;                   // 自增 ID
+const std::string FILENAME = &quot;todos.txt&quot;;  // 持久化文件
+
+// ─── 持久化：保存到文件 ─────────────────────────
+// 使用简单的行格式：id|task|completed
+void save() {
+    std::ofstream out(FILENAME);   // 打开文件（覆盖模式）
+    if (!out) { std::cerr &lt;&lt; &quot;无法保存文件！&quot; &lt;&lt; std::endl; return; }
+    for (const auto&amp; t : todos)
+        out &lt;&lt; t.id &lt;&lt; &quot;|&quot; &lt;&lt; t.task &lt;&lt; &quot;|&quot; &lt;&lt; t.completed &lt;&lt; &quot;\n&quot;;
+    std::cout &lt;&lt; &quot;已保存 &quot; &lt;&lt; todos.size() &lt;&lt; &quot; 条记录。&quot; &lt;&lt; std::endl;
+}
+
+// ─── 持久化：从文件加载 ─────────────────────────
+void load() {
+    std::ifstream in(FILENAME);
+    if (!in) return;  // 文件不存在则跳过（首次运行）
+    todos.clear();
+    std::string line;
+    while (std::getline(in, line)) {
+        auto p1 = line.find('|');
+        auto p2 = line.find('|', p1 + 1);
+        if (p1 == std::string::npos || p2 == std::string::npos) continue;
+        Todo t;
+        t.id = std::stoi(line.substr(0, p1));
+        t.task = line.substr(p1 + 1, p2 - p1 - 1);
+        t.completed = (line.substr(p2 + 1) == &quot;1&quot;);
+        todos.push_back(t);
+    }
+    // 计算下一个可用 ID
+    if (!todos.empty())
+        nextId = todos.back().id + 1;
+}
+
+// ─── 核心操作 ────────────────────────────────────
+void addTask(const std::string&amp; task) {
+    todos.push_back({nextId++, task, false});
+    std::cout &lt;&lt; &quot;已添加 #&quot; &lt;&lt; nextId - 1 &lt;&lt; std::endl;
+}
+
+void listTasks() {
+    if (todos.empty()) { std::cout &lt;&lt; &quot;暂无任务。&quot; &lt;&lt; std::endl; return; }
+    for (const auto&amp; t : todos) t.print();
+}
+
+void completeTask(int id) {
+    auto it = std::find_if(todos.begin(), todos.end(),
+        [id](const Todo&amp; t) { return t.id == id; });
+    if (it != todos.end()) {
+        it-&gt;completed = true;
+        std::cout &lt;&lt; &quot;已标记 #&quot; &lt;&lt; id &lt;&lt; &quot; 完成！&quot; &lt;&lt; std::endl;
+    } else {
+        std::cout &lt;&lt; &quot;找不到 #&quot; &lt;&lt; id &lt;&lt; std::endl;
+    }
+}
+
+void deleteTask(int id) {
+    auto it = std::find_if(todos.begin(), todos.end(),
+        [id](const Todo&amp; t) { return t.id == id; });
+    if (it != todos.end()) {
+        std::cout &lt;&lt; &quot;已删除: &quot; &lt;&lt; it-&gt;task &lt;&lt; std::endl;
+        todos.erase(it);  // vector::erase 会移动后续元素
+    } else {
+        std::cout &lt;&lt; &quot;找不到 #&quot; &lt;&lt; id &lt;&lt; std::endl;
+    }
+}
+
+// ─── 主程序：交互式循环 ─────────────────────────
+int main() {
+    load();  // 启动时加载已有数据
+
+    while (true) {
+        std::cout &lt;&lt; &quot;\n===== TODO 管理器 =====\n&quot;;
+        std::cout &lt;&lt; &quot;1. 查看  2. 添加  3. 完成  4. 删除  5. 保存  0. 退出\n&gt; &quot;;
+
+        int choice;
+        std::cin &gt;&gt; choice;
+        std::cin.ignore();  // 清除换行符，防止干扰 getline
+
+        if (choice == 0) {
+            std::cout &lt;&lt; &quot;退出前是否保存？(y/n): &quot;;
+            char c; std::cin &gt;&gt; c;
+            if (c == 'y' || c == 'Y') save();
+            break;
+        }
+
+        switch (choice) {
+            case 1: listTasks(); break;
+            case 2: {
+                std::cout &lt;&lt; &quot;输入任务: &quot;;
+                std::string task;
+                std::getline(std::cin, task);  // 读取含空格的整行
+                if (!task.empty()) addTask(task);
+                break;
+            }
+            case 3: {
+                std::cout &lt;&lt; &quot;输入任务 ID: &quot;;
+                int id; std::cin &gt;&gt; id;
+                completeTask(id);
+                break;
+            }
+            case 4: {
+                std::cout &lt;&lt; &quot;输入任务 ID: &quot;;
+                int id; std::cin &gt;&gt; id;
+                deleteTask(id);
+                break;
+            }
+            case 5: save(); break;
+            default: std::cout &lt;&lt; &quot;无效选项&quot; &lt;&lt; std::endl;
+        }
+    }
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：std::ofstream / std::ifstream 文件流</h3><pre class="code-block"><code class="language-cpp">#include &lt;fstream&gt;
+std::ofstream out(&quot;file.txt&quot;);       // 写入模式（覆盖）
+if (!out) { /* 打开失败处理 */ }
+out &lt;&lt; &quot;Hello&quot; &lt;&lt; std::endl;
+out.close();  // 析构时自动关闭，也可手动
+
+std::ifstream in(&quot;file.txt&quot;);        // 读取模式
+std::string line;
+while (std::getline(in, line)) { }   // 逐行读取</code></pre><p class="tip">💡 举一反三：所有文件流对象离开作用域时自动关闭（RAII）。ofstream 默认覆盖，加 std::ios::app 切换为追加模式。ifstream 读取到文件尾时，getline 返回空流（转为 false），自然退出循环。</p>
+<h3>语法规则：std::find_if + lambda 条件查找</h3><pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+auto it = std::find_if(vec.begin(), vec.end(),
+    [](const T&amp; item) { return item.id == target; });
+if (it != vec.end()) { /* 找到了 */ }</code></pre><p class="tip">💡 举一反三：find_if 传入一个谓词（返回 bool 的函数），返回第一个满足条件的迭代器。lambda 的捕获列表 [id] 将外部变量按值捕获进闭包。这是 STL 和 lambda 结合的经典模式，替代手写 for 循环。</p>
+<h3>语法规则：std::cin.ignore() 清除输入缓冲区</h3><pre class="code-block"><code class="language-cpp">int n; std::cin &gt;&gt; n;
+std::cin.ignore();  // 丢弃换行符
+std::string line; std::getline(std::cin, line);</code></pre><p class="tip">💡 举一反三：cin >> 读取数字后会在缓冲区留下换行符，如果不 ignore，紧接着的 getline 会读到空行。这是一个常见的输入 Bug，务必记住这个组合。</p></section></main></body></html>

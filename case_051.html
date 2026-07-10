@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 51：多线程文件拷贝器 - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 51：多线程文件拷贝器</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;fstream&gt;</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
+<tr><td class="ln">5</td><td class="cd">#include &lt;filesystem&gt;</td><td class="cmt">C++17 文件系统</td></tr>
+<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">8</td><td class="cd">namespace fs = filesystem;</td><td class="cmt">命名空间别名</td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">// 线程参数结构体</td></tr>
+<tr><td class="ln">11</td><td class="cd">struct CopyTask {</td><td class="cmt">每个线程负责拷贝的块</td></tr>
+<tr><td class="ln">12</td><td class="cd">    string srcPath;</td><td class="cmt">源文件路径</td></tr>
+<tr><td class="ln">13</td><td class="cd">    string dstPath;</td><td class="cmt">目标文件路径</td></tr>
+<tr><td class="ln">14</td><td class="cd">    size_t offset;</td><td class="cmt">起始偏移</td></tr>
+<tr><td class="ln">15</td><td class="cd">    size_t chunkSize;</td><td class="cmt">块大小</td></tr>
+<tr><td class="ln">16</td><td class="cd" colspan="2">};</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">// 单个块的拷贝函数</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">void copyChunk(const CopyTask&amp; task) {</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">    // 每个线程独立打开文件</td></tr>
+<tr><td class="ln">21</td><td class="cd" colspan="2">    ifstream inFile(task.srcPath, ios::binary);</td></tr>
+<tr><td class="ln">22</td><td class="cd">    inFile.seekg(task.offset);</td><td class="cmt">定位到偏移位置</td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2">    vector&lt;char&gt; buffer(task.chunkSize);</td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2">    inFile.read(buffer.data(), task.chunkSize);</td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2">    inFile.close();</td></tr>
+<tr><td class="ln">27</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">28</td><td class="cd" colspan="2">    // 以 in 模式打开目标文件，再定位写入</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">    // 简化：用 fstream 的 in|out 模式定位写入</td></tr>
+<tr><td class="ln">30</td><td class="cd">    fstream outFile(task.dstPath, ios::in | ios::out | ios::binary);</td><td class="cmt">in|out 保留已有内容</td></tr>
+<tr><td class="ln">31</td><td class="cd">    outFile.seekp(task.offset);</td><td class="cmt">定位输出位置</td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2">    outFile.write(buffer.data(), task.chunkSize);</td></tr>
+<tr><td class="ln">33</td><td class="cd" colspan="2">    outFile.close();</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">// 多线程拷贝入口</td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2">bool parallelCopy(const string&amp; src, const string&amp; dst,</td></tr>
+<tr><td class="ln">38</td><td class="cd">                  size_t numThreads = thread::hardware_concurrency()) {</td><td class="cmt">自动获取 CPU 核心数</td></tr>
+<tr><td class="ln">39</td><td class="cd" colspan="2">    // 检查源文件</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2">    if (!fs::exists(src)) {</td></tr>
+<tr><td class="ln">41</td><td class="cd" colspan="2">        cerr &lt;&lt; "Source not found: " &lt;&lt; src &lt;&lt; endl;</td></tr>
+<tr><td class="ln">42</td><td class="cd" colspan="2">        return false;</td></tr>
+<tr><td class="ln">43</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">44</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">45</td><td class="cd">    auto fileSize = fs::file_size(src);</td><td class="cmt">获取文件大小</td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">47</td><td class="cd" colspan="2">    // 预分配目标文件（填充零）</td></tr>
+<tr><td class="ln">48</td><td class="cd" colspan="2">    {</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2">        ofstream init(dst, ios::binary);</td></tr>
+<tr><td class="ln">50</td><td class="cd">        init.seekp(fileSize - 1);</td><td class="cmt">定位到最后一个字节</td></tr>
+<tr><td class="ln">51</td><td class="cd">        init.write("", 1);</td><td class="cmt">写入一个字节以扩展文件</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">        init.close();</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2">    // 计算每个线程的块大小</td></tr>
+<tr><td class="ln">56</td><td class="cd">    size_t chunkSize = (fileSize + numThreads - 1) / numThreads;</td><td class="cmt">向上取整</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">    // 创建线程列表</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">    vector&lt;thread&gt; threads;</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2">    for (size_t i = 0; i &lt; numThreads; i++) {</td></tr>
+<tr><td class="ln">61</td><td class="cd">        size_t offset = i * chunkSize;</td><td class="cmt">计算偏移</td></tr>
+<tr><td class="ln">62</td><td class="cd">        size_t size = min(chunkSize, fileSize - offset);</td><td class="cmt">最后一块可能不满</td></tr>
+<tr><td class="ln">63</td><td class="cd" colspan="2">        if (size == 0) break;</td></tr>
+<tr><td class="ln">64</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">65</td><td class="cd">        CopyTask task{src, dst, offset, size};</td><td class="cmt">构造任务</td></tr>
+<tr><td class="ln">66</td><td class="cd">        threads.emplace_back(copyChunk, task);</td><td class="cmt">emplace_back 就地构造线程</td></tr>
+<tr><td class="ln">67</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2">    // 等待所有线程完成</td></tr>
+<tr><td class="ln">70</td><td class="cd" colspan="2">    for (auto&amp; t : threads) {</td></tr>
+<tr><td class="ln">71</td><td class="cd">        if (t.joinable()) t.join();</td><td class="cmt">join 等待线程结束</td></tr>
+<tr><td class="ln">72</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">74</td><td class="cd" colspan="2">    cout &lt;&lt; "Copied " &lt;&lt; fileSize &lt;&lt; " bytes in " &lt;&lt; numThreads &lt;&lt; " threads." &lt;&lt; endl;</td></tr>
+<tr><td class="ln">75</td><td class="cd" colspan="2">    return true;</td></tr>
+<tr><td class="ln">76</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">77</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2">    // 创建测试文件</td></tr>
+<tr><td class="ln">80</td><td class="cd" colspan="2">    string src = "test_large.dat";</td></tr>
+<tr><td class="ln">81</td><td class="cd" colspan="2">    string dst = "test_large_copy.dat";</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">    {</td></tr>
+<tr><td class="ln">83</td><td class="cd" colspan="2">        ofstream f(src);</td></tr>
+<tr><td class="ln">84</td><td class="cd">        for (int i = 0; i &lt; 100000; i++) f &lt;&lt; "0123456789";</td><td class="cmt">生成约 1MB 文件</td></tr>
+<tr><td class="ln">85</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">86</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">87</td><td class="cd">    parallelCopy(src, dst);</td><td class="cmt">多线程拷贝</td></tr>
+<tr><td class="ln">88</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">89</td><td class="cd" colspan="2">    // 验证</td></tr>
+<tr><td class="ln">90</td><td class="cd" colspan="2">    cout &lt;&lt; "MD5 not shown here, but you can verify with certutil -hashfile" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">91</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">92</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>std::thread::hardware_concurrency() 获取 CPU 核心数</h3>
+<div class="rule"><strong>语法规则：</strong>返回系统支持的并发线程数（通常为 CPU 核心数）。返回 0 时表示无法确定，应用代码应提供回退值。这是<strong>确定线程池大小的推荐方法</strong>。</div>
+<pre class="example"><code>unsigned int n = thread::hardware_concurrency();
+cout << "Your CPU supports " << n << " concurrent threads.";
+// 常用公式
+size_t optimal = max(1u, n - 1);  // 留一个核给系统</code></pre>
+</div>
+<div class="grammar-item">
+<h3>fs::file_size 和 fs::exists</h3>
+<div class="rule"><strong>语法规则：</strong><strong>std::filesystem</strong>（C++17）提供跨平台的文件系统操作。<code>exists(path)</code> 检查文件是否存在，<code>file_size(path)</code> 返回文件字节数。注意 file_size 对不存在或无法访问的文件会抛异常。</div>
+<pre class="example"><code>namespace fs = filesystem;
+try {
+    if (fs::exists("config.ini")) {
+        auto sz = fs::file_size("config.ini");
+        cout << sz << " bytes";
+    }
+} catch (fs::filesystem_error& e) {
+    cerr << e.what();
+}</code></pre>
+</div>
+<div class="grammar-item">
+<h3>vector::emplace_back 就地构造</h3>
+<div class="rule"><strong>语法规则：</strong><code>emplace_back(args...)</code> 直接在 vector 尾部构造元素，<strong>无需临时对象拷贝</strong>。相比 push_back（先构造临时对象再拷贝/移动），emplace_back 性能更好，尤其对大对象和不可拷贝类型。</div>
+<pre class="example"><code>struct Point { int x, y; Point(int a, int b): x(a), y(b) {} };
+vector<Point> pts;
+pts.emplace_back(1, 2);  // 直接构造！
+// 等效的 push_back 写法：
+pts.push_back(Point(1, 2));  // 先构造临时对象，再拷贝</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>使用文件内存映射 (mmap) 实现零拷贝：</strong><pre><code>#include <fcntl.h>
+#include <sys/mman.h>
+// Linux 上 mmap 可让多线程直接映射文件内容
+// Windows: CreateFileMapping + MapViewOfFile</code></pre><p>内存映射文件将文件内容直接映射到进程地址空间，读写就像操作内存一样，避免了 read/write 系统调用的开销，适合超大文件的并行处理。</p></li>
+<li><strong>线程池批量任务 + 进度条：</strong><pre><code>ThreadPool pool(n);
+for (size_t i = 0; i < numTasks; i++) {
+    pool.enqueue([i, &tasks] { copyChunk(tasks[i]); });
+}
+// 使用 atomic<size_t> doneCount 和文件大小计算进度</code></pre><p>实际应用需要线程池管理线程生命周期，并提供进度条等反馈机制。可以用第 61 案例的线程池来重构这段代码。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_050.html">← 案例 50</a><a href="case_052.html">案例 52 →</a>
+</nav>
+</main>
+</body>
+</html>

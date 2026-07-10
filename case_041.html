@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 41：命令行参数解析器 - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 41：命令行参数解析器</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd">#include &lt;iostream&gt;</td><td class="cmt">标准输入输出流</td></tr>
+<tr><td class="ln">2</td><td class="cd">#include &lt;string&gt;</td><td class="cmt">std::string</td></tr>
+<tr><td class="ln">3</td><td class="cd">#include &lt;vector&gt;</td><td class="cmt">std::vector 动态数组</td></tr>
+<tr><td class="ln">4</td><td class="cd">#include &lt;map&gt;</td><td class="cmt">std::map 键值对</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">6</td><td class="cd">using namespace std;</td><td class="cmt">全局使用 std 命名空间</td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">8</td><td class="cd">struct ArgParser {</td><td class="cmt">参数解析器结构体，封装解析逻辑</td></tr>
+<tr><td class="ln">9</td><td class="cd">    map&lt;string, string&gt; options;</td><td class="cmt">存储键值对 --key=value</td></tr>
+<tr><td class="ln">10</td><td class="cd">    vector&lt;string&gt; positional;</td><td class="cmt">存储位置参数（无前缀的参数）</td></tr>
+<tr><td class="ln">11</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">12</td><td class="cd">    void parse(int argc, char* argv[]) {</td><td class="cmt">解析函数：argc=参数数量，argv=参数数组</td></tr>
+<tr><td class="ln">13</td><td class="cd">        for (int i = 1; i &lt; argc; i++) {</td><td class="cmt">跳过 argv[0]（程序名本身）</td></tr>
+<tr><td class="ln">14</td><td class="cd">            string arg = argv[i];</td><td class="cmt">当前参数转为 string</td></tr>
+<tr><td class="ln">15</td><td class="cd">            if (arg.starts_with("--")) {</td><td class="cmt">检测 -- 开头的命名参数（C++20 starts_with）</td></tr>
+<tr><td class="ln">16</td><td class="cd">                auto pos = arg.find('=');</td><td class="cmt">查找 = 号位置</td></tr>
+<tr><td class="ln">17</td><td class="cd">                if (pos != string::npos) {</td><td class="cmt">找到等号：--key=value 格式</td></tr>
+<tr><td class="ln">18</td><td class="cd">                    string key = arg.substr(2, pos - 2);</td><td class="cmt">提取 key（跳过 --）</td></tr>
+<tr><td class="ln">19</td><td class="cd">                    string val = arg.substr(pos + 1);</td><td class="cmt">提取 value（= 之后全部）</td></tr>
+<tr><td class="ln">20</td><td class="cd">                    options[key] = val;</td><td class="cmt">存入 map</td></tr>
+<tr><td class="ln">21</td><td class="cd">                } else {</td><td class="cmt">没找到等号：--flag 格式（布尔标志）</td></tr>
+<tr><td class="ln">22</td><td class="cd">                    string key = arg.substr(2);</td><td class="cmt">提取 flag 名</td></tr>
+<tr><td class="ln">23</td><td class="cd">                    options[key] = "true";</td><td class="cmt">标志存在即为 true</td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2">                }</td></tr>
+<tr><td class="ln">25</td><td class="cd">            } else if (arg.starts_with("-")) {</td><td class="cmt">检测 - 开头的短选项（-o, -v）</td></tr>
+<tr><td class="ln">26</td><td class="cd">                string key = arg.substr(1);</td><td class="cmt">提取选项名（跳过 -）</td></tr>
+<tr><td class="ln">27</td><td class="cd">                if (i + 1 &lt; argc &amp;&amp; !string(argv[i+1]).starts_with("-")) {</td><td class="cmt">下一个参数不是选项，则是值</td></tr>
+<tr><td class="ln">28</td><td class="cd">                    options[key] = argv[++i];</td><td class="cmt">读取下一个参数作为值，并跳过它</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">                } else {</td></tr>
+<tr><td class="ln">30</td><td class="cd">                    options[key] = "true";</td><td class="cmt">无值则设为 true（布尔标志）</td></tr>
+<tr><td class="ln">31</td><td class="cd" colspan="2">                }</td></tr>
+<tr><td class="ln">32</td><td class="cd">            } else {</td><td class="cmt">不以 - 开头：位置参数</td></tr>
+<tr><td class="ln">33</td><td class="cd">                positional.push_back(arg);</td><td class="cmt">加入位置参数列表</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">38</td><td class="cd">    bool has(const string&amp; key) const {</td><td class="cmt">检查某个选项是否存在</td></tr>
+<tr><td class="ln">39</td><td class="cd">        return options.find(key) != options.end();</td><td class="cmt">map::find 返回迭代器，不存在返回 end()</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">41</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">42</td><td class="cd">    string get(const string&amp; key, const string&amp; def = "") const {</td><td class="cmt">获取选项值，不存在返回默认值</td></tr>
+<tr><td class="ln">43</td><td class="cd">        auto it = options.find(key);</td><td class="cmt">查找 key</td></tr>
+<tr><td class="ln">44</td><td class="cd">        return it != options.end() ? it-&gt;second : def;</td><td class="cmt">三元运算符：找到返回值，否则返回默认值</td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2">};</td></tr>
+<tr><td class="ln">47</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">48</td><td class="cd">int main(int argc, char* argv[]) {</td><td class="cmt">main 函数接收命令行参数</td></tr>
+<tr><td class="ln">49</td><td class="cd">    ArgParser ap;</td><td class="cmt">创建解析器实例</td></tr>
+<tr><td class="ln">50</td><td class="cd">    ap.parse(argc, argv);</td><td class="cmt">解析命令行参数</td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">    cout &lt;&lt; "=== 解析结果 ===" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2">    cout &lt;&lt; "命名参数:" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">54</td><td class="cd">    for (auto&amp; [k, v] : ap.options) {</td><td class="cmt">C++17 结构化绑定遍历 map</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2">        cout &lt;&lt; "  " &lt;&lt; k &lt;&lt; " = " &lt;&lt; v &lt;&lt; endl;</td></tr>
+<tr><td class="ln">56</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">    cout &lt;&lt; "位置参数:" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">59</td><td class="cd">    for (auto&amp; p : ap.positional) {</td><td class="cmt">遍历位置参数</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2">        cout &lt;&lt; "  " &lt;&lt; p &lt;&lt; endl;</td></tr>
+<tr><td class="ln">61</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">62</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">63</td><td class="cd">    if (ap.has("help") || ap.has("h")) {</td><td class="cmt">检查 --help 或 -h 标志</td></tr>
+<tr><td class="ln">64</td><td class="cd" colspan="2">        cout &lt;&lt; "Usage: program [options] &lt;input&gt; &lt;output&gt;" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">65</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">66</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">67</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">68</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>main 函数参数 argc/argv</h3>
+<div class="rule"><strong>语法规则：</strong><strong>argc</strong>（argument count）是参数个数，<strong>argv</strong>（argument vector）是参数字符串数组。<code>argv[0]</code> 始终是程序名本身，真正的参数从 <code>argv[1]</code> 开始。argv 中每个元素是 <code>char*</code>（C 风格字符串），需要时可以转为 <code>std::string</code>。</div>
+<pre class="example"><code>// 测试命令：
+// program.exe --name=Alice --age=25 -v input.txt output.txt
+// argv[0] = "program.exe"
+// argv[1] = "--name=Alice"
+// argv[2] = "--age=25"
+// argv[3] = "-v"
+// argv[4] = "input.txt"
+// argv[5] = "output.txt"</code></pre>
+</div>
+<div class="grammar-item">
+<h3>std::string::starts_with（C++20）</h3>
+<div class="rule"><strong>语法规则：</strong>检查字符串是否以指定前缀开头。C++20 新增，之前需要用 <code>compare(0, n, prefix)</code> 或 <code>rfind(prefix, 0) == 0</code> 替代。同样还有 <code>ends_with</code>。</div>
+<pre class="example"><code>string s = "hello.cpp";
+bool a = s.starts_with("he");   // true
+bool b = s.ends_with(".cpp");    // true
+bool c = s.ends_with(".h");      // false
+// 等价写法（C++17）
+bool d = s.rfind(".cpp") == s.size() - 5;  // true</code></pre>
+</div>
+<div class="grammar-item">
+<h3>std::string::find 和 std::string::npos</h3>
+<div class="rule"><strong>语法规则：</strong><strong>find()</strong> 返回子串首次出现的位置（size_t 类型）。未找到时返回 <code>std::string::npos</code>，这是一个表示“无效位置”的静态常量，实际值为 -1 转为 size_t 的最大值。</div>
+<pre class="example"><code>string s = "key=value";
+size_t pos = s.find('=');
+if (pos != string::npos) {
+    string k = s.substr(0, pos);   // "key"
+    string v = s.substr(pos + 1);  // "value"
+}</code></pre>
+</div>
+<div class="grammar-item">
+<h3>map::find 与 end() 用法</h3>
+<div class="rule"><strong>语法规则：</strong><code>map::find(key)</code> 返回指向该键值对的迭代器。如果 key 不存在，返回 <code>end()</code>。<strong>这是检查 key 是否存在的最佳方式</strong>，比 <code>count(key)</code> 更语义清晰。</div>
+<pre class="example"><code>map<string,int> m = {{"a",1},{"b",2}};
+auto it = m.find("a");
+if (it != m.end()) {
+    cout << it->second;  // 1
+} else {
+    cout << "not found";
+}</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>完整的 CLI 库（CLI11 / cxxopts）：</strong><pre><code>#include "CLI/CLI.hpp"
+CLI::App app{"My Tool"};
+string filename;
+app.add_option("-f,--file", filename, "Input file");
+CLI11_PARSE(app, argc, argv);</code></pre><p>工业级项目推荐使用 CLI11 或 cxxopts 等 header-only 库，它们处理了长短选项、帮助生成、类型验证、默认值等复杂逻辑。</p></li>
+<li><strong>Windows 下的宽字符参数：</strong><pre><code>int wmain(int argc, wchar_t* argv[]) {
+    wstring arg = argv[1];
+}</code></pre><p>Windows 支持宽字符版本 wmain，参数为 wchar_t*，适合处理 Unicode 路径和中文参数。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_040.html">← 案例 40</a><a href="case_042.html">案例 42 →</a>
+</nav>
+</main>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 7：字符串工具（反转/查找/替换） - C++ 100工程案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
+  <div class="stage-title">第一阶段：语法练兵场</div>
+    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
+    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
+    <a href="case_003.html" class="case-link">3. 简易计算器</a>
+    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
+    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
+    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
+    <a href="case_007.html" class="case-link active">7. 字符串工具（反转/查找/替换）</a>
+    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
+    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
+    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
+    <a href="case_011.html" class="case-link">11. </a>
+    <a href="case_012.html" class="case-link">12. </a>
+    <a href="case_013.html" class="case-link">13. </a>
+    <a href="case_014.html" class="case-link">14. </a>
+    <a href="case_015.html" class="case-link">15. </a>
+    <a href="case_016.html" class="case-link">16. </a>
+    <a href="case_017.html" class="case-link">17. </a>
+    <a href="case_018.html" class="case-link">18. </a>
+    <a href="case_019.html" class="case-link">19. </a>
+    <a href="case_020.html" class="case-link">20. </a>
+  <div class="stage-title">第二阶段：STL 熟练工</div>
+    <a href="case_021.html" class="case-link">21. </a>
+    <a href="case_022.html" class="case-link">22. </a>
+    <a href="case_023.html" class="case-link">23. </a>
+    <a href="case_024.html" class="case-link">24. </a>
+    <a href="case_025.html" class="case-link">25. </a>
+    <a href="case_026.html" class="case-link">26. </a>
+    <a href="case_027.html" class="case-link">27. </a>
+    <a href="case_028.html" class="case-link">28. </a>
+    <a href="case_029.html" class="case-link">29. </a>
+    <a href="case_030.html" class="case-link">30. </a>
+    <a href="case_031.html" class="case-link">31. </a>
+    <a href="case_032.html" class="case-link">32. </a>
+    <a href="case_033.html" class="case-link">33. </a>
+    <a href="case_034.html" class="case-link">34. </a>
+    <a href="case_035.html" class="case-link">35. </a>
+    <a href="case_036.html" class="case-link">36. </a>
+    <a href="case_037.html" class="case-link">37. </a>
+    <a href="case_038.html" class="case-link">38. </a>
+    <a href="case_039.html" class="case-link">39. </a>
+    <a href="case_040.html" class="case-link">40. </a>
+  <div class="stage-title">第三阶段：实用小工具</div>
+    <a href="case_041.html" class="case-link">41. </a>
+    <a href="case_042.html" class="case-link">42. </a>
+    <a href="case_043.html" class="case-link">43. </a>
+    <a href="case_044.html" class="case-link">44. </a>
+    <a href="case_045.html" class="case-link">45. </a>
+    <a href="case_046.html" class="case-link">46. </a>
+    <a href="case_047.html" class="case-link">47. </a>
+    <a href="case_048.html" class="case-link">48. </a>
+    <a href="case_049.html" class="case-link">49. </a>
+    <a href="case_050.html" class="case-link">50. </a>
+    <a href="case_051.html" class="case-link">51. </a>
+    <a href="case_052.html" class="case-link">52. </a>
+    <a href="case_053.html" class="case-link">53. </a>
+    <a href="case_054.html" class="case-link">54. </a>
+    <a href="case_055.html" class="case-link">55. </a>
+    <a href="case_056.html" class="case-link">56. </a>
+    <a href="case_057.html" class="case-link">57. </a>
+    <a href="case_058.html" class="case-link">58. </a>
+    <a href="case_059.html" class="case-link">59. </a>
+    <a href="case_060.html" class="case-link">60. </a>
+  <div class="stage-title">第四阶段：工程能力锻造</div>
+    <a href="case_061.html" class="case-link">61. </a>
+    <a href="case_062.html" class="case-link">62. </a>
+    <a href="case_063.html" class="case-link">63. </a>
+    <a href="case_064.html" class="case-link">64. </a>
+    <a href="case_065.html" class="case-link">65. </a>
+    <a href="case_066.html" class="case-link">66. </a>
+    <a href="case_067.html" class="case-link">67. </a>
+    <a href="case_068.html" class="case-link">68. </a>
+    <a href="case_069.html" class="case-link">69. </a>
+    <a href="case_070.html" class="case-link">70. </a>
+    <a href="case_071.html" class="case-link">71. </a>
+    <a href="case_072.html" class="case-link">72. </a>
+    <a href="case_073.html" class="case-link">73. </a>
+    <a href="case_074.html" class="case-link">74. </a>
+    <a href="case_075.html" class="case-link">75. </a>
+    <a href="case_076.html" class="case-link">76. </a>
+    <a href="case_077.html" class="case-link">77. </a>
+    <a href="case_078.html" class="case-link">78. </a>
+    <a href="case_079.html" class="case-link">79. </a>
+    <a href="case_080.html" class="case-link">80. </a>
+    <a href="case_081.html" class="case-link">81. </a>
+    <a href="case_082.html" class="case-link">82. </a>
+    <a href="case_083.html" class="case-link">83. </a>
+    <a href="case_084.html" class="case-link">84. </a>
+    <a href="case_085.html" class="case-link">85. </a>
+  <div class="stage-title">第五阶段：综合项目</div>
+    <a href="case_086.html" class="case-link">86. </a>
+    <a href="case_087.html" class="case-link">87. </a>
+    <a href="case_088.html" class="case-link">88. </a>
+    <a href="case_089.html" class="case-link">89. </a>
+    <a href="case_090.html" class="case-link">90. </a>
+    <a href="case_091.html" class="case-link">91. </a>
+    <a href="case_092.html" class="case-link">92. </a>
+    <a href="case_093.html" class="case-link">93. </a>
+    <a href="case_094.html" class="case-link">94. </a>
+    <a href="case_095.html" class="case-link">95. </a>
+    <a href="case_096.html" class="case-link">96. </a>
+    <a href="case_097.html" class="case-link">97. </a>
+    <a href="case_098.html" class="case-link">98. </a>
+    <a href="case_099.html" class="case-link">99. </a>
+    <a href="case_100.html" class="case-link">100. </a>
+</nav>
+
+    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
+    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+
+    <main class="content">
+        <div class="top-nav">
+            <a href="case_006.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_008.html" class="nav-link">下一个 →</a>
+        </div>
+
+        <h1>案例 7：字符串工具（反转/查找/替换）</h1>
+
+        <section class="section">
+            <h2>完整代码（带逐行注释）</h2>
+            <div class="code-container">
+                
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include <iostream></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include <string>     // string 类型</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>#include <algorithm>  // reverse()</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>// 反转字符串（返回新字符串，不修改原串）</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>string reverseStr(const string& s) {</code></span>
+                        <span class="line-comment">const string& — 常量引用，避免拷贝且保证不修改原串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>    string result = s;       // string 支持直接用 = 复制</code></span>
+                        <span class="line-comment">string 类型重载了 operator=，可以直接赋值来复制字符串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code>    reverse(result.begin(), result.end());</code></span>
+                        <span class="line-comment">reverse() 接受两个迭代器，原地反转区间内的元素</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>    return result;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>}</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>// 查找子串出现次数</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>int countOccurrences(const string& text, const string& pattern) {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>    if (pattern.empty()) return 0;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code>    int count = 0;</code></span>
+                        <span class="line-comment">size_t 是无符号整型，用于表示大小和索引</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>    size_t pos = 0;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>    // find 返回找到的位置，找不到返回 string::npos</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code>    while ((pos = text.find(pattern, pos)) != string::npos) {</code></span>
+                        <span class="line-comment">find(pattern, pos) 从 pos 位置开始查找，返回首次出现的位置</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>        count++;</code></span>
+                        <span class="line-comment">string::npos 是 find 找不到时返回的特殊值（通常为 size_t 的最大值）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code>        pos += pattern.length();  // 跳过已匹配的部分</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>    }</code></span>
+                        <span class="line-comment">pattern.length() 返回字符串的长度</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>    return count;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code>}</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>// 替换所有匹配子串</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code>string replaceAll(string text, const string& from, const string& to) {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code>    if (from.empty()) return text;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>    size_t pos = 0;</code></span>
+                        <span class="line-comment">replace(pos, len, str) 从 pos 开始删除 len 个字符，然后插入 str</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>    while ((pos = text.find(from, pos)) != string::npos) {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>        text.replace(pos, from.length(), to);</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>        pos += to.length();  // 跳过新插入的文本</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>    }</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>    return text;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>}</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code>    string s = "Hello C++ World! C++ is great.";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>    cout << "原始: " << s << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">41</span>
+                        <span class="line-code"><code>    cout << "反转: " << reverseStr(s) << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">42</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">43</span>
+                        <span class="line-code"><code>    // substr(pos, len) — 从 pos 开始取 len 个字符</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">44</span>
+                        <span class="line-code"><code>    cout << "子串: " << s.substr(6, 3) << endl;  // "C++"</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">45</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">46</span>
+                        <span class="line-code"><code>    // find — 查找子串</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">47</span>
+                        <span class="line-code"><code>    size_t found = s.find("C++");</code></span>
+                        <span class="line-comment">substr(pos, len) 提取子串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">48</span>
+                        <span class="line-code"><code>    if (found != string::npos) {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">49</span>
+                        <span class="line-code"><code>        cout << "第一次出现 \"C++\" 的位置: " << found << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">50</span>
+                        <span class="line-code"><code>    }</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">51</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">52</span>
+                        <span class="line-code"><code>    cout << "\"C++\" 出现次数: " << countOccurrences(s, "C++") << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">53</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">54</span>
+                        <span class="line-code"><code>    cout << "替换后: " << replaceAll(s, "C++", "C Plus Plus") << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">55</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">56</span>
+                        <span class="line-code"><code>    // 大小写转换</code></span>
+                        <span class="line-comment">char& 是对字符的引用，通过引用可以直接修改原字符串中的字符</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">57</span>
+                        <span class="line-code"><code>    string upper = s;</code></span>
+                        <span class="line-comment">toupper(c) 将字符转为大写（需 #include <cctype>，但有些编译器内置）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">58</span>
+                        <span class="line-code"><code>    for (char& c : upper) c = toupper(c);  // char& 引用，修改会反映到原串</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">59</span>
+                        <span class="line-code"><code>    cout << "大写: " << upper << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">60</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">61</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">62</span>
+                        <span class="line-code"><code>}</code></span>
+                        
+                    </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>新语法讲解</h2>
+            <div class="grammar-container">
+                
+                <div class="grammar-item">
+                    <h3>std::string 常用操作</h3>
+                    <div class="rule-box">C++ 的 string 类型远比 C 风格字符串安全方便。常用操作：`s.length()` / `s.size()` 获取长度；`s.empty()` 判空；`s.clear()` 清空；`s += t` 拼接；`s == t` 比较。</div>
+                    <pre><code>string a = "Hello";
+a += " World";       // "Hello World"
+if (a == "Hello") ... // 直接用 == 比较内容</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>引用 &</h3>
+                    <div class="rule-box">引用是变量的别名，`int& r = x` 之后对 r 的操作等价于对 x 的操作。引用必须在定义时初始化，且不能改变绑定。const 引用可以绑定到临时对象，延长其生命周期。</div>
+                    <pre><code>int x = 10;
+int& r = x;   // r 是 x 的别名
+r = 20;       // x 也变成 20
+const int& cr = 42;  // 合法，const引用绑定临时值</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>size_t 类型</h3>
+                    <div class="rule-box">`size_t` 定义在 `<cstddef>` 中，是 `sizeof` 运算符的返回类型，一个无符号整数。用于表示大小、计数、索引。注意：`size_t` 不会为负数，循环减到负数会回绕。</div>
+                    <pre><code>for (size_t i = v.size(); i-- > 0; )  // 安全反向遍历
+    cout << v[i];</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>举一反三</h2>
+            <div class="extend-container">
+                
+                <div class="extend-item">
+                    <h4>判断回文串</h4>
+                    <p>用 reverseStr + 比较，或者双指针法</p>
+                    <p><strong>思路：</strong>palindrome 函数</p>
+                </div>
+                <div class="extend-item">
+                    <h4>字符串分割</h4>
+                    <p>用 find + substr 按分隔符分割</p>
+                    <p><strong>思路：</strong>split(s, ',') → vector<string></p>
+                </div>
+                <div class="extend-item">
+                    <h4>去除首尾空格 (trim)</h4>
+                    <p>find_first_not_of / find_last_not_of + substr</p>
+                    <p><strong>思路：</strong>trim 工具函数</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="bottom-nav">
+            <a href="case_006.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_008.html" class="nav-link">下一个 →</a>
+        </div>
+    </main>
+</body>
+</html>

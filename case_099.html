@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 99：高并发聊天服务器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_098.html">← 上一案例</a>    <span class="sep">|</span>
+            <a href="case_100.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 99：高并发聊天服务器</h1><section class="intro"><p>用 epoll 边缘触发 + 线程池 + 非阻塞 IO 实现支持数万并发连接的实时聊天服务器，理解 C10K 问题解决方案。</p><p><strong>核心知识点：</strong>epoll(EPOLLET)、非阻塞IO(fcntl)、线程池(条件变量)、SO_REUSEADDR、广播消息</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 99：高并发聊天服务器（epoll + 线程池）
+// 使用 Linux epoll 多路复用 + 线程池，支持数万并发连接。
+// 这是 C10K/C10M 级别性能的入门实践。
+// 需在 Linux 编译：g++ -std=c++17 -pthread chat_server.cpp -o chat_server
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;queue&gt;
+#include &lt;functional&gt;
+#include &lt;atomic&gt;
+#include &lt;condition_variable&gt;
+#include &lt;cstring&gt;
+#include &lt;algorithm&gt;
+
+#include &lt;sys/epoll.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+const int MAX_EVENTS = 10000;
+const int PORT = 8888;
+const int THREAD_COUNT = 4;
+
+// --- 设置非阻塞 ---
+int setNonblocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}
+
+// --- 线程池 ---
+class ThreadPool {
+    std::vector&lt;std::thread&gt; workers;
+    std::queue&lt;std::function&lt;void()&gt;&gt; tasks;
+    std::mutex mtx;
+    std::condition_variable cv;
+    std::atomic&lt;bool&gt; stop{false};
+
+public:
+    ThreadPool(int n) {
+        for (int i = 0; i &lt; n; i++)
+            workers.emplace_back([this] {
+                while (true) {
+                    std::function&lt;void()&gt; task;
+                    {
+                        std::unique_lock&lt;std::mutex&gt; lock(mtx);
+                        cv.wait(lock, [this] { return stop || !tasks.empty(); });
+                        if (stop &amp;&amp; tasks.empty()) return;
+                        task = std::move(tasks.front());
+                        tasks.pop();
+                    }
+                    task();
+                }
+            });
+    }
+
+    void submit(std::function&lt;void()&gt; f) {
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(mtx);
+            tasks.push(std::move(f));
+        }
+        cv.notify_one();
+    }
+
+    ~ThreadPool() {
+        stop = true;
+        cv.notify_all();
+        for (auto&amp; t : workers) t.join();
+    }
+};
+
+// --- 客户端集合（线程安全）---
+std::vector&lt;int&gt; clients;
+std::mutex clientsMutex;
+
+void broadcast(const std::string&amp; msg, int senderFd) {
+    std::lock_guard&lt;std::mutex&gt; lock(clientsMutex);
+    for (int fd : clients) {
+        if (fd != senderFd)
+            send(fd, msg.c_str(), msg.size(), 0);
+    }
+}
+
+// --- 处理客户端消息 ---
+void handleMessage(int fd) {
+    char buf[4096];
+    int n = recv(fd, buf, sizeof(buf) - 1, 0);
+
+    if (n &lt;= 0) {
+        // 客户端断开
+        std::cout &lt;&lt; &quot;[断开] fd=&quot; &lt;&lt; fd &lt;&lt; std::endl;
+        close(fd);
+        {
+            std::lock_guard&lt;std::mutex&gt; lock(clientsMutex);
+            auto it = std::find(clients.begin(), clients.end(), fd);
+            if (it != clients.end()) clients.erase(it);
+        }
+        return;
+    }
+
+    buf[n] = '\0';
+    std::string msg = &quot;[客户端&quot; + std::to_string(fd) + &quot;] &quot; + std::string(buf);
+    std::cout &lt;&lt; &quot;[消息] &quot; &lt;&lt; msg;
+    broadcast(msg, fd);
+}
+
+int main() {
+    // --- 创建 socket ---
+    int listenFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenFd &lt; 0) { perror(&quot;socket&quot;); return 1; }
+
+    // SO_REUSEADDR 允许快速重启服务器
+    int opt = 1;
+    setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &amp;opt, sizeof(opt));
+
+    struct sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(PORT);
+
+    bind(listenFd, (struct sockaddr*)&amp;addr, sizeof(addr));
+    listen(listenFd, SOMAXCONN);
+    setNonblocking(listenFd);
+
+    std::cout &lt;&lt; &quot;=== 高并发聊天服务器 ===\n&quot;;
+    std::cout &lt;&lt; &quot;监听端口: &quot; &lt;&lt; PORT &lt;&lt; &quot; | 工作线程: &quot; &lt;&lt; THREAD_COUNT &lt;&lt; &quot;\n&quot;;
+
+    // --- 创建 epoll ---
+    int epollFd = epoll_create1(0);
+    struct epoll_event ev, events[MAX_EVENTS];
+    ev.events = EPOLLIN | EPOLLET;  // 边缘触发
+    ev.data.fd = listenFd;
+    epoll_ctl(epollFd, EPOLL_CTL_ADD, listenFd, &amp;ev);
+
+    ThreadPool pool(THREAD_COUNT);
+
+    // --- 事件循环 ---
+    while (true) {
+        int n = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+
+        for (int i = 0; i &lt; n; i++) {
+            int fd = events[i].data.fd;
+
+            if (fd == listenFd) {
+                // 新连接
+                while (true) {
+                    struct sockaddr_in clientAddr{};
+                    socklen_t len = sizeof(clientAddr);
+                    int clientFd = accept(listenFd,
+                        (struct sockaddr*)&amp;clientAddr, &amp;len);
+                    if (clientFd &lt; 0) break;
+
+                    setNonblocking(clientFd);
+                    ev.events = EPOLLIN | EPOLLET;
+                    ev.data.fd = clientFd;
+                    epoll_ctl(epollFd, EPOLL_CTL_ADD, clientFd, &amp;ev);
+
+                    {
+                        std::lock_guard&lt;std::mutex&gt; lock(clientsMutex);
+                        clients.push_back(clientFd);
+                    }
+                    std::cout &lt;&lt; &quot;[连接] fd=&quot; &lt;&lt; clientFd
+                              &lt;&lt; &quot; 来自 &quot; &lt;&lt; inet_ntoa(clientAddr.sin_addr)
+                              &lt;&lt; &quot; (当前 &quot; &lt;&lt; clients.size() &lt;&lt; &quot; 人)&quot; &lt;&lt; std::endl;
+                }
+            } else {
+                // 客户端消息 -&gt; 提交到线程池
+                pool.submit([fd] { handleMessage(fd); });
+            }
+        }
+    }
+
+    close(epollFd);
+    close(listenFd);
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：epoll 多路复用（边缘触发 EPOLLET）</h3><pre class="code-block"><code class="language-cpp">int epollFd = epoll_create1(0);
+struct epoll_event ev, events[MAX_EVENTS];
+ev.events = EPOLLIN | EPOLLET;  // 边缘触发：只在状态变化时通知
+ev.data.fd = fd;
+epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &amp;ev);
+
+while (true) {
+    int n = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+    for (int i = 0; i &lt; n; i++) {
+        int fd = events[i].data.fd;
+        // 处理 ready 的 fd
+    }
+}</code></pre><p class="tip">举一反三：epoll 是 Linux 上 O(1) 复杂度的事件通知机制。EPOLLET（边缘触发）比 EPOLLLT（水平触发）性能更高，但要求 fd 设为非阻塞，且每次读到 EAGAIN 才算读空。select/poll 是 O(n) 遍历，连接上万时性能急剧下降。</p>
+<h3>语法规则：非阻塞 IO + fcntl</h3><pre class="code-block"><code class="language-cpp">#include &lt;fcntl.h&gt;
+int flags = fcntl(fd, F_GETFL, 0);
+fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+// 现在 recv() 不会阻塞了：无数据立即返回 -1 + EAGAIN
+int n = recv(fd, buf, size, 0);
+if (n &lt; 0 &amp;&amp; errno == EAGAIN) { /* 暂时没数据，稍后再试 */ }</code></pre><p class="tip">举一反三：非阻塞 IO + epoll 是高性能网络服务器的标准组合。没有非阻塞的话，一个慢客户端就能阻塞整个事件循环。边缘触发模式下必须用非阻塞，否则可能丢事件。</p>
+<h3>语法规则：ThreadPool 生产者-消费者模型</h3><pre class="code-block"><code class="language-cpp">class ThreadPool {
+    std::queue&lt;std::function&lt;void()&gt;&gt; tasks;  // 共享任务队列
+    std::mutex mtx;
+    std::condition_variable cv;
+    
+    void submit(std::function&lt;void()&gt; f) {
+        { std::lock_guard lock(mtx); tasks.push(f); }
+        cv.notify_one();  // 唤醒一个等待线程
+    }
+};</code></pre><p class="tip">举一反三：这个线程池是「生产者-消费者」模型。epoll 线程生产任务入队，工作线程消费出队执行。进阶可以用无锁队列（moodycamel::ConcurrentQueue）减少锁竞争，或用 work-stealing（每个线程有自己的队列，空闲时偷别人的）。</p></section></main></body></html>

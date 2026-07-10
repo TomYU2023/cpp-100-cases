@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 78：简易性能剖析器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_077.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_079.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 78：简易性能剖析器</h1><section class="intro"><p>用 RAII + chrono 实现轻量级函数性能统计，支持按总耗时排序报告，堪比 Python cProfile。</p><p><strong>核心知识点：</strong>RAII、性能剖析、chrono 高精度计时、structured binding C++17、iomanip 格式化</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 78：简易性能剖析器（Profiler）
+// 使用 RAII 和 chrono 实现一个函数级性能计时器，类似 Python 的 cProfile。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;chrono&gt;
+#include &lt;unordered_map&gt;
+#include &lt;algorithm&gt;
+#include &lt;iomanip&gt;
+
+/* 语法规则：性能剖析（Profiling）
+   Profiling 回答三个问题：
+   1. 哪个函数最耗时？（热点分析）
+   2. 函数被调用了多少次？
+   3. 每次调用平均耗时多少？
+
+   常用工具：
+   - perf (Linux): perf record ./app &amp;&amp; perf report
+   - Instruments (macOS)
+   - Visual Studio Profiler (Windows)
+   - Valgrind/Callgrind (Linux)
+   本案例实现的是一个轻量级代码内嵌 Profiler，适合快速定位瓶颈。
+
+   计时原理：
+     auto start = high_resolution_clock::now();
+     // ... 被测代码 ...
+     auto end = high_resolution_clock::now();
+     auto duration = end - start;
+
+   举一反三：生产环境常用的 Profiler（如 Tracy、Optick）支持
+   多线程、GPU、网络、内存等维度的可视化分析，比本案例强大得多，
+   但核心思想相同：记录时间戳 + 统计聚合。
+*/
+
+// RAII 计时器：构造时开始计时，析构时记录结果
+class ScopedTimer {
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = Clock::time_point;
+
+    std::string funcName;
+    TimePoint start;
+
+    // 全局统计表：函数名 → {总耗时, 调用次数}
+    static std::unordered_map&lt;std::string,
+        std::pair&lt;long long, int&gt;&gt;&amp; stats() {
+        static std::unordered_map&lt;std::string, std::pair&lt;long long, int&gt;&gt; s;
+        return s;
+    }
+
+public:
+    explicit ScopedTimer(std::string name)
+        : funcName(std::move(name)), start(Clock::now()) {}
+
+    ~ScopedTimer() {
+        auto end = Clock::now();
+        auto duration = std::chrono::duration_cast&lt;
+            std::chrono::microseconds&gt;(end - start).count();  // 微秒
+
+        auto&amp; [total, count] = stats()[funcName];
+        total += duration;
+        count += 1;
+    }
+
+    // 打印统计报告
+    static void report() {
+        // 转为 vector 以排序
+        std::vector&lt;std::tuple&lt;std::string, long long, int&gt;&gt; entries;
+        for (auto&amp; [name, pair] : stats()) {
+            entries.emplace_back(name, pair.first, pair.second);
+        }
+
+        // 按总耗时降序排序
+        std::sort(entries.begin(), entries.end(),
+            [](auto&amp; a, auto&amp; b) { return std::get&lt;1&gt;(a) &gt; std::get&lt;1&gt;(b); });
+
+        std::cout &lt;&lt; &quot;\n========== 性能分析报告 ==========&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; std::left &lt;&lt; std::setw(20) &lt;&lt; &quot;函数名&quot;
+                  &lt;&lt; std::right &lt;&lt; std::setw(12) &lt;&lt; &quot;总耗时(μs)&quot;
+                  &lt;&lt; std::setw(10) &lt;&lt; &quot;调用次数&quot;
+                  &lt;&lt; std::setw(12) &lt;&lt; &quot;平均(μs)&quot; &lt;&lt; std::endl;
+        std::cout &lt;&lt; std::string(54, '-') &lt;&lt; std::endl;
+
+        for (auto&amp; [name, total, count] : entries) {
+            std::cout &lt;&lt; std::left &lt;&lt; std::setw(20) &lt;&lt; name
+                      &lt;&lt; std::right &lt;&lt; std::setw(12) &lt;&lt; total
+                      &lt;&lt; std::setw(10) &lt;&lt; count
+                      &lt;&lt; std::setw(12) &lt;&lt; (total / count) &lt;&lt; std::endl;
+        }
+        std::cout &lt;&lt; &quot;=====================================&quot; &lt;&lt; std::endl;
+    }
+};
+
+// 配合宏使用更简洁
+#define PROFILE_SCOPE(name) ScopedTimer _timer_##__LINE__(name)
+
+// 假装是业务代码
+void heavyCalculation() {
+    PROFILE_SCOPE(&quot;heavyCalculation&quot;);
+    long long sum = 0;
+    for (int i = 0; i &lt; 1000000; ++i) sum += i;  // 模拟计算
+}
+
+void lightWork() {
+    PROFILE_SCOPE(&quot;lightWork&quot;);
+    volatile int x = 42; (void)x;
+}
+
+void mixedWork() {
+    PROFILE_SCOPE(&quot;mixedWork&quot;);
+    heavyCalculation();
+    lightWork();
+    heavyCalculation();  // 调用两次
+}
+
+int main() {
+    std::cout &lt;&lt; &quot;运行性能剖析...&quot; &lt;&lt; std::endl;
+
+    mixedWork();
+    heavyCalculation();
+    lightWork();
+
+    ScopedTimer::report();
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：RAII（资源获取即初始化）</h3><pre class="code-block"><code class="language-cpp">// RAII：将资源生命周期绑定到对象生命周期
+class FileGuard {
+  FILE* f;
+public:
+  FileGuard(const char* path) : f(fopen(path, &quot;r&quot;)) {}
+  ~FileGuard() { if (f) fclose(f); }  // 离开作用域自动关闭
+};
+// C++ 标准库中大量使用：unique_ptr, lock_guard, ifstream 等</code></pre><p class="tip">💡 举一反三：RAII 是 C++ 最重要的惯用法，没有之一。它解决了其他语言需要 try-finally 或 defer 才能解决的问题。任何时候你需要"获取-使用-释放"模式，就写一个 RAII 类。</p>
+<h3>语法规则：结构体绑定（C++17）与 auto& [a, b]</h3><pre class="code-block"><code class="language-cpp">std::pair&lt;int, std::string&gt; p = {1, &quot;hello&quot;};
+auto&amp; [id, name] = p;  // id=1, name=&quot;hello&quot;
+// 也可以用 auto [id, name] = p; 获取副本</code></pre><p class="tip">💡 举一反三：C++17 结构化绑定让 pair/tuple 解包变得优雅。注意 & 表示引用，不加 & 是副本。const auto& 表示只读引用。</p>
+<h3>语法规则：std::setw + std::left/right 格式化输出</h3><pre class="code-block"><code class="language-cpp">std::cout &lt;&lt; std::left &lt;&lt; std::setw(20) &lt;&lt; &quot;Name&quot;
+          &lt;&lt; std::right &lt;&lt; std::setw(10) &lt;&lt; 12345;
+// 输出: Name                    12345</code></pre><p class="tip">💡 举一反三：<iomanip> 提供了 setw/setfill/setprecision/fixed 等操纵符。setw 只对下一个输出有效，其他操纵符是持久的。</p></section></main></body></html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 62：内存池实现 - C++ 100 案例</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; display:flex; min-height:100vh; background:#0d1117; color:#c9d1d9; }
+.sidebar { width:260px; background:#161b22; border-right:1px solid #30363d; position:fixed; top:0; left:0; bottom:0; overflow-y:auto; z-index:100; }
+.sidebar-header { padding:20px; border-bottom:1px solid #30363d; }
+.sidebar-header h2 { color:#58a6ff; font-size:18px; }
+.nav-list { list-style:none; }
+.nav-stage { border-bottom:1px solid #21262d; }
+.stage-title { display:block; padding:12px 20px; font-size:13px; font-weight:700; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.nav-cases { list-style:none; }
+.nav-cases li {  }
+.nav-cases li a { display:block; padding:6px 20px 6px 32px; font-size:13px; color:#8b949e; text-decoration:none; transition:all 0.15s; }
+.nav-cases li a:hover { color:#58a6ff; background:#1c2128; }
+.nav-cases li.active a { color:#58a6ff; background:#1f2937; border-left:3px solid #58a6ff; padding-left:29px; }
+.main { margin-left:260px; flex:1; padding:40px; max-width:1100px; }
+.case-header { margin-bottom:30px; }
+.case-header h1 { font-size:28px; color:#58a6ff; margin-bottom:8px; }
+.case-header .meta { font-size:14px; color:#8b949e; }
+.case-header .meta span { background:#21262d; padding:3px 10px; border-radius:12px; margin-right:8px; }
+h2 { color:#f0f6fc; font-size:20px; margin:30px 0 15px; padding-bottom:8px; border-bottom:1px solid #30363d; }
+h3 { color:#f0f6fc; font-size:16px; margin:20px 0 10px; }
+.section-desc { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px 20px; margin-bottom:20px; line-height:1.7; font-size:14px; }
+.section-desc code { background:#30363d; padding:2px 6px; border-radius:4px; font-size:13px; color:#f0883e; }
+.code-block { background:#161b22; border:1px solid #30363d; border-radius:8px; overflow:hidden; margin-bottom:20px; }
+.code-block .code-header { background:#21262d; padding:8px 16px; font-size:12px; color:#8b949e; border-bottom:1px solid #30363d; }
+.code-block pre { padding:16px; overflow-x:auto; margin:0; }
+.code-block code { font-family:'Cascadia Code','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
+.line { display:flex; min-height:22px; }
+.line .ln { color:#484f58; text-align:right; padding-right:16px; min-width:44px; user-select:none; flex-shrink:0; }
+.line .cc { flex:1; white-space:pre-wrap; word-break:break-all; }
+.line .comment { color:#6e7681; }
+.comment-block { background:#0d1117; border-left:3px solid #58a6ff; padding:12px 16px; margin:8px 0; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; }
+.comment-block strong { color:#58a6ff; }
+.grammar-box { background:#1a2332; border:1px solid #1f6feb; border-radius:8px; padding:20px; margin-bottom:20px; }
+.grammar-box .grammar-title { color:#58a6ff; font-size:15px; font-weight:700; margin-bottom:10px; }
+.grammar-box .grammar-rule { background:#0d1117; border-radius:6px; padding:12px 16px; font-family:'Cascadia Code',monospace; font-size:13px; margin-bottom:10px; }
+.grammar-box .grammar-example { margin-bottom:8px; }
+.grammar-box .grammar-example pre { background:#0d1117; border-radius:6px; padding:12px 16px; font-size:13px; margin:5px 0; }
+.grammar-box .grammar-tips { color:#8b949e; font-size:13px; margin-top:8px; }
+.grammar-box .grammar-tips ul { padding-left:20px; }
+.grammar-box .grammar-tips li { margin:4px 0; }
+.keyword { color:#ff7b72; }
+.string { color:#a5d6ff; }
+.func { color:#d2a8ff; }
+.type { color:#ffa657; }
+.number { color:#79c0ff; }
+.op { color:#ff7b72; }
+.macro { color:#8b949e; }
+a { color:#58a6ff; text-decoration:none; }
+a:hover { text-decoration:underline; }
+.bottom-nav { display:flex; justify-content:space-between; margin-top:40px; padding-top:20px; border-top:1px solid #30363d; }
+.bottom-nav a { background:#21262d; padding:10px 20px; border-radius:6px; font-size:14px; transition:background 0.15s; }
+.bottom-nav a:hover { background:#30363d; text-decoration:none; }
+</style>
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header"><h2>C++ 100 案例</h2></div>
+  <ul class="nav-list">
+    <li class="nav-stage"><span class="stage-title">语法练兵场</span>
+      <ul class="nav-cases">
+        <li><a href="case_001.html">案例 1</a></li>
+        <li><a href="case_002.html">案例 2</a></li>
+        <li><a href="case_003.html">案例 3</a></li>
+        <li><a href="case_004.html">案例 4</a></li>
+        <li><a href="case_005.html">案例 5</a></li>
+        <li><a href="case_006.html">案例 6</a></li>
+        <li><a href="case_007.html">案例 7</a></li>
+        <li><a href="case_008.html">案例 8</a></li>
+        <li><a href="case_009.html">案例 9</a></li>
+        <li><a href="case_010.html">案例 10</a></li>
+        <li><a href="case_011.html">案例 11</a></li>
+        <li><a href="case_012.html">案例 12</a></li>
+        <li><a href="case_013.html">案例 13</a></li>
+        <li><a href="case_014.html">案例 14</a></li>
+        <li><a href="case_015.html">案例 15</a></li>
+        <li><a href="case_016.html">案例 16</a></li>
+        <li><a href="case_017.html">案例 17</a></li>
+        <li><a href="case_018.html">案例 18</a></li>
+        <li><a href="case_019.html">案例 19</a></li>
+        <li><a href="case_020.html">案例 20</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">STL 熟练工</span>
+      <ul class="nav-cases">
+        <li><a href="case_021.html">案例 21</a></li>
+        <li><a href="case_022.html">案例 22</a></li>
+        <li><a href="case_023.html">案例 23</a></li>
+        <li><a href="case_024.html">案例 24</a></li>
+        <li><a href="case_025.html">案例 25</a></li>
+        <li><a href="case_026.html">案例 26</a></li>
+        <li><a href="case_027.html">案例 27</a></li>
+        <li><a href="case_028.html">案例 28</a></li>
+        <li><a href="case_029.html">案例 29</a></li>
+        <li><a href="case_030.html">案例 30</a></li>
+        <li><a href="case_031.html">案例 31</a></li>
+        <li><a href="case_032.html">案例 32</a></li>
+        <li><a href="case_033.html">案例 33</a></li>
+        <li><a href="case_034.html">案例 34</a></li>
+        <li><a href="case_035.html">案例 35</a></li>
+        <li><a href="case_036.html">案例 36</a></li>
+        <li><a href="case_037.html">案例 37</a></li>
+        <li><a href="case_038.html">案例 38</a></li>
+        <li><a href="case_039.html">案例 39</a></li>
+        <li><a href="case_040.html">案例 40</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">实用小工具</span>
+      <ul class="nav-cases">
+        <li><a href="case_041.html">案例 41</a></li>
+        <li><a href="case_042.html">案例 42</a></li>
+        <li><a href="case_043.html">案例 43</a></li>
+        <li><a href="case_044.html">案例 44</a></li>
+        <li><a href="case_045.html">案例 45</a></li>
+        <li><a href="case_046.html">案例 46</a></li>
+        <li><a href="case_047.html">案例 47</a></li>
+        <li><a href="case_048.html">案例 48</a></li>
+        <li><a href="case_049.html">案例 49</a></li>
+        <li><a href="case_050.html">案例 50</a></li>
+        <li><a href="case_051.html">案例 51</a></li>
+        <li><a href="case_052.html">案例 52</a></li>
+        <li><a href="case_053.html">案例 53</a></li>
+        <li><a href="case_054.html">案例 54</a></li>
+        <li><a href="case_055.html">案例 55</a></li>
+        <li><a href="case_056.html">案例 56</a></li>
+        <li><a href="case_057.html">案例 57</a></li>
+        <li><a href="case_058.html">案例 58</a></li>
+        <li><a href="case_059.html">案例 59</a></li>
+        <li><a href="case_060.html">案例 60</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">工程能力锻造</span>
+      <ul class="nav-cases">
+        <li><a href="case_061.html">案例 61</a></li>
+        <li class="active"><a href="case_062.html">案例 62</a></li>
+        <li><a href="case_063.html">案例 63</a></li>
+        <li><a href="case_064.html">案例 64</a></li>
+        <li><a href="case_065.html">案例 65</a></li>
+        <li><a href="case_066.html">案例 66</a></li>
+        <li><a href="case_067.html">案例 67</a></li>
+        <li><a href="case_068.html">案例 68</a></li>
+        <li><a href="case_069.html">案例 69</a></li>
+        <li><a href="case_070.html">案例 70</a></li>
+        <li><a href="case_071.html">案例 71</a></li>
+        <li><a href="case_072.html">案例 72</a></li>
+        <li><a href="case_073.html">案例 73</a></li>
+        <li><a href="case_074.html">案例 74</a></li>
+        <li><a href="case_075.html">案例 75</a></li>
+        <li><a href="case_076.html">案例 76</a></li>
+        <li><a href="case_077.html">案例 77</a></li>
+        <li><a href="case_078.html">案例 78</a></li>
+        <li><a href="case_079.html">案例 79</a></li>
+        <li><a href="case_080.html">案例 80</a></li>
+        <li><a href="case_081.html">案例 81</a></li>
+        <li><a href="case_082.html">案例 82</a></li>
+        <li><a href="case_083.html">案例 83</a></li>
+        <li><a href="case_084.html">案例 84</a></li>
+        <li><a href="case_085.html">案例 85</a></li>
+      </ul>
+    </li>
+    <li class="nav-stage"><span class="stage-title">综合项目</span>
+      <ul class="nav-cases">
+        <li><a href="case_086.html">案例 86</a></li>
+        <li><a href="case_087.html">案例 87</a></li>
+        <li><a href="case_088.html">案例 88</a></li>
+        <li><a href="case_089.html">案例 89</a></li>
+        <li><a href="case_090.html">案例 90</a></li>
+        <li><a href="case_091.html">案例 91</a></li>
+        <li><a href="case_092.html">案例 92</a></li>
+        <li><a href="case_093.html">案例 93</a></li>
+        <li><a href="case_094.html">案例 94</a></li>
+        <li><a href="case_095.html">案例 95</a></li>
+        <li><a href="case_096.html">案例 96</a></li>
+        <li><a href="case_097.html">案例 97</a></li>
+        <li><a href="case_098.html">案例 98</a></li>
+        <li><a href="case_099.html">案例 99</a></li>
+        <li><a href="case_100.html">案例 100</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+<main class="main">
+<div class="case-header">
+<h1>案例 62：内存池实现</h1>
+<div class="meta">
+<span>阶段：工程能力锻造</span><span>难度：⭐⭐⭐⭐</span><span>练什么：内存管理、placement new</span>
+</div>
+</div>
+
+<div class="section-desc">手写固定大小的内存池，预分配大块内存，按需切分小块分配。理解 malloc/free 的底层原理，消除频繁 new/delete 的开销。</div>
+
+<h2>完整代码与逐行注释</h2>
+<div class="code-block">
+<div class="code-header">case_062.cpp</div>
+<pre><code><div class="line"><span class="ln">1</span><span class="cc">#include &lt;iostream&gt;</span></div>
+<div class="line"><span class="ln">2</span><span class="cc">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="ln">3</span><span class="cc">#include &lt;cstdint&gt;</span></div>
+<div class="comment-block">💬 <strong>第3行：</strong>uintptr_t 类型</div>
+<div class="line"><span class="ln">4</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">5</span><span class="cc">// 固定大小内存池</span></div>
+<div class="line"><span class="ln">6</span><span class="cc">template&lt;size_t BlockSize, size_t BlockCount = 1024&gt;</span></div>
+<div class="comment-block">💬 <strong>第6行：</strong>模板参数：块大小 + 块数量</div>
+<div class="line"><span class="ln">7</span><span class="cc">class MemoryPool {</span></div>
+<div class="line"><span class="ln">8</span><span class="cc">    static_assert(BlockSize &gt;= sizeof(void*),</span></div>
+<div class="comment-block">💬 <strong>第8行：</strong>编译期断言：块至少能放下一个指针</div>
+<div class="line"><span class="ln">9</span><span class="cc">        &quot;BlockSize must be &gt;= sizeof(void*)&quot;);</span></div>
+<div class="line"><span class="ln">10</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">11</span><span class="cc">    union Block {</span></div>
+<div class="comment-block">💬 <strong>第11行：</strong>union：同一内存位置存储不同数据类型</div>
+<div class="line"><span class="ln">12</span><span class="cc">        char data[BlockSize];</span></div>
+<div class="comment-block">💬 <strong>第12行：</strong>当块被使用时：存储用户数据</div>
+<div class="line"><span class="ln">13</span><span class="cc">        Block* next;</span></div>
+<div class="comment-block">💬 <strong>第13行：</strong>当块空闲时：存放下一个空闲块指针</div>
+<div class="line"><span class="ln">14</span><span class="cc">    };</span></div>
+<div class="line"><span class="ln">15</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">16</span><span class="cc">    std::vector&lt;Block&gt; pool;</span></div>
+<div class="comment-block">💬 <strong>第16行：</strong>用 vector 管理大块内存，自动 RAII</div>
+<div class="line"><span class="ln">17</span><span class="cc">    Block* freeList = nullptr;</span></div>
+<div class="comment-block">💬 <strong>第17行：</strong>空闲链表头指针</div>
+<div class="line"><span class="ln">18</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">19</span><span class="cc">public:</span></div>
+<div class="line"><span class="ln">20</span><span class="cc">    MemoryPool() {</span></div>
+<div class="line"><span class="ln">21</span><span class="cc">        pool.resize(BlockCount);</span></div>
+<div class="comment-block">💬 <strong>第21行：</strong>预分配所有块</div>
+<div class="line"><span class="ln">22</span><span class="cc">        // 初始化空闲链表：把所有块串起来</span></div>
+<div class="line"><span class="ln">23</span><span class="cc">        for (size_t i = 0; i &lt; BlockCount - 1; ++i) {</span></div>
+<div class="line"><span class="ln">24</span><span class="cc">            pool[i].next = &amp;pool[i + 1];</span></div>
+<div class="comment-block">💬 <strong>第24行：</strong>每块 next 指向下一块</div>
+<div class="line"><span class="ln">25</span><span class="cc">        }</span></div>
+<div class="line"><span class="ln">26</span><span class="cc">        pool[BlockCount - 1].next = nullptr;</span></div>
+<div class="comment-block">💬 <strong>第26行：</strong>最后一块 next 为 null</div>
+<div class="line"><span class="ln">27</span><span class="cc">        freeList = &amp;pool[0];</span></div>
+<div class="comment-block">💬 <strong>第27行：</strong>空闲链表指向第一块</div>
+<div class="line"><span class="ln">28</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">29</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">30</span><span class="cc">    void* allocate() {</span></div>
+<div class="line"><span class="ln">31</span><span class="cc">        if (!freeList) throw std::bad_alloc();</span></div>
+<div class="comment-block">💬 <strong>第31行：</strong>无空闲块 → 抛异常</div>
+<div class="line"><span class="ln">32</span><span class="cc">        void* ptr = freeList;</span></div>
+<div class="comment-block">💬 <strong>第32行：</strong>取链表头部</div>
+<div class="line"><span class="ln">33</span><span class="cc">        freeList = freeList-&gt;next;</span></div>
+<div class="comment-block">💬 <strong>第33行：</strong>头指针后移</div>
+<div class="line"><span class="ln">34</span><span class="cc">        return ptr;</span></div>
+<div class="comment-block">💬 <strong>第34行：</strong>返回可用内存</div>
+<div class="line"><span class="ln">35</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">36</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">37</span><span class="cc">    void deallocate(void* ptr) {</span></div>
+<div class="line"><span class="ln">38</span><span class="cc">        if (!ptr) return;</span></div>
+<div class="comment-block">💬 <strong>第38行：</strong>空指针不处理</div>
+<div class="line"><span class="ln">39</span><span class="cc">        auto block = static_cast&lt;Block*&gt;(ptr);</span></div>
+<div class="comment-block">💬 <strong>第39行：</strong>还原为 Block 类型</div>
+<div class="line"><span class="ln">40</span><span class="cc">        block-&gt;next = freeList;</span></div>
+<div class="comment-block">💬 <strong>第40行：</strong>头插法归还到空闲链表</div>
+<div class="line"><span class="ln">41</span><span class="cc">        freeList = block;</span></div>
+<div class="line"><span class="ln">42</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">43</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">44</span><span class="cc">    // 便捷接口：分配 + 构造</span></div>
+<div class="line"><span class="ln">45</span><span class="cc">    template&lt;typename T, typename... Args&gt;</span></div>
+<div class="line"><span class="ln">46</span><span class="cc">    T* create(Args&amp;&amp;... args) {</span></div>
+<div class="line"><span class="ln">47</span><span class="cc">        void* mem = allocate();</span></div>
+<div class="comment-block">💬 <strong>第47行：</strong>从内存池分配</div>
+<div class="line"><span class="ln">48</span><span class="cc">        return new (mem) T(std::forward&lt;Args&gt;(args)...);</span></div>
+<div class="comment-block">💬 <strong>第48行：</strong>placement new 在已分配内存构造对象</div>
+<div class="line"><span class="ln">49</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">50</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">51</span><span class="cc">    // 便捷接口：析构 + 归还</span></div>
+<div class="line"><span class="ln">52</span><span class="cc">    template&lt;typename T&gt;</span></div>
+<div class="line"><span class="ln">53</span><span class="cc">    void destroy(T* ptr) {</span></div>
+<div class="line"><span class="ln">54</span><span class="cc">        if (ptr) {</span></div>
+<div class="line"><span class="ln">55</span><span class="cc">            ptr-&gt;~T();</span></div>
+<div class="comment-block">💬 <strong>第55行：</strong>手动调用析构函数</div>
+<div class="line"><span class="ln">56</span><span class="cc">            deallocate(ptr);</span></div>
+<div class="comment-block">💬 <strong>第56行：</strong>归还内存</div>
+<div class="line"><span class="ln">57</span><span class="cc">        }</span></div>
+<div class="line"><span class="ln">58</span><span class="cc">    }</span></div>
+<div class="line"><span class="ln">59</span><span class="cc">};</span></div>
+<div class="line"><span class="ln">60</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">61</span><span class="cc">// 测试用的简单类</span></div>
+<div class="line"><span class="ln">62</span><span class="cc">struct Widget {</span></div>
+<div class="line"><span class="ln">63</span><span class="cc">    int id;</span></div>
+<div class="line"><span class="ln">64</span><span class="cc">    double value;</span></div>
+<div class="line"><span class="ln">65</span><span class="cc">    Widget(int i, double v) : id(i), value(v) {}</span></div>
+<div class="line"><span class="ln">66</span><span class="cc">    ~Widget() { std::cout &lt;&lt; &quot;Widget &quot; &lt;&lt; id &lt;&lt; &quot; destroyed\n&quot;; }</span></div>
+<div class="line"><span class="ln">67</span><span class="cc">};</span></div>
+<div class="line"><span class="ln">68</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">69</span><span class="cc">int main() {</span></div>
+<div class="line"><span class="ln">70</span><span class="cc">    MemoryPool&lt;sizeof(Widget), 4&gt; pool;</span></div>
+<div class="comment-block">💬 <strong>第70行：</strong>创建能存放 4 个 Widget 的内存池</div>
+<div class="line"><span class="ln">71</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">72</span><span class="cc">    auto w1 = pool.create&lt;Widget&gt;(1, 3.14);</span></div>
+<div class="comment-block">💬 <strong>第72行：</strong>从内存池构造 Widget</div>
+<div class="line"><span class="ln">73</span><span class="cc">    auto w2 = pool.create&lt;Widget&gt;(2, 2.71);</span></div>
+<div class="line"><span class="ln">74</span><span class="cc">    std::cout &lt;&lt; &quot;w1: id=&quot; &lt;&lt; w1-&gt;id &lt;&lt; &quot;, val=&quot; &lt;&lt; w1-&gt;value &lt;&lt; std::endl;</span></div>
+<div class="line"><span class="ln">75</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">76</span><span class="cc">    pool.destroy(w1);</span></div>
+<div class="comment-block">💬 <strong>第76行：</strong>析构并归还内存</div>
+<div class="line"><span class="ln">77</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">78</span><span class="cc">    auto w3 = pool.create&lt;Widget&gt;(3, 1.41);</span></div>
+<div class="comment-block">💬 <strong>第78行：</strong>复用 w1 归还的内存</div>
+<div class="line"><span class="ln">79</span><span class="cc">    std::cout &lt;&lt; &quot;w3: id=&quot; &lt;&lt; w3-&gt;id &lt;&lt; std::endl;</span></div>
+<div class="line"><span class="ln">80</span><span class="cc"> </span></div>
+<div class="line"><span class="ln">81</span><span class="cc">    pool.destroy(w2);</span></div>
+<div class="line"><span class="ln">82</span><span class="cc">    pool.destroy(w3);</span></div>
+<div class="line"><span class="ln">83</span><span class="cc">    return 0;</span></div>
+<div class="comment-block">💬 <strong>第83行：</strong>内存池析构时 vector 自动释放所有块</div>
+<div class="line"><span class="ln">84</span><span class="cc">}</span></div></code></pre>
+</div>
+
+<div class="grammar-box">
+<div class="grammar-title">📖 语法规则：placement new</div>
+<div class="grammar-rule"><code>new (address) Type(args);  // 在已分配内存上构造对象</code></div>
+<div class="grammar-example">
+<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
+<pre><code>char buf[100];
+new (buf) int(42);  // 在 buf 上构造一个 int
+// 注意：placement new 不分配内存，只在已有内存上调用构造函数</code></pre>
+</div>
+<div class="grammar-tips">
+<p>💡 举一反三：</p>
+<ul><li>placement new 返回的就是传入的地址</li><li>placement new 构造的对象不能 delete，要手动调用析构：obj->~T()</li><li>常用于内存池、嵌入式等场景</li></ul>
+</div>
+</div>
+
+<div class="grammar-box">
+<div class="grammar-title">📖 语法规则：链表管理空闲块</div>
+<div class="grammar-rule"><code>将空闲块的首部用作链表节点的 next 指针</code></div>
+<div class="grammar-example">
+<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
+<pre><code>struct Block { Block* next; };
+Block* freeList;
+void* alloc() {
+  Block* b = freeList;
+  freeList = freeList->next;
+  return b;
+}</code></pre>
+</div>
+<div class="grammar-tips">
+<p>💡 举一反三：</p>
+<ul><li>每个块至少 sizeof(void*) 大，否则放不下 next 指针</li><li>这就是 malloc 底层 jemalloc/tcmalloc 的核心思想</li><li>空闲链表是侵入式数据结构——数据本身承载指针</li></ul>
+</div>
+</div>
+
+<div class="bottom-nav">
+<a href='case_061.html'>← 案例 61</a>
+<a href='case_063.html'>案例 63 →</a>
+</div>
+</main>
+</body>
+</html>

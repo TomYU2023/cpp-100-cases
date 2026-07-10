@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 5：数组去重 + 排序 - C++ 100工程案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
+  <div class="stage-title">第一阶段：语法练兵场</div>
+    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
+    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
+    <a href="case_003.html" class="case-link">3. 简易计算器</a>
+    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
+    <a href="case_005.html" class="case-link active">5. 数组去重 + 排序</a>
+    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
+    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
+    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
+    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
+    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
+    <a href="case_011.html" class="case-link">11. </a>
+    <a href="case_012.html" class="case-link">12. </a>
+    <a href="case_013.html" class="case-link">13. </a>
+    <a href="case_014.html" class="case-link">14. </a>
+    <a href="case_015.html" class="case-link">15. </a>
+    <a href="case_016.html" class="case-link">16. </a>
+    <a href="case_017.html" class="case-link">17. </a>
+    <a href="case_018.html" class="case-link">18. </a>
+    <a href="case_019.html" class="case-link">19. </a>
+    <a href="case_020.html" class="case-link">20. </a>
+  <div class="stage-title">第二阶段：STL 熟练工</div>
+    <a href="case_021.html" class="case-link">21. </a>
+    <a href="case_022.html" class="case-link">22. </a>
+    <a href="case_023.html" class="case-link">23. </a>
+    <a href="case_024.html" class="case-link">24. </a>
+    <a href="case_025.html" class="case-link">25. </a>
+    <a href="case_026.html" class="case-link">26. </a>
+    <a href="case_027.html" class="case-link">27. </a>
+    <a href="case_028.html" class="case-link">28. </a>
+    <a href="case_029.html" class="case-link">29. </a>
+    <a href="case_030.html" class="case-link">30. </a>
+    <a href="case_031.html" class="case-link">31. </a>
+    <a href="case_032.html" class="case-link">32. </a>
+    <a href="case_033.html" class="case-link">33. </a>
+    <a href="case_034.html" class="case-link">34. </a>
+    <a href="case_035.html" class="case-link">35. </a>
+    <a href="case_036.html" class="case-link">36. </a>
+    <a href="case_037.html" class="case-link">37. </a>
+    <a href="case_038.html" class="case-link">38. </a>
+    <a href="case_039.html" class="case-link">39. </a>
+    <a href="case_040.html" class="case-link">40. </a>
+  <div class="stage-title">第三阶段：实用小工具</div>
+    <a href="case_041.html" class="case-link">41. </a>
+    <a href="case_042.html" class="case-link">42. </a>
+    <a href="case_043.html" class="case-link">43. </a>
+    <a href="case_044.html" class="case-link">44. </a>
+    <a href="case_045.html" class="case-link">45. </a>
+    <a href="case_046.html" class="case-link">46. </a>
+    <a href="case_047.html" class="case-link">47. </a>
+    <a href="case_048.html" class="case-link">48. </a>
+    <a href="case_049.html" class="case-link">49. </a>
+    <a href="case_050.html" class="case-link">50. </a>
+    <a href="case_051.html" class="case-link">51. </a>
+    <a href="case_052.html" class="case-link">52. </a>
+    <a href="case_053.html" class="case-link">53. </a>
+    <a href="case_054.html" class="case-link">54. </a>
+    <a href="case_055.html" class="case-link">55. </a>
+    <a href="case_056.html" class="case-link">56. </a>
+    <a href="case_057.html" class="case-link">57. </a>
+    <a href="case_058.html" class="case-link">58. </a>
+    <a href="case_059.html" class="case-link">59. </a>
+    <a href="case_060.html" class="case-link">60. </a>
+  <div class="stage-title">第四阶段：工程能力锻造</div>
+    <a href="case_061.html" class="case-link">61. </a>
+    <a href="case_062.html" class="case-link">62. </a>
+    <a href="case_063.html" class="case-link">63. </a>
+    <a href="case_064.html" class="case-link">64. </a>
+    <a href="case_065.html" class="case-link">65. </a>
+    <a href="case_066.html" class="case-link">66. </a>
+    <a href="case_067.html" class="case-link">67. </a>
+    <a href="case_068.html" class="case-link">68. </a>
+    <a href="case_069.html" class="case-link">69. </a>
+    <a href="case_070.html" class="case-link">70. </a>
+    <a href="case_071.html" class="case-link">71. </a>
+    <a href="case_072.html" class="case-link">72. </a>
+    <a href="case_073.html" class="case-link">73. </a>
+    <a href="case_074.html" class="case-link">74. </a>
+    <a href="case_075.html" class="case-link">75. </a>
+    <a href="case_076.html" class="case-link">76. </a>
+    <a href="case_077.html" class="case-link">77. </a>
+    <a href="case_078.html" class="case-link">78. </a>
+    <a href="case_079.html" class="case-link">79. </a>
+    <a href="case_080.html" class="case-link">80. </a>
+    <a href="case_081.html" class="case-link">81. </a>
+    <a href="case_082.html" class="case-link">82. </a>
+    <a href="case_083.html" class="case-link">83. </a>
+    <a href="case_084.html" class="case-link">84. </a>
+    <a href="case_085.html" class="case-link">85. </a>
+  <div class="stage-title">第五阶段：综合项目</div>
+    <a href="case_086.html" class="case-link">86. </a>
+    <a href="case_087.html" class="case-link">87. </a>
+    <a href="case_088.html" class="case-link">88. </a>
+    <a href="case_089.html" class="case-link">89. </a>
+    <a href="case_090.html" class="case-link">90. </a>
+    <a href="case_091.html" class="case-link">91. </a>
+    <a href="case_092.html" class="case-link">92. </a>
+    <a href="case_093.html" class="case-link">93. </a>
+    <a href="case_094.html" class="case-link">94. </a>
+    <a href="case_095.html" class="case-link">95. </a>
+    <a href="case_096.html" class="case-link">96. </a>
+    <a href="case_097.html" class="case-link">97. </a>
+    <a href="case_098.html" class="case-link">98. </a>
+    <a href="case_099.html" class="case-link">99. </a>
+    <a href="case_100.html" class="case-link">100. </a>
+</nav>
+
+    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
+    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+
+    <main class="content">
+        <div class="top-nav">
+            <a href="case_004.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_006.html" class="nav-link">下一个 →</a>
+        </div>
+
+        <h1>案例 5：数组去重 + 排序</h1>
+
+        <section class="section">
+            <h2>完整代码（带逐行注释）</h2>
+            <div class="code-container">
+                
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include <iostream></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include <algorithm>  // sort(), unique()</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>#include <vector>     // vector</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>    // 初始化一个包含重复元素的数组</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>    int arr[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code>    int n = sizeof(arr) / sizeof(arr[0]);</code></span>
+                        <span class="line-comment">初始化列表 {} 是 C++11 语法，用于初始化数组</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code></code></span>
+                        <span class="line-comment">sizeof(arr) 返回整个数组的字节数，sizeof(arr[0]) 是单个元素的字节数，相除得到元素个数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>    cout << "原始数组：";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code>    for (int i = 0; i < n; i++) cout << arr[i] << " ";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code></code></span>
+                        <span class="line-comment">arr[i] 通过下标访问第 i 个元素（从 0 开始）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>    // 第一步：排序（sort 底层是快速排序，O(n log n)）</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>    sort(arr, arr + n);</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code></code></span>
+                        <span class="line-comment">sort(起始指针, 结束指针) — 数组名退化为首元素指针，arr+n 是 past-the-end 指针</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>    cout << "\n排序后：";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>    for (int i = 0; i < n; i++) cout << arr[i] << " ";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>    // 第二步：去重（unique 把重复元素移到末尾，返回新结尾的迭代器）</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code>    int* newEnd = unique(arr, arr + n);</code></span>
+                        <span class="line-comment">unique 返回一个指针，指向去重后逻辑结尾的下一个位置</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>    // newEnd 指向去重后数组的"逻辑末尾"</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>    int newSize = newEnd - arr;</code></span>
+                        <span class="line-comment">指针相减得到两个地址之间的元素个数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>    cout << "\n去重后：";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>    for (int i = 0; i < newSize; i++) cout << arr[i] << " ";</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code>    cout << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>    // ====== 用 vector 实现的版本（更现代） ======</code></span>
+                        <span class="line-comment">vector<int> 是可动态增长的数组容器</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>    vector<int> vec = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};</code></span>
+                        <span class="line-comment">vec.begin() 返回指向第一个元素的迭代器，vec.end() 指向末尾之后</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>    sort(vec.begin(), vec.end());</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>    // erase + unique 组合拳：真正删除重复元素</code></span>
+                        <span class="line-comment">erase(first, last) 删除 [first, last) 范围内的元素</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>    vec.erase(unique(vec.begin(), vec.end()), vec.end());</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>    cout << "vector 版去重排序：";</code></span>
+                        <span class="line-comment">for (int x : vec) 是范围 for 循环，遍历容器中每个元素（C++11）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>    for (int x : vec) cout << x << " ";   // 范围 for 循环（C++11）</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>    cout << endl;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code></code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                        
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>}</code></span>
+                        
+                    </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>新语法讲解</h2>
+            <div class="grammar-container">
+                
+                <div class="grammar-item">
+                    <h3>数组与指针的关系</h3>
+                    <div class="rule-box">数组名在表达式中会退化为指向首元素的指针。`arr` 和 `&arr[0]` 等价。`arr + i` 等价于 `&arr[i]`。</div>
+                    <pre><code>int a[5] = {1,2,3,4,5};
+int* p = a;       // p 指向 a[0]
+cout << *(p+2);   // 输出 3</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>迭代器 (iterator)</h3>
+                    <div class="rule-box">迭代器是泛化的指针，用于遍历容器。`vec.begin()` 返回指向首元素的迭代器，`vec.end()` 返回指向末尾之后。</div>
+                    <pre><code>vector<int> v = {1,2,3};
+for (auto it = v.begin(); it != v.end(); ++it)
+    cout << *it << " ";</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>范围 for 循环 (range-based for)</h3>
+                    <div class="rule-box">`for (类型 变量 : 容器)` 自动遍历容器中的每个元素。C++11 引入，是最简洁的遍历方式。</div>
+                    <pre><code>vector<string> names = {"Alice","Bob"};
+for (const string& s : names) cout << s;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>举一反三</h2>
+            <div class="extend-container">
+                
+                <div class="extend-item">
+                    <h4>手动去重（不用 STL）</h4>
+                    <p>用两个指针，慢指针指向已去重部分的末尾</p>
+                    <p><strong>思路：</strong>双指针技巧，O(n) 时间 O(1) 额外空间</p>
+                </div>
+                <div class="extend-item">
+                    <h4>去重并统计频率</h4>
+                    <p>用 map<int,int> 记录每个元素的出现次数</p>
+                    <p><strong>思路：</strong>用 frequency[num]++ 模式</p>
+                </div>
+                <div class="extend-item">
+                    <h4>对自定义类型去重</h4>
+                    <p>为自定义 struct 定义 operator== 和 operator<</p>
+                    <p><strong>思路：</strong>sort 和 unique 都需要比较运算</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="bottom-nav">
+            <a href="case_004.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_006.html" class="nav-link">下一个 →</a>
+        </div>
+    </main>
+</body>
+</html>

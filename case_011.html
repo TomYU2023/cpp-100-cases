@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 11：字符串类（手写 String） - C++ 100工程案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
+  <div class="stage-title">第一阶段：语法练兵场</div>
+    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
+    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
+    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
+    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
+    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
+    <a href="case_006.html" class="case-link ">6. 动态数组实现（手写 Vector）</a>
+    <a href="case_007.html" class="case-link ">7. 字符串工具（反转/查找/替换）</a>
+    <a href="case_008.html" class="case-link ">8. 统计文本文件中字符/单词频率</a>
+    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统（结构体版）</a>
+    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
+    <a href="case_011.html" class="case-link active">11. 字符串类（手写 String）</a>
+    <a href="case_012.html" class="case-link ">12. 银行账户类（封装 + 友元）</a>
+    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
+    <a href="case_014.html" class="case-link ">14. 模板函数：交换/比较/求和</a>
+    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
+    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
+    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
+    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
+    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr实战</a>
+    <a href="case_020.html" class="case-link ">20. variant + optional小工具</a>
+  <div class="stage-title">第二阶段：STL 熟练工</div>
+    <a href="case_021.html" class="case-link ">21. vector深入：自定义分配器</a>
+    <a href="case_022.html" class="case-link ">22. map实战：电话号码簿</a>
+    <a href="case_023.html" class="case-link ">23. unordered_map实现LRU缓存</a>
+    <a href="case_024.html" class="case-link ">24. set交集/并集/差集运算器</a>
+    <a href="case_025.html" class="case-link ">25. priority_queue任务调度器</a>
+    <a href="case_026.html" class="case-link ">26. deque滑动窗口工具</a>
+    <a href="case_027.html" class="case-link ">27. sort + stable_sort对比实验</a>
+    <a href="case_028.html" class="case-link ">28. find_if / count_if条件筛选器</a>
+    <a href="case_029.html" class="case-link ">29. transform批量数据转换</a>
+    <a href="case_030.html" class="case-link ">30. accumulate / reduce聚合计算</a>
+    <a href="case_031.html" class="case-link ">31. partition实现快排分区</a>
+    <a href="case_032.html" class="case-link ">32. next_permutation全排列生成器</a>
+    <a href="case_033.html" class="case-link ">33. string_view零拷贝字符串分析</a>
+    <a href="case_034.html" class="case-link ">34. chrono计时器/性能测试</a>
+    <a href="case_035.html" class="case-link ">35. filesystem文件遍历/查找器</a>
+    <a href="case_036.html" class="case-link ">36. regex日志解析器</a>
+    <a href="case_037.html" class="case-link ">37. thread入门：并行求和</a>
+    <a href="case_038.html" class="case-link ">38. mutex + lock_guard线程安全计数器</a>
+    <a href="case_039.html" class="case-link ">39. condition_variable生产者-消费者</a>
+    <a href="case_040.html" class="case-link ">40. future + async异步任务框架</a>
+  <div class="stage-title">第三阶段：实用小工具</div>
+    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
+    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
+    <a href="case_043.html" class="case-link ">43. 文件MD5/SHA256校验工具</a>
+    <a href="case_044.html" class="case-link ">44. Base64编解码器</a>
+    <a href="case_045.html" class="case-link ">45. JSON解析器（递归下降）</a>
+    <a href="case_046.html" class="case-link ">46. CSV读写工具</a>
+    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
+    <a href="case_048.html" class="case-link ">48. 配置文件.ini/.toml读写器</a>
+    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
+    <a href="case_050.html" class="case-link ">50. 压缩/解压工具（zlib封装）</a>
+    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
+    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
+    <a href="case_053.html" class="case-link ">53. 简易Markdown转HTML</a>
+    <a href="case_054.html" class="case-link ">54. SQLite数据库封装</a>
+    <a href="case_055.html" class="case-link ">55. 简易WebSocket客户端</a>
+    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
+    <a href="case_057.html" class="case-link ">57. 简易Ping工具</a>
+    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
+    <a href="case_059.html" class="case-link ">59. 进程内存使用监控</a>
+    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
+  <div class="stage-title">第四阶段：工程能力锻造</div>
+    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
+    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
+    <a href="case_063.html" class="case-link ">63. 无锁队列（CAS原子操作）</a>
+    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
+    <a href="case_065.html" class="case-link ">65. TCP聊天室</a>
+    <a href="case_066.html" class="case-link ">66. HTTP静态文件服务器</a>
+    <a href="case_067.html" class="case-link ">67. REST API客户端封装</a>
+    <a href="case_068.html" class="case-link ">68. gRPC服务端/客户端</a>
+    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
+    <a href="case_070.html" class="case-link ">70. 策略模式：排序策略可插拔</a>
+    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
+    <a href="case_072.html" class="case-link ">72. 装饰器模式：日志/计时包装器</a>
+    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做系统</a>
+    <a href="case_074.html" class="case-link ">74. 状态机：TCP连接状态管理</a>
+    <a href="case_075.html" class="case-link ">75. CMake构建的项目骨架</a>
+    <a href="case_076.html" class="case-link ">76. 单元测试框架集成（Google Test）</a>
+    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
+    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
+    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
+    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
+    <a href="case_081.html" class="case-link ">81. 插件系统（动态加载DLL/SO）</a>
+    <a href="case_082.html" class="case-link ">82. 简易脚本引擎（表达式求值）</a>
+    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
+    <a href="case_084.html" class="case-link ">84. 连接池（数据库连接复用）</a>
+    <a href="case_085.html" class="case-link ">85. 简易Redis客户端</a>
+  <div class="stage-title">第五阶段：综合项目</div>
+    <a href="case_086.html" class="case-link ">86. 命令行TODO管理器</a>
+    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
+    <a href="case_088.html" class="case-link ">88. 简易Git实现</a>
+    <a href="case_089.html" class="case-link ">89. 键值数据库（LSM-Tree）</a>
+    <a href="case_090.html" class="case-link ">90. 简易Nginx（HTTP反向代理）</a>
+    <a href="case_091.html" class="case-link ">91. 协程库（有栈协程）</a>
+    <a href="case_092.html" class="case-link ">92. 脚本语言解释器（Lox/Tiny）</a>
+    <a href="case_093.html" class="case-link ">93. 2D游戏引擎基础</a>
+    <a href="case_094.html" class="case-link ">94. 简易数据库（SQL解析+执行）</a>
+    <a href="case_095.html" class="case-link ">95. 分布式KV存储（Raft共识）</a>
+    <a href="case_096.html" class="case-link ">96. 简易Docker（Namespaces+Cgroups）</a>
+    <a href="case_097.html" class="case-link ">97. LLVM Pass插件</a>
+    <a href="case_098.html" class="case-link ">98. 简易Tensor库（前向推理）</a>
+    <a href="case_099.html" class="case-link ">99. 多人聊天服务器（百万并发）</a>
+    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
+</nav>
+
+    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
+    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+
+    <main class="content">
+        <div class="top-nav">
+            <a href="case_010.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_012.html" class="nav-link">下一个 →</a>
+        </div>
+
+        <h1>案例 11：字符串类（手写 String）</h1>
+
+        <section class="section">
+            <h2>完整代码（带逐行注释）</h2>
+            <div class="code-container">
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
+                        <span class="line-comment">输入输出流</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include &lt;cstring&gt;</code></span>
+                        <span class="line-comment">包含 strlen、strcpy 等 C 风格字符串函数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                        <span class="line-comment">使用标准命名空间</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code>class String {</code></span>
+                        <span class="line-comment">自定义字符串类的声明</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>private:</code></span>
+                        <span class="line-comment">private 成员只能被类内部的函数访问</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>    char* data_;</code></span>
+                        <span class="line-comment">底层用动态字符数组存储字符串内容</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>    size_t size_;</code></span>
+                        <span class="line-comment">size_t 是无符号整数类型，用于表示大小</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>public:</code></span>
+                        <span class="line-comment">public 成员可以从外部访问</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>    String() : data_(nullptr), size_(0) {}</code></span>
+                        <span class="line-comment">初始化列表：冒号后面的 data_(nullptr), size_(0)</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>    String(const char* s) {</code></span>
+                        <span class="line-comment">构造函数接收一个 C 风格字符串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>        size_ = strlen(s);</code></span>
+                        <span class="line-comment">strlen 计算字符串长度（不包括空字符）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>        data_ = new char[size_ + 1];</code></span>
+                        <span class="line-comment">new 在堆上分配内存，+1 用于结尾空字符</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code>        strcpy(data_, s);</code></span>
+                        <span class="line-comment">strcpy 将源字符串复制到目标地址</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code>    String(const String&amp; other) {</code></span>
+                        <span class="line-comment">拷贝构造函数（三法则之一）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>        size_ = other.size_;</code></span>
+                        <span class="line-comment">拷贝大小</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code>        data_ = new char[size_ + 1];</code></span>
+                        <span class="line-comment">分配新内存（深拷贝，不是浅拷贝）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>        strcpy(data_, other.data_);</code></span>
+                        <span class="line-comment">复制内容</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>    String&amp; operator=(const String&amp; other) {</code></span>
+                        <span class="line-comment">拷贝赋值运算符（三法则之二）</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>        if (this == &amp;other) return *this;</code></span>
+                        <span class="line-comment">自赋值检查：如果是自己赋值给自己，直接返回</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code>        delete[] data_;</code></span>
+                        <span class="line-comment">释放旧内存</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code>        size_ = other.size_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>        data_ = new char[size_ + 1];</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>        strcpy(data_, other.data_);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>        return *this;</code></span>
+                        <span class="line-comment">返回当前对象的引用，支持链式赋值</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>    ~String() {</code></span>
+                        <span class="line-comment">析构函数（三法则之三），对象销毁时自动调用</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code>        delete[] data_;</code></span>
+                        <span class="line-comment">释放动态数组，防止内存泄漏</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code>    const char* c_str() const {</code></span>
+                        <span class="line-comment">获取字符串的 C 风格表示</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code>        return data_;</code></span>
+                        <span class="line-comment">返回 const char*，外部不能修改</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">40</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">41</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">42</span>
+                        <span class="line-code"><code>    size_t length() const { return size_; }</code></span>
+                        <span class="line-comment">获取长度，内联实现</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">43</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">44</span>
+                        <span class="line-code"><code>    String operator+(const String&amp; other) const {</code></span>
+                        <span class="line-comment">+ 运算符重载，拼接字符串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">45</span>
+                        <span class="line-code"><code>        String result;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">46</span>
+                        <span class="line-code"><code>        result.size_ = size_ + other.size_;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">47</span>
+                        <span class="line-code"><code>        result.data_ = new char[result.size_ + 1];</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">48</span>
+                        <span class="line-code"><code>        strcpy(result.data_, data_);</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">49</span>
+                        <span class="line-code"><code>        strcpy(result.data_ + size_, other.data_);</code></span>
+                        <span class="line-comment">指针偏移，追加到末尾</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">50</span>
+                        <span class="line-code"><code>        return result;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">51</span>
+                        <span class="line-code"><code>    }</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">52</span>
+                        <span class="line-code"><code>};</code></span>
+                        <span class="line-comment">类定义结束，必须有分号</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">53</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">54</span>
+                        <span class="line-code"><code>ostream&amp; operator&lt;&lt;(ostream&amp; os, const String&amp; s) {</code></span>
+                        <span class="line-comment">全局函数重载 &lt;&lt; 运算符</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">55</span>
+                        <span class="line-code"><code>    os &lt;&lt; s.c_str();</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">56</span>
+                        <span class="line-code"><code>    return os;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">57</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">58</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">59</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">60</span>
+                        <span class="line-code"><code>    String s1("Hello");</code></span>
+                        <span class="line-comment">调用带参构造函数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">61</span>
+                        <span class="line-code"><code>    String s2(" World");</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">62</span>
+                        <span class="line-code"><code>    String s3 = s1 + s2;</code></span>
+                        <span class="line-comment">调用 operator+ 和拷贝构造</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">63</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">64</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "s1 = " &lt;&lt; s1 &lt;&lt; ", 长度 = " &lt;&lt; s1.length() &lt;&lt; endl;</code></span>
+                        <span class="line-comment">测试输出和长度</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">65</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "s2 = " &lt;&lt; s2 &lt;&lt; ", 长度 = " &lt;&lt; s2.length() &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">66</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "s3 = " &lt;&lt; s3 &lt;&lt; ", 长度 = " &lt;&lt; s3.length() &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">67</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">68</span>
+                        <span class="line-code"><code>    String s4 = s1;</code></span>
+                        <span class="line-comment">调用拷贝构造函数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">69</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "s4（拷贝自 s1）= " &lt;&lt; s4 &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">70</span>
+                        <span class="line-code"><code>    s4 = s2;</code></span>
+                        <span class="line-comment">调用拷贝赋值运算符</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">71</span>
+                        <span class="line-code"><code>    cout &lt;&lt; "s4（赋值为 s2）= " &lt;&lt; s4 &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">72</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">73</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>新语法讲解</h2>
+            <div class="grammar-container">
+                <div class="grammar-item">
+                    <h3>C++ 三法则 (Rule of Three)</h3>
+                    <div class="rule-box">如果一个类定义了<strong>析构函数、拷贝构造函数、拷贝赋值运算符</strong>中的任意一个，那么通常需要同时定义这三个。因为这三个函数都涉及资源管理（如动态内存）。</div>
+                    <pre><code>// 有了析构函数 ~String()
+// 就必须有:
+// String(const String&amp; other)    // 拷贝构造
+// String&amp; operator=(const String&amp;) // 拷贝赋值</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>初始化列表 (: member(value))</h3>
+                    <div class="rule-box">在构造函数体执行<strong>之前</strong>执行的初始化语法。对于 const 成员和引用成员，必须用初始化列表。比在函数体赋值更高效。</div>
+                    <pre><code>class Point {
+    int x_, y_;
+public:
+    Point(int x, int y) : x_(x), y_(y) {}
+};</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>运算符重载 (operator)</h3>
+                    <div class="rule-box">为自定义类型定义运算符行为。语法：<code>返回类型 operator运算符(参数) { ... }</code>。常用重载：+ - * / = == << >> [ ]</div>
+                    <pre><code>class Complex {
+public:
+    Complex operator+(const Complex&amp; o) {
+        return Complex(real+o.real, imag+o.imag);
+    }
+};</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>举一反三</h2>
+            <div class="extend-container">
+                <div class="extend-item">
+                    <h4>实现 operator==</h4>
+                    <p>bool operator==(const String& o) const { return strcmp(data_, o.data_) == 0; }</p>
+                    <p><strong>思路：</strong>strcmp 比较两个 C 字符串，相等返回 0</p>
+                </div>
+                <div class="extend-item">
+                    <h4>支持移动语义（C++11）</h4>
+                    <p>String(String&& o) : data_(o.data_), size_(o.size_) { o.data_ = nullptr; }</p>
+                    <p><strong>思路：</strong>移动构造：直接接管资源，避免深拷贝</p>
+                </div>
+                <div class="extend-item">
+                    <h4>实现下标访问 [ ]</h4>
+                    <p>char& operator[](size_t i) { return data_[i]; }</p>
+                    <p><strong>思路：</strong>让 String 可以像数组一样用 s[0] 访问字符</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="bottom-nav">
+            <a href="case_010.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_012.html" class="nav-link">下一个 →</a>
+        </div>
+    </main>
+</body>
+</html>

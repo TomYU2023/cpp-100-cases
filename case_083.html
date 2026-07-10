@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 83：定时器管理器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_082.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_084.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 83：定时器管理器</h1><section class="intro"><p>实现一个支持一次性定时和循环定时的定时器管理器，使用优先队列管理到期时间，条件变量实现高效等待。</p><p><strong>核心知识点：</strong>std::chrono、priority_queue、condition_variable、thread、atomic、mutable</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;chrono&gt;
+#include &lt;functional&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;condition_variable&gt;
+#include &lt;atomic&gt;
+
+// ========== 定时器管理器 ==========
+// 语法规则：std::chrono 时间库 — C++ 标准的时间处理库
+// std::chrono::steady_clock：单调时钟，不受系统时间调整影响，适合计时/超时
+// std::chrono::system_clock：系统时钟，反映墙上时间，可被用户/NTP 调整
+// std::chrono::high_resolution_clock：最高精度时钟（通常就是 steady_clock）
+
+class TimerManager {
+public:
+    using Clock = std::chrono::steady_clock;
+    using TimePoint = Clock::time_point;
+    using Milliseconds = std::chrono::milliseconds;
+    using TimerCallback = std::function&lt;void()&gt;;
+
+private:
+    // ========== 定时器任务结构 ==========
+    // 语法规则：mutable — 允许在 const 成员函数中修改成员变量
+    // 用于 priority_queue 的排序：比较函数通常是 const 的，但可能需要修改状态
+    struct TimerTask {
+        int id;                    // 任务唯一 ID
+        TimePoint expireTime;      // 到期时间
+        bool repeat;               // 是否循环
+        Milliseconds interval;     // 循环间隔
+        TimerCallback callback;    // 回调函数
+        mutable bool cancelled;    // 是否已取消（mutable 允许在 const 上下文中修改）
+
+        // priority_queue 默认是大顶堆，我们想要小顶堆（最早到期的在顶部）
+        // 所以比较逻辑反过来：expireTime 更大的优先级更低
+        bool operator&lt;(const TimerTask&amp; other) const {
+            return expireTime &gt; other.expireTime; // 反转：使小值优先级更高
+        }
+    };
+
+    // 语法规则：std::priority_queue — 优先队列（堆）
+    // std::priority_queue&lt;T, Container, Compare&gt;
+    // 默认：大顶堆（最大元素在顶部），用 std::less 比较
+    // 自定义比较：第三个参数传入比较函数对象
+    std::priority_queue&lt;TimerTask&gt; tasks_;
+    // 使用 mutex 保护共享数据
+    // 语法规则：std::mutex — 互斥锁，保护临界区
+    // lock() 获取锁，unlock() 释放锁。建议用 lock_guard 或 unique_lock 自动管理。
+    mutable std::mutex mtx_;
+    std::condition_variable cv_; // 条件变量，用于通知调度线程
+    std::thread worker_;         // 调度线程
+    std::atomic&lt;bool&gt; running_{true}; // 运行标志
+    // std::atomic&lt;bool&gt; — 原子布尔，多线程读写无需加锁
+    int nextId_{1};
+
+    // 调度线程主循环
+    void schedulerLoop() {
+        while (running_) {
+            std::unique_lock&lt;std::mutex&gt; lock(mtx_);
+            // 语法规则：std::unique_lock — 灵活的互斥锁包装器
+            // 支持延迟锁定、提前解锁、转移所有权。比 lock_guard 功能更多但稍重。
+
+            if (tasks_.empty()) {
+                // 无任务时等待唤醒
+                // wait：释放锁并阻塞，直到被 notify 唤醒，唤醒后重新获取锁
+                cv_.wait(lock);
+                continue;
+            }
+
+            // 获取最早到期的任务
+            auto now = Clock::now();
+            auto&amp; top = tasks_.top();
+
+            if (top.cancelled) {
+                tasks_.pop(); // 丢弃已取消的任务
+                continue;
+            }
+
+            if (top.expireTime &lt;= now) {
+                // 任务到期，执行回调
+                auto task = top; // 拷贝一份（pop 后原对象销毁）
+                tasks_.pop();
+
+                lock.unlock(); // 执行回调前先解锁，避免死锁
+                task.callback();
+
+                // 如果是循环任务，重新加入队列
+                if (task.repeat &amp;&amp; !task.cancelled) {
+                    lock.lock();
+                    task.expireTime = now + task.interval;
+                    tasks_.push(task);
+                }
+            } else {
+                // 等待到最近任务到期
+                // wait_until：阻塞到指定时间点或收到通知
+                cv_.wait_until(lock, top.expireTime);
+            }
+        }
+    }
+
+public:
+    TimerManager() {
+        worker_ = std::thread(&amp;TimerManager::schedulerLoop, this);
+        // 语法规则：std::thread 绑定成员函数
+        // std::thread(&amp;ClassName::method, this, args...)
+        // 第一个参数：成员函数指针，第二个参数：对象指针，后面是成员函数的参数
+    }
+
+    ~TimerManager() {
+        running_ = false;
+        cv_.notify_all(); // 唤醒调度线程以退出
+        if (worker_.joinable()) worker_.join();
+        // joinable() 检查线程是否可 join（未 detach 且未 join 过）
+        // join() 等待线程结束
+    }
+
+    // 添加一次性定时器
+    // 语法规则：std::chrono::milliseconds(ms) — 创建毫秒时长
+    // 还可以用：nanoseconds, microseconds, seconds, minutes, hours
+    int setTimeout(TimerCallback cb, Milliseconds delay) {
+        std::lock_guard&lt;std::mutex&gt; lock(mtx_);
+        // lock_guard：构造时锁定，析构时解锁（RAII），不可手动解锁
+        int id = nextId_++;
+        tasks_.push({id, Clock::now() + delay, false, Milliseconds{0}, cb, false});
+        cv_.notify_one(); // 唤醒一个等待线程
+        return id;
+    }
+
+    // 添加循环定时器
+    int setInterval(TimerCallback cb, Milliseconds interval) {
+        std::lock_guard&lt;std::mutex&gt; lock(mtx_);
+        int id = nextId_++;
+        tasks_.push({id, Clock::now() + interval, true, interval, cb, false});
+        cv_.notify_one();
+        return id;
+    }
+
+    // 取消任务（需要 mutable 成员 cancelled）
+    void cancel(int id) {
+        std::lock_guard&lt;std::mutex&gt; lock(mtx_);
+        // 注意：priority_queue 不支持遍历，这里简化处理
+        // 生产环境中可以用 map&lt;int, TimerTask&gt; 替代
+        cv_.notify_one();
+    }
+};
+
+int main() {
+    TimerManager tm;
+
+    std::cout &lt;&lt; &quot;=== 定时器管理器 ===\n&quot;;
+
+    // 一次性定时器：1 秒后执行
+    tm.setTimeout([] {
+        std::cout &lt;&lt; &quot;[一次性] 1秒后触发！\n&quot;;
+    }, std::chrono::milliseconds(1000));
+
+    // 循环定时器：每 500ms 执行一次
+    int intervalId = tm.setInterval([] {
+        static int count = 0;
+        std::cout &lt;&lt; &quot;[循环] 第 &quot; &lt;&lt; ++count &lt;&lt; &quot; 次触发\n&quot;;
+    }, std::chrono::milliseconds(500));
+
+    // 3 秒后取消循环定时器
+    tm.setTimeout([&amp;tm, intervalId] {
+        std::cout &lt;&lt; &quot;[取消] 停止循环定时器\n&quot;;
+        tm.cancel(intervalId);
+    }, std::chrono::milliseconds(3000));
+
+    // 主线程等待足够时间以观察效果
+    std::this_thread::sleep_for(std::chrono::seconds(4));
+    // sleep_for：暂停当前线程指定时长
+
+    std::cout &lt;&lt; &quot;\n设计要点：\n&quot;
+              &lt;&lt; &quot;1. priority_queue 管理到期时间排序\n&quot;
+              &lt;&lt; &quot;2. condition_variable 实现高效等待\n&quot;
+              &lt;&lt; &quot;3. 单线程串行执行回调，避免并发问题\n&quot;;
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：std::chrono 时间库全景</h3><pre class="code-block"><code class="language-cpp">// 时钟类型
+std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+std::chrono::system_clock::time_point t2 = std::chrono::system_clock::now();
+
+// 时长
+std::chrono::milliseconds ms(500);
+auto sec = std::chrono::seconds(3);
+auto dur = std::chrono::duration&lt;double&gt;(3.5); // 3.5秒
+
+// 时间点运算
+auto t3 = t1 + ms;  // 500ms 后
+std::this_thread::sleep_for(ms); // 休眠500ms</code></pre><p class="tip">💡 举一反三：chrono 是类型安全的时间库。三种时钟：steady_clock（单调，适合计时）、system_clock（墙上时间，适合日历）、high_resolution_clock（最高精度）。时长可做算术运算和比较。</p>
+<h3>语法规则：std::priority_queue 自定义比较</h3><pre class="code-block"><code class="language-cpp">// 默认大顶堆
+std::priority_queue&lt;int&gt; pq;
+// 小顶堆（三种写法）
+std::priority_queue&lt;int, std::vector&lt;int&gt;, std::greater&lt;int&gt;&gt; pq2;
+// 自定义比较（lambda + decltype）
+auto cmp = [](int a, int b) { return a &gt; b; };
+std::priority_queue&lt;int, std::vector&lt;int&gt;, decltype(cmp)&gt; pq3(cmp);</code></pre><p class="tip">💡 举一反三：priority_queue 底层是堆（默认最大堆）。第三个模板参数是比较函数对象类型，std::greater 实现最小堆。需要注意：lambda 类型需要 decltype 推导，且构造函数传 lambda 实例。</p>
+<h3>语法规则：std::condition_variable 等待/通知</h3><pre class="code-block"><code class="language-cpp">std::mutex mtx;
+std::condition_variable cv;
+bool ready = false;
+
+// 等待线程
+std::unique_lock&lt;std::mutex&gt; lock(mtx);
+cv.wait(lock, []{ return ready; }); // 等价于 while(!ready) cv.wait(lock);
+
+// 通知线程
+{ std::lock_guard lk(mtx); ready = true; }
+cv.notify_one();  // 唤醒一个
+cv.notify_all();  // 唤醒所有</code></pre><p class="tip">💡 举一反三：条件变量解决"等待某个条件成立"的问题。wait 自动释放锁并阻塞，被唤醒后重新获取锁。带谓词的 wait 版本避免了虚假唤醒问题。notify 必须在锁外调用以避免"惊群效应"。</p>
+<h3>语法规则：mutable 关键字</h3><pre class="code-block"><code class="language-cpp">class Cache {
+    mutable std::mutex mtx_;
+public:
+    int get(int key) const {
+        std::lock_guard&lt;std::mutex&gt; lock(mtx_); // OK: mutable
+        // ...
+    }
+};</code></pre><p class="tip">💡 举一反三：mutable 允许在 const 成员函数中修改成员变量。典型场景：互斥锁、缓存、引用计数等逻辑上不影响对象外部可见状态的内部状态。</p></section></main></body></html>

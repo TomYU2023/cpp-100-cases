@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 92：脚本语言解释器</title>    <link rel="stylesheet" href="style.css"></head><body>
+    <nav class="nav-bar">
+        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
+        <div class="nav-links">
+            <a href="case_091.html">← 上一案例</a>
+            <span class="sep">|</span>
+            <a href="case_093.html">下一案例 →</a>
+        </div>
+    </nav><main class="container"><h1>案例 92：脚本语言解释器</h1><section class="intro"><p>实现一个微型脚本语言的词法分析器和递归下降解析器，支持四则运算、变量赋值和 print 输出。</p><p><strong>核心知识点：</strong>递归下降解析、词法分析（tokenize）、符号表（std::map）、操作符优先级、REPL 循环</p></section>
+<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 92：脚本语言解释器（Lox 风格）
+// 实现一个微型脚本语言的词法分析器和表达式求值器。
+// 这是编译原理的绝佳入门项目，理解 tokenize → parse → evaluate 的完整流程。
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;functional&gt;
+#include &lt;sstream&gt;
+#include &lt;stdexcept&gt;
+#include &lt;cmath&gt;
+
+// ─── Token 类型 ──────────────────────────────────
+enum class TokenType {
+    NUMBER, PLUS, MINUS, STAR, SLASH,       // 算术
+    LPAREN, RPAREN,                          // 括号
+    IDENTIFIER, ASSIGN,                      // 变量
+    PRINT, EOF_TOKEN                         // 关键字和结束
+};
+
+struct Token {
+    TokenType type;
+    std::string text;
+    double value;  // 仅 NUMBER 用
+};
+
+// ─── 词法分析器（Lexer）─────────────────────────
+class Lexer {
+    std::string source;
+    size_t pos = 0;
+public:
+    Lexer(const std::string&amp; src) : source(src) {}
+
+    Token next() {
+        skipWhitespace();
+        if (pos &gt;= source.size()) return {TokenType::EOF_TOKEN, &quot;&quot;};
+
+        char c = source[pos];
+
+        // 数字
+        if (isdigit(c)) return number();
+        // 标识符 / 关键字
+        if (isalpha(c) || c == '_') return identifier();
+        // 单字符 Token
+        pos++;
+        switch (c) {
+            case '+': return {TokenType::PLUS, &quot;+&quot;};
+            case '-': return {TokenType::MINUS, &quot;-&quot;};
+            case '*': return {TokenType::STAR, &quot;*&quot;};
+            case '/': return {TokenType::SLASH, &quot;/&quot;};
+            case '(': return {TokenType::LPAREN, &quot;(&quot;};
+            case ')': return {TokenType::RPAREN, &quot;)&quot;};
+            case '=': return {TokenType::ASSIGN, &quot;=&quot;};
+            default: throw std::runtime_error(&quot;未知字符: &quot; + std::string(1,c));
+        }
+    }
+
+private:
+    void skipWhitespace() {
+        while (pos &lt; source.size() &amp;&amp; isspace(source[pos])) pos++;
+    }
+
+    Token number() {
+        size_t start = pos;
+        while (pos &lt; source.size() &amp;&amp; (isdigit(source[pos]) || source[pos]=='.'))
+            pos++;
+        double val = std::stod(source.substr(start, pos - start));
+        return {TokenType::NUMBER, source.substr(start, pos-start), val};
+    }
+
+    Token identifier() {
+        size_t start = pos;
+        while (pos &lt; source.size() &amp;&amp; (isalnum(source[pos]) || source[pos]=='_'))
+            pos++;
+        std::string name = source.substr(start, pos - start);
+        if (name == &quot;print&quot;) return {TokenType::PRINT, name};
+        return {TokenType::IDENTIFIER, name};
+    }
+};
+
+// ─── 解释器 ──────────────────────────────────────
+class Interpreter {
+    std::vector&lt;Token&gt; tokens;
+    size_t pos = 0;
+    std::map&lt;std::string, double&gt; variables;  // 变量表
+
+public:
+    void execute(const std::string&amp; line) {
+        Lexer lexer(line);
+        tokens.clear();
+        pos = 0;
+
+        // Tokenize
+        while (true) {
+            auto t = lexer.next();
+            tokens.push_back(t);
+            if (t.type == TokenType::EOF_TOKEN) break;
+        }
+
+        // 解析并执行
+        try {
+            statement();
+        } catch (const std::exception&amp; e) {
+            std::cerr &lt;&lt; &quot;错误: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+        }
+    }
+
+private:
+    Token peek() { return tokens[pos]; }
+    Token consume() { return tokens[pos++]; }
+
+    void statement() {
+        if (peek().type == TokenType::PRINT) {
+            consume();  // 吃掉 print
+            double result = expression();
+            std::cout &lt;&lt; result &lt;&lt; std::endl;
+        } else if (peek().type == TokenType::IDENTIFIER) {
+            // 赋值: a = 3 + 4
+            std::string name = consume().text;
+            if (peek().type != TokenType::ASSIGN)
+                throw std::runtime_error(&quot;期望 '='&quot;);
+            consume();
+            double val = expression();
+            variables[name] = val;
+            std::cout &lt;&lt; name &lt;&lt; &quot; = &quot; &lt;&lt; val &lt;&lt; std::endl;
+        } else {
+            // 纯表达式
+            std::cout &lt;&lt; expression() &lt;&lt; std::endl;
+        }
+    }
+
+    // 递归下降解析器（operator precedence）
+    double expression() { return additive(); }
+
+    double additive() {
+        double left = multiplicative();
+        while (peek().type == TokenType::PLUS || peek().type == TokenType::MINUS) {
+            char op = consume().text[0];
+            double right = multiplicative();
+            left = (op == '+') ? left + right : left - right;
+        }
+        return left;
+    }
+
+    double multiplicative() {
+        double left = unary();
+        while (peek().type == TokenType::STAR || peek().type == TokenType::SLASH) {
+            char op = consume().text[0];
+            double right = unary();
+            left = (op == '*') ? left * right : left / right;
+        }
+        return left;
+    }
+
+    double unary() {
+        if (peek().type == TokenType::MINUS) {
+            consume();
+            return -primary();
+        }
+        return primary();
+    }
+
+    double primary() {
+        Token t = consume();
+        if (t.type == TokenType::NUMBER) return t.value;
+        if (t.type == TokenType::LPAREN) {
+            double val = expression();
+            if (peek().type != TokenType::RPAREN)
+                throw std::runtime_error(&quot;期望 ')'&quot;);
+            consume();
+            return val;
+        }
+        if (t.type == TokenType::IDENTIFIER) {
+            auto it = variables.find(t.text);
+            if (it == variables.end())
+                throw std::runtime_error(&quot;未定义变量: &quot; + t.text);
+            return it-&gt;second;
+        }
+        throw std::runtime_error(&quot;语法错误&quot;);
+    }
+};
+
+// ─── REPL 主循环 ────────────────────────────────
+int main() {
+    Interpreter interp;
+    std::cout &lt;&lt; &quot;=== Mini 脚本语言 ===\n&quot;;
+    std::cout &lt;&lt; &quot;支持: 四则运算、变量赋值、print 输出\n&quot;;
+    std::cout &lt;&lt; &quot;输入 'quit' 退出\n\n&quot;;
+
+    while (true) {
+        std::cout &lt;&lt; &quot;&gt; &quot;;
+        std::string line;
+        std::getline(std::cin, line);
+        if (line == &quot;quit&quot;) break;
+        if (line.empty()) continue;
+        interp.execute(line);
+    }
+    return 0;
+}</code></pre></section>
+<section class="grammar-section"><h3>语法规则：递归下降解析器（Recursive Descent Parser）</h3><pre class="code-block"><code class="language-cpp">// 每个优先级对应一个函数
+double expression() { return additive(); }      // 最低优先级
+double additive() {                              // + -
+    double left = multiplicative();
+    while (peek() is '+' or '-')
+        left += multiplicative();
+    return left;
+}
+double multiplicative() {                        // * /
+    double left = unary();
+    while (peek() is '*' or '/')
+        left *= unary();
+    return left;
+}
+double unary() { return -primary(); }           // 一元负号
+double primary() { return NUMBER or (expr); }   // 终结符</code></pre><p class="tip">💡 举一反三：递归下降是手写解析器的最经典方法。每个非终结符对应一个函数，内部按 BNF 文法递归调用。优先级由函数调用层级决定：越深的函数（primary）优先级越高。这是 Pratt Parser 和 LL/PEG 的基础。</p>
+<h3>语法规则：std::map 作为符号表</h3><pre class="code-block"><code class="language-cpp">#include &lt;map&gt;
+std::map&lt;std::string, double&gt; variables;
+variables[&quot;x&quot;] = 42;
+auto it = variables.find(&quot;x&quot;);
+if (it != variables.end()) { std::cout &lt;&lt; it-&gt;second; }</code></pre><p class="tip">💡 举一反三：map 基于红黑树，键自动排序，查找 O(log n)。在解释器中作为符号表（symbol table）存储变量名到值的映射。生产级语言使用哈希表（unordered_map）或继承链式作用域。</p>
+<h3>语法规则：std::stod 字符串转 double</h3><pre class="code-block"><code class="language-cpp">#include &lt;string&gt;
+double val = std::stod(&quot;3.14&quot;);     // 3.14
+double val2 = std::stod(&quot;1e3&quot;);   // 1000.0
+// size_t* pos 参数记录解析结束位置（可选）</code></pre><p class="tip">💡 举一反三：std::stod/stoi/stoll 系列是 C++11 引入的安全类型转换函数，自动处理前导空白并抛出 std::invalid_argument 或 std::out_of_range。比 atof/atoi 更安全（atoi 对非法输入返回 0，无法区分）。</p></section></main></body></html>

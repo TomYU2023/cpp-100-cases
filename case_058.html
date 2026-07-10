@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 58：目录监控器（文件变化通知） - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 58：目录监控器（文件变化通知）</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">// Windows: ReadDirectoryChangesW</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;windows.h&gt;</td></tr>
+<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">8</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2">void watchDirectory(const string&amp; path) {</td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">    // CreateFile 打开目录（FILE_FLAG_BACKUP_SEMANTICS 允许操作目录）</td></tr>
+<tr><td class="ln">11</td><td class="cd" colspan="2">    HANDLE hDir = CreateFileA(</td></tr>
+<tr><td class="ln">12</td><td class="cd">        path.c_str(),</td><td class="cmt">目录路径</td></tr>
+<tr><td class="ln">13</td><td class="cd">        FILE_LIST_DIRECTORY,</td><td class="cmt">只需要列出目录的权限</td></tr>
+<tr><td class="ln">14</td><td class="cd">        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,</td><td class="cmt">共享模式</td></tr>
+<tr><td class="ln">15</td><td class="cd">        nullptr,</td><td class="cmt">安全属性</td></tr>
+<tr><td class="ln">16</td><td class="cd">        OPEN_EXISTING,</td><td class="cmt">打开已存在的目录</td></tr>
+<tr><td class="ln">17</td><td class="cd">        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,</td><td class="cmt">backup semantics 才能打开目录</td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">        nullptr);</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">    if (hDir == INVALID_HANDLE_VALUE) {</td></tr>
+<tr><td class="ln">21</td><td class="cd">        cerr &lt;&lt; "Cannot open directory: " &lt;&lt; GetLastError() &lt;&lt; endl;</td><td class="cmt">GetLastError 获取错误码</td></tr>
+<tr><td class="ln">22</td><td class="cd" colspan="2">        return;</td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">24</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2">    // OVERLAPPED 结构体用于异步 I/O</td></tr>
+<tr><td class="ln">26</td><td class="cd">    OVERLAPPED overlapped{};</td><td class="cmt">零初始化</td></tr>
+<tr><td class="ln">27</td><td class="cd">    overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);</td><td class="cmt">手动重置事件</td></tr>
+<tr><td class="ln">28</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">    // 缓冲区（8KB）</td></tr>
+<tr><td class="ln">30</td><td class="cd">    char buffer[8192];</td><td class="cmt">FILE_NOTIFY_INFORMATION 列表</td></tr>
+<tr><td class="ln">31</td><td class="cd">    DWORD bytesReturned;</td><td class="cmt">实际返回的字节数</td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">33</td><td class="cd" colspan="2">    cout &lt;&lt; "Watching directory: " &lt;&lt; path &lt;&lt; " (Press Ctrl+C to stop)" &lt;&lt; endl;</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2">    while (true) {</td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">        // 注册目录变更通知</td></tr>
+<tr><td class="ln">37</td><td class="cd">        BOOL success = ReadDirectoryChangesW(</td><td class="cmt">宽字符版本 API</td></tr>
+<tr><td class="ln">38</td><td class="cd">            hDir, buffer, sizeof(buffer),</td><td class="cmt">目录句柄、缓冲区、缓冲区大小</td></tr>
+<tr><td class="ln">39</td><td class="cd">            TRUE,</td><td class="cmt">bWatchSubtree: 监控子目录</td></tr>
+<tr><td class="ln">40</td><td class="cd">            FILE_NOTIFY_CHANGE_FILE_NAME  |</td><td class="cmt">文件创建/删除/重命名</td></tr>
+<tr><td class="ln">41</td><td class="cd">            FILE_NOTIFY_CHANGE_DIR_NAME   |</td><td class="cmt">目录变更</td></tr>
+<tr><td class="ln">42</td><td class="cd">            FILE_NOTIFY_CHANGE_SIZE       |</td><td class="cmt">文件大小变更</td></tr>
+<tr><td class="ln">43</td><td class="cd">            FILE_NOTIFY_CHANGE_LAST_WRITE |</td><td class="cmt">文件修改</td></tr>
+<tr><td class="ln">44</td><td class="cd">            FILE_NOTIFY_CHANGE_ATTRIBUTES,</td><td class="cmt">属性变更</td></tr>
+<tr><td class="ln">45</td><td class="cd">            &amp;bytesReturned,</td><td class="cmt">输出：返回字节数</td></tr>
+<tr><td class="ln">46</td><td class="cd">            &amp;overlapped,</td><td class="cmt">异步结构体</td></tr>
+<tr><td class="ln">47</td><td class="cd">            nullptr);</td><td class="cmt">完成回调（无）</td></tr>
+<tr><td class="ln">48</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">49</td><td class="cd">        if (!success &amp;&amp; GetLastError() != ERROR_IO_PENDING) {</td><td class="cmt">正常时返回 ERROR_IO_PENDING</td></tr>
+<tr><td class="ln">50</td><td class="cd" colspan="2">            cerr &lt;&lt; "ReadDirectoryChangesW failed: " &lt;&lt; GetLastError() &lt;&lt; endl;</td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2">            break;</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">        // 等待事件触发（文件变更时 overlapped.hEvent 被置位）</td></tr>
+<tr><td class="ln">55</td><td class="cd">        WaitForSingleObject(overlapped.hEvent, INFINITE);</td><td class="cmt">阻塞直到有变更</td></tr>
+<tr><td class="ln">56</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2">        // 解析 FILE_NOTIFY_INFORMATION 链表</td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2">        FILE_NOTIFY_INFORMATION* fni = (FILE_NOTIFY_INFORMATION*)buffer;</td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">        while (true) {</td></tr>
+<tr><td class="ln">60</td><td class="cd" colspan="2">            // 将宽字符文件名转为 ANSI 字符串</td></tr>
+<tr><td class="ln">61</td><td class="cd">            int len = WideCharToMultiByte(CP_ACP, 0,</td><td class="cmt">WideChar→MultiByte 转换</td></tr>
+<tr><td class="ln">62</td><td class="cd">                fni-&gt;FileName, fni-&gt;FileNameLength / sizeof(WCHAR),</td><td class="cmt">源宽字符串和长度</td></tr>
+<tr><td class="ln">63</td><td class="cd">                nullptr, 0, nullptr, nullptr);</td><td class="cmt">先获取所需长度</td></tr>
+<tr><td class="ln">64</td><td class="cd">            string fileName(len, '\0');</td><td class="cmt">预分配空间</td></tr>
+<tr><td class="ln">65</td><td class="cd">            WideCharToMultiByte(CP_ACP, 0,</td><td class="cmt">第二次调用执行转换</td></tr>
+<tr><td class="ln">66</td><td class="cd" colspan="2">                fni-&gt;FileName, fni-&gt;FileNameLength / sizeof(WCHAR),</td></tr>
+<tr><td class="ln">67</td><td class="cd" colspan="2">                &amp;fileName[0], len, nullptr, nullptr);</td></tr>
+<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2">            // 输出变更类型</td></tr>
+<tr><td class="ln">70</td><td class="cd" colspan="2">            switch (fni-&gt;Action) {</td></tr>
+<tr><td class="ln">71</td><td class="cd" colspan="2">                case FILE_ACTION_ADDED:</td></tr>
+<tr><td class="ln">72</td><td class="cd" colspan="2">                    cout &lt;&lt; "[+] Created:    " &lt;&lt; fileName &lt;&lt; endl; break;</td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2">                case FILE_ACTION_REMOVED:</td></tr>
+<tr><td class="ln">74</td><td class="cd" colspan="2">                    cout &lt;&lt; "[-] Deleted:    " &lt;&lt; fileName &lt;&lt; endl; break;</td></tr>
+<tr><td class="ln">75</td><td class="cd" colspan="2">                case FILE_ACTION_MODIFIED:</td></tr>
+<tr><td class="ln">76</td><td class="cd" colspan="2">                    cout &lt;&lt; "[*] Modified:   " &lt;&lt; fileName &lt;&lt; endl; break;</td></tr>
+<tr><td class="ln">77</td><td class="cd" colspan="2">                case FILE_ACTION_RENAMED_OLD_NAME:</td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2">                    cout &lt;&lt; "[&gt;] Renamed-to: " &lt;&lt; fileName &lt;&lt; endl; break;</td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2">                case FILE_ACTION_RENAMED_NEW_NAME:</td></tr>
+<tr><td class="ln">80</td><td class="cd" colspan="2">                    cout &lt;&lt; "[&lt;] Renamed-to: " &lt;&lt; fileName &lt;&lt; endl; break;</td></tr>
+<tr><td class="ln">81</td><td class="cd" colspan="2">                default:</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">                    cout &lt;&lt; "[?] Unknown: " &lt;&lt; fni-&gt;Action &lt;&lt; endl;</td></tr>
+<tr><td class="ln">83</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">84</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">85</td><td class="cd">            if (fni-&gt;NextEntryOffset == 0) break;</td><td class="cmt">链表结束</td></tr>
+<tr><td class="ln">86</td><td class="cd">            fni = (FILE_NOTIFY_INFORMATION*)((BYTE*)fni + fni-&gt;NextEntryOffset);</td><td class="cmt">移动到下一个</td></tr>
+<tr><td class="ln">87</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">88</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">89</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">90</td><td class="cd">    CloseHandle(overlapped.hEvent);</td><td class="cmt">清理事件句柄</td></tr>
+<tr><td class="ln">91</td><td class="cd">    CloseHandle(hDir);</td><td class="cmt">关闭目录句柄</td></tr>
+<tr><td class="ln">92</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">93</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">94</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">95</td><td class="cd">    watchDirectory("C:\\Users\\Admin\\Desktop");</td><td class="cmt">监控桌面</td></tr>
+<tr><td class="ln">96</td><td class="cd" colspan="2">    // 或监控当前目录：watchDirectory(".");</td></tr>
+<tr><td class="ln">97</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">98</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>Windows 句柄（HANDLE）与 RAII 封装</h3>
+<div class="rule"><strong>语法规则：</strong><strong>HANDLE</strong> 是 Windows 中内核对象的抽象标识（void*）。文件、目录、事件、线程、进程都用 HANDLE 表示。释放用 <code>CloseHandle</code>。C++ 中应该用 <code>unique_ptr</code> 配合自定义删除器管理。</div>
+<pre class="example"><code>// RAII HANDLE 封装
+struct HandleDeleter {
+    using pointer = HANDLE;
+    void operator()(HANDLE h) const {
+        if (h != INVALID_HANDLE_VALUE && h != nullptr)
+            CloseHandle(h);
+    }
+};
+using UniqueHandle = unique_ptr<void, HandleDeleter>;</code></pre>
+</div>
+<div class="grammar-item">
+<h3>FILE_FLAG_BACKUP_SEMANTICS 的意义</h3>
+<div class="rule"><strong>语法规则：</strong>CreateFile 默认只打开文件。要打开<strong>目录</strong>，必须加 <code>FILE_FLAG_BACKUP_SEMANTICS</code>。这个标志名容易误导，含义是"允许不备份权限的用户打开对象"——它的副作用是允许打开目录。</div>
+<pre class="example"><code>// 打开文件
+HANDLE hFile = CreateFile("data.txt", ..., OPEN_EXISTING, 0, nullptr);
+// 打开目录（加 FILE_FLAG_BACKUP_SEMANTICS）
+HANDLE hDir  = CreateFile("C:\\dir", ..., OPEN_EXISTING,
+                          FILE_FLAG_BACKUP_SEMANTICS, nullptr);</code></pre>
+</div>
+<div class="grammar-item">
+<h3>FILE_NOTIFY_INFORMATION 链表遍历</h3>
+<div class="rule"><strong>语法规则：</strong>ReadDirectoryChangesW 返回 <strong>FILE_NOTIFY_INFORMATION 链表</strong>。每个节点的 NextEntryOffset 指向下一个（0 表示结束）。文件名是 <strong>WCHAR 数组</strong>，长度以字符计（非字节），需用 WideCharToMultiByte 转换。</div>
+<pre class="example"><code>FILE_NOTIFY_INFORMATION* node = (FILE_NOTIFY_INFORMATION*)buffer;
+while (true) {
+    wstring wname(node->FileName, node->FileNameLength / sizeof(WCHAR));
+    // 处理 node->Action (FILE_ACTION_ADDED 等)
+    if (node->NextEntryOffset == 0) break;
+    node = (FILE_NOTIFY_INFORMATION*)((BYTE*)node + node->NextEntryOffset);
+}</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>Linux inotify 实现：</strong><pre><code>#include <sys/inotify.h>
+int fd = inotify_init();
+int wd = inotify_add_watch(fd, "/path", IN_CREATE | IN_DELETE | IN_MODIFY);
+// read(fd, buf, sizeof(buf)) 阻塞直到有事件
+// 跨平台封装：用 #ifdef _WIN32 / #ifdef __linux__</code></pre><p>inotify 是 Linux 内核提供的文件系统监控机制，接口比 Windows 的 ReadDirectoryChangesW 更简洁。跨平台项目可以用条件编译统一封装。</p></li>
+<li><strong>实现文件同步工具的基础：</strong><pre><code>结合第 41-60 案例的技能：目录监控 + 文件读取 + 网络通信，可以实现一个简易的
+文件同步工具 (dropbox-like)。检测到本地文件变化 → 通过网络传给远端 → 远端写入文件。</code></pre><p>这是分布式文件同步系统的核心思路。Dropbox、Syncthing 等工具就是在这个基础上增加了冲突解决、增量传输、加密等功能。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_057.html">← 案例 57</a><a href="case_059.html">案例 59 →</a>
+</nav>
+</main>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 14：模板函数 - C++ 100工程案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
+  <div class="stage-title">第一阶段：语法练兵场</div>
+    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
+    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
+    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
+    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
+    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
+    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
+    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
+    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
+    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
+    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
+    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
+    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
+    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
+    <a href="case_014.html" class="case-link active">14. 模板函数</a>
+    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
+    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
+    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
+    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
+    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr 实战</a>
+    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
+  <div class="stage-title">第二阶段：STL 熟练工</div>
+    <a href="case_021.html" class="case-link ">21. vector 深入</a>
+    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
+    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
+    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
+    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
+    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
+    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
+    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
+    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
+    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
+    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
+    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
+    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
+    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
+    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
+    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
+    <a href="case_037.html" class="case-link ">37. thread 入门</a>
+    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
+    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
+    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
+  <div class="stage-title">第三阶段：实用小工具</div>
+    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
+    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
+    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
+    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
+    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
+    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
+    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
+    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
+    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
+    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
+    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
+    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
+    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
+    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
+    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
+    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
+    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
+    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
+    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
+    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
+  <div class="stage-title">第四阶段：工程能力锻造</div>
+    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
+    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
+    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
+    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
+    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
+    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
+    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
+    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
+    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
+    <a href="case_070.html" class="case-link ">70. 策略模式</a>
+    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
+    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
+    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
+    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
+    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
+    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
+    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
+    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
+    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
+    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
+    <a href="case_081.html" class="case-link ">81. 插件系统</a>
+    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
+    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
+    <a href="case_084.html" class="case-link ">84. 连接池</a>
+    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
+  <div class="stage-title">第五阶段：综合项目</div>
+    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
+    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
+    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
+    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
+    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
+    <a href="case_091.html" class="case-link ">91. 协程库</a>
+    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
+    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
+    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
+    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
+    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
+    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
+    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
+    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
+    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
+</nav>
+
+    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
+    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+
+    <main class="content">
+        <div class="top-nav">
+            <a href="case_013.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_015.html" class="nav-link">下一个 →</a>
+        </div>
+
+        <h1>案例 14：模板函数</h1>
+
+        <section class="section">
+            <h2>完整代码（带逐行注释）</h2>
+            <div class="code-container">
+                    <div class="code-line">
+                        <span class="line-no"> 1</span>
+                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 2</span>
+                        <span class="line-code"><code>#include &lt;string&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 3</span>
+                        <span class="line-code"><code>using namespace std;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 4</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 5</span>
+                        <span class="line-code"><code>template&lt;typename T&gt;</code></span>
+                        <span class="line-comment">函数模板声明，T 是类型参数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 6</span>
+                        <span class="line-code"><code>T maxOf(T a, T b) {</code></span>
+                        <span class="line-comment">类型 T 的两个参数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 7</span>
+                        <span class="line-code"><code>    return (a &gt; b) ? a : b;</code></span>
+                        <span class="line-comment">三元运算符：条件 ? 真值 : 假值</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 8</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no"> 9</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">10</span>
+                        <span class="line-code"><code>template&lt;typename T&gt;</code></span>
+                        <span class="line-comment">每个函数模板都需要单独声明</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">11</span>
+                        <span class="line-code"><code>void swapVal(T&amp; a, T&amp; b) {</code></span>
+                        <span class="line-comment">引用参数，直接操作原始变量</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">12</span>
+                        <span class="line-code"><code>    T temp = a;</code></span>
+                        <span class="line-comment">用临时变量暂存</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">13</span>
+                        <span class="line-code"><code>    a = b;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">14</span>
+                        <span class="line-code"><code>    b = temp;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">15</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">16</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">17</span>
+                        <span class="line-code"><code>template&lt;typename T&gt;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">18</span>
+                        <span class="line-code"><code>T sum(T arr[], int n) {</code></span>
+                        <span class="line-comment">数组 + 元素个数</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">19</span>
+                        <span class="line-code"><code>    T total = T();</code></span>
+                        <span class="line-comment">T() 是值初始化：int→0，double→0.0，string→空串</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">20</span>
+                        <span class="line-code"><code>    for (int i = 0; i &lt; n; i++) total += arr[i];</code></span>
+                        <span class="line-comment">按元素类型 T 进行加法</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">21</span>
+                        <span class="line-code"><code>    return total;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">22</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">23</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">24</span>
+                        <span class="line-code"><code>int main() {</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">25</span>
+                        <span class="line-code"><code>    cout &lt;&lt; maxOf(3, 7) &lt;&lt; endl;</code></span>
+                        <span class="line-comment">编译器自动推导 T = int</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">26</span>
+                        <span class="line-code"><code>    cout &lt;&lt; maxOf(3.14, 2.71) &lt;&lt; endl;</code></span>
+                        <span class="line-comment">T = double</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">27</span>
+                        <span class="line-code"><code>    cout &lt;&lt; maxOf(string("abc"), string("abd")) &lt;&lt; endl;</code></span>
+                        <span class="line-comment">T = string，按字典序比较</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">28</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">29</span>
+                        <span class="line-code"><code>    int x=1, y=2;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">30</span>
+                        <span class="line-code"><code>    swapVal(x, y);</code></span>
+                        <span class="line-comment">T = int，x 和 y 的值交换</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">31</span>
+                        <span class="line-code"><code>    cout &lt;&lt; x &lt;&lt; y &lt;&lt; endl;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">32</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">33</span>
+                        <span class="line-code"><code>    int arr[] = {1, 2, 3, 4, 5};</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">34</span>
+                        <span class="line-code"><code>    cout &lt;&lt; sum(arr, 5) &lt;&lt; endl;</code></span>
+                        <span class="line-comment">T = int，返回 15</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">35</span>
+                        <span class="line-code"><code></code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">36</span>
+                        <span class="line-code"><code>    double darr[] = {1.1, 2.2, 3.3};</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">37</span>
+                        <span class="line-code"><code>    cout &lt;&lt; sum(darr, 3) &lt;&lt; endl;</code></span>
+                        <span class="line-comment">T = double，返回 6.6</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">38</span>
+                        <span class="line-code"><code>    return 0;</code></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-no">39</span>
+                        <span class="line-code"><code>}</code></span>
+                    </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>新语法讲解</h2>
+            <div class="grammar-container">
+                <div class="grammar-item">
+                    <h3>函数模板 template<typename T></h3>
+                    <div class="rule-box">语法：<code>template &lt;typename T&gt;</code> 后跟函数定义。T 是占位符，编译时根据<strong>调用参数的实际类型</strong>自动生成对应版本（叫模板实例化）。</div>
+                    <pre><code>template&lt;typename T&gt;
+T add(T a, T b) { return a + b; }
+add(1, 2);    // 生成 int 版本
+add(1.0, 2.0); // 生成 double 版本</code></pre>
+                </div>
+                <div class="grammar-item">
+                    <h3>值初始化 T()</h3>
+                    <div class="rule-box"><code>T()</code> 产生 T 类型的零值：数值类型为 0/0.0，指针为 nullptr，类类型为默认构造对象。用于泛型编程中的初始化。</div>
+                    <pre><code>int i = int();     // 0
+double d = double(); // 0.0
+string s = string(); // 空串</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>举一反三</h2>
+            <div class="extend-container">
+                <div class="extend-item">
+                    <h4>模板特化：字符串拼接 sum</h4>
+                    <p><strong>代码：</strong><code>template<> string sum(string arr[], int n) { ... }</code></p>
+                    <p><strong>思路：</strong>对特定类型提供不同实现</p>
+                </div>
+                <div class="extend-item">
+                    <h4>支持多个类型参数</h4>
+                    <p><strong>代码：</strong><code>template<typename T, typename U> auto multiply(T a, U b) -> decltype(a*b);</code></p>
+                    <p><strong>思路：</strong>decltype 推导返回类型</p>
+                </div>
+                <div class="extend-item">
+                    <h4>非类型模板参数</h4>
+                    <p><strong>代码：</strong><code>template<typename T, int N> T sum(T (&arr)[N]) { ... }</code></p>
+                    <p><strong>思路：</strong>用模板参数自动推导数组大小</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="bottom-nav">
+            <a href="case_013.html" class="nav-link">← 上一个</a>
+            <a href="index.html" class="nav-link">🏠 主页</a>
+            <a href="case_015.html" class="nav-link">下一个 →</a>
+        </div>
+    </main>
+</body>
+</html>

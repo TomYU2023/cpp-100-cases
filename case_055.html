@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 55：简易 WebSocket 客户端 - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 55：简易 WebSocket 客户端</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">// 需要第三方库: websocketpp 或 Boost.Beast</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">// 这里用 ws_client 库做示意</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
+<tr><td class="ln">6</td><td class="cd">#include &lt;boost/beast/core.hpp&gt;</td><td class="cmt">Beast 核心</td></tr>
+<tr><td class="ln">7</td><td class="cd">#include &lt;boost/beast/websocket.hpp&gt;</td><td class="cmt">WebSocket 模块</td></tr>
+<tr><td class="ln">8</td><td class="cd">#include &lt;boost/asio/connect.hpp&gt;</td><td class="cmt">网络连接</td></tr>
+<tr><td class="ln">9</td><td class="cd">#include &lt;boost/asio/ip/tcp.hpp&gt;</td><td class="cmt">TCP</td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">11</td><td class="cd">namespace beast = boost::beast;</td><td class="cmt">命名空间统一</td></tr>
+<tr><td class="ln">12</td><td class="cd" colspan="2">namespace ws = beast::websocket;</td></tr>
+<tr><td class="ln">13</td><td class="cd" colspan="2">namespace net = boost::asio;</td></tr>
+<tr><td class="ln">14</td><td class="cd">using tcp = net::ip::tcp;</td><td class="cmt">类型别名</td></tr>
+<tr><td class="ln">15</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">16</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">    try {</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">        // ASIO 上下文（I/O 引擎核心）</td></tr>
+<tr><td class="ln">21</td><td class="cd">        net::io_context ioc;</td><td class="cmt">管理所有异步 I/O 操作</td></tr>
+<tr><td class="ln">22</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2">        // WebSocket 流（封装 TCP 连接）</td></tr>
+<tr><td class="ln">24</td><td class="cd">        ws::stream&lt;tcp::socket&gt; ws{ioc};</td><td class="cmt">模板参数指定底层传输类型</td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2">        // 解析地址</td></tr>
+<tr><td class="ln">27</td><td class="cd">        tcp::resolver resolver{ioc};</td><td class="cmt">DNS 解析器</td></tr>
+<tr><td class="ln">28</td><td class="cd">        auto results = resolver.resolve("echo.websocket.org", "80");</td><td class="cmt">域名 → IP 列表</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">30</td><td class="cd" colspan="2">        // 建立 TCP 连接</td></tr>
+<tr><td class="ln">31</td><td class="cd">        net::connect(ws.next_layer(), results);</td><td class="cmt">next_layer() 访问底层 TCP socket</td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">33</td><td class="cd" colspan="2">        // WebSocket 握手</td></tr>
+<tr><td class="ln">34</td><td class="cd">        ws.handshake("echo.websocket.org", "/");</td><td class="cmt">HTTP Upgrade → WebSocket</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">        // 发送消息</td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2">        string msg = "Hello, WebSocket!";</td></tr>
+<tr><td class="ln">38</td><td class="cd">        ws.write(net::buffer(msg));</td><td class="cmt">发送文本帧</td></tr>
+<tr><td class="ln">39</td><td class="cd" colspan="2">        cout &lt;&lt; "Sent: " &lt;&lt; msg &lt;&lt; endl;</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">41</td><td class="cd" colspan="2">        // 接收回显</td></tr>
+<tr><td class="ln">42</td><td class="cd">        beast::flat_buffer buffer;</td><td class="cmt">动态缓冲区</td></tr>
+<tr><td class="ln">43</td><td class="cd">        ws.read(buffer);</td><td class="cmt">阻塞读取</td></tr>
+<tr><td class="ln">44</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2">        cout &lt;&lt; "Received: " &lt;&lt; beast::make_printable(buffer.data()) &lt;&lt; endl;</td></tr>
+<tr><td class="ln">46</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">47</td><td class="cd" colspan="2">        // 关闭连接</td></tr>
+<tr><td class="ln">48</td><td class="cd">        ws.close(ws::close_code::normal);</td><td class="cmt">标准关闭码</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">50</td><td class="cd" colspan="2">    } catch (beast::system_error const&amp; e) {</td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2">        cerr &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; endl;</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">54</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>Boost.Beast 的 I/O 模型</h3>
+<div class="rule"><strong>语法规则：</strong>Beast 基于 ASIO 的 <strong>Proactor 模式</strong>。<code>io_context</code> 是所有 I/O 的调度中心，socket/stream 都绑定在它上面。同步操作直接调用，异步操作通过回调/协程处理。</div>
+<pre class="example"><code>net::io_context ioc;  // I/O 调度器
+tcp::socket sock(ioc);    // 创建绑定到 ioc 的 socket
+// 同步：直接返回
+net::connect(sock, ...);
+// 异步：需要回调或协程
+sock.async_connect(..., [](error_code ec) { ... });
+ioc.run();  // 驱动异步事件循环</code></pre>
+</div>
+<div class="grammar-item">
+<h3>next_layer() 访问底层对象</h3>
+<div class="rule"><strong>语法规则：</strong>WebSocket stream 封装了 TCP socket。<code>next_layer()</code> 返回底层 socket 的<strong>引用</strong>，可以在 WebSocket 握手前/后进行 TCP 级别的操作（如设置超时、获取本地地址）。</div>
+<pre class="example"><code>ws::stream<tcp::socket> ws{ioc};
+auto& tcp = ws.next_layer();          // 获取 TCP socket 引用
+tcp.set_option(tcp::no_delay(true));  // 禁用 Nagle 算法
+// 也可以用 beast::get_lowest_layer(ws)</code></pre>
+</div>
+<div class="grammar-item">
+<h3>beast::flat_buffer 动态缓冲区</h3>
+<div class="rule"><strong>语法规则：</strong><code>flat_buffer</code> 是 ASIO 的动态缓冲区，读取数据时自动增长。适合未知大小的消息。<code>make_printable</code> 将缓冲区转为可打印形式。</div>
+<pre class="example"><code>beast::flat_buffer buf;
+ws.read(buf);  // buf 自动调整大小
+cout << beast::buffers_to_string(buf.data());  // 转为 string</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>WebSocket 协议帧格式简析：</strong><pre><code>WebSocket 帧格式：[FIN|RSV|opcode] [MASK|payload_len] [extended_len] [mask_key] [payload]
+opcode: 0x1=文本, 0x2=二进制, 0x8=关闭, 0x9=Ping, 0xA=Pong
+MASK: 客户端→服务端必须掩码，服务端→客户端不能掩码。</code></pre><p>理解帧格式有助于调试 WebSocket 问题，以及实现无依赖的轻量级客户端（如在嵌入式设备上）。</p></li>
+<li><strong>WebSocket 心跳保活 (Ping/Pong)：</strong><pre><code>// 发送 Ping
+ws.ping("");
+// 读取 Pong（Beast 自动处理，但可手动控制）
+ws.control_callback([](ws::frame_type kind, string_view payload) {
+    if (kind == ws::frame_type::pong) cout << "Pong received";
+});</code></pre><p>WebSocket 支持 Ping/Pong 帧用于心跳检测。Beast 默认自动处理，但可以设置自定义回调。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_054.html">← 案例 54</a><a href="case_056.html">案例 56 →</a>
+</nav>
+</main>
+</body>
+</html>

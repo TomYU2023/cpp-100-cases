@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例 53：简易 Markdown 转 HTML - C++ 100 案例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="brand">C++ 100 案例</a>
+  <div class="nav-links">
+    <span>阶段：</span>
+    <a href="case_001.html">1-20</a>
+    <a href="case_021.html">21-40</a>
+    <a href="case_041.html">41-60</a>
+    <a href="case_061.html">61-85</a>
+    <a href="case_086.html">86-100</a>
+  </div>
+</nav>
+<main>
+<h1>案例 53：简易 Markdown 转 HTML</h1>
+<div class="section"><h2>完整代码（逐行注释）</h2>
+<div class="code-block"><table class="code-table">
+<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
+<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;fstream&gt;</td></tr>
+<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;sstream&gt;</td></tr>
+<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
+<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;regex&gt;</td></tr>
+<tr><td class="ln">6</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
+<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">8</td><td class="cd" colspan="2">using namespace std;</td></tr>
+<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">10</td><td class="cd" colspan="2">// Markdown 转 HTML 核心转换器</td></tr>
+<tr><td class="ln">11</td><td class="cd" colspan="2">string mdToHTML(const string&amp; md) {</td></tr>
+<tr><td class="ln">12</td><td class="cd">    string html;</td><td class="cmt">最终输出</td></tr>
+<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">14</td><td class="cd" colspan="2">    // HTML 头部</td></tr>
+<tr><td class="ln">15</td><td class="cd" colspan="2">    html += "&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;head&gt;\n";</td></tr>
+<tr><td class="ln">16</td><td class="cd" colspan="2">    html += "&lt;meta charset=\"utf-8\"&gt;\n";</td></tr>
+<tr><td class="ln">17</td><td class="cd" colspan="2">    html += "&lt;style&gt;body{font-family:sans-serif;max-width:800px;margin:auto;padding:20px;}";</td></tr>
+<tr><td class="ln">18</td><td class="cd" colspan="2">    html += "code{background:#f4f4f4;padding:2px 6px;border-radius:3px;}";</td></tr>
+<tr><td class="ln">19</td><td class="cd" colspan="2">    html += "pre{background:#f4f4f4;padding:15px;overflow-x:auto;}";</td></tr>
+<tr><td class="ln">20</td><td class="cd" colspan="2">    html += "&lt;/style&gt;\n&lt;/head&gt;\n&lt;body&gt;\n";</td></tr>
+<tr><td class="ln">21</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">22</td><td class="cd">    istringstream ss(md);</td><td class="cmt">逐行读取 Markdown 文本</td></tr>
+<tr><td class="ln">23</td><td class="cd" colspan="2">    string line;</td></tr>
+<tr><td class="ln">24</td><td class="cd">    bool inCodeBlock = false;</td><td class="cmt">是否在代码块内</td></tr>
+<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">26</td><td class="cd" colspan="2">    while (getline(ss, line)) {</td></tr>
+<tr><td class="ln">27</td><td class="cd" colspan="2">        // 代码块处理</td></tr>
+<tr><td class="ln">28</td><td class="cd">        if (line.substr(0, 3) == "```") {</td><td class="cmt">判断是否为代码块标记</td></tr>
+<tr><td class="ln">29</td><td class="cd" colspan="2">            if (!inCodeBlock) {</td></tr>
+<tr><td class="ln">30</td><td class="cd">                html += "&lt;pre&gt;&lt;code&gt;";</td><td class="cmt">开始代码块</td></tr>
+<tr><td class="ln">31</td><td class="cd" colspan="2">                inCodeBlock = true;</td></tr>
+<tr><td class="ln">32</td><td class="cd" colspan="2">            } else {</td></tr>
+<tr><td class="ln">33</td><td class="cd">                html += "&lt;/code&gt;&lt;/pre&gt;\n";</td><td class="cmt">结束代码块</td></tr>
+<tr><td class="ln">34</td><td class="cd" colspan="2">                inCodeBlock = false;</td></tr>
+<tr><td class="ln">35</td><td class="cd" colspan="2">            }</td></tr>
+<tr><td class="ln">36</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">37</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">38</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">39</td><td class="cd" colspan="2">        // 代码块内的行：直接输出</td></tr>
+<tr><td class="ln">40</td><td class="cd" colspan="2">        if (inCodeBlock) {</td></tr>
+<tr><td class="ln">41</td><td class="cd">            html += line + "\n";</td><td class="cmt">原样输出</td></tr>
+<tr><td class="ln">42</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">43</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">44</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">45</td><td class="cd" colspan="2">        // 标题（# ~ ######）</td></tr>
+<tr><td class="ln">46</td><td class="cd">        if (line.substr(0, 2) == "# ") {</td><td class="cmt">h1</td></tr>
+<tr><td class="ln">47</td><td class="cd">            html += "&lt;h1&gt;" + line.substr(2) + "&lt;/h1&gt;\n";</td><td class="cmt">去掉前两个字符 # 和空格</td></tr>
+<tr><td class="ln">48</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">49</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">50</td><td class="cd">        if (line.substr(0, 3) == "## ") {</td><td class="cmt">h2</td></tr>
+<tr><td class="ln">51</td><td class="cd" colspan="2">            html += "&lt;h2&gt;" + line.substr(3) + "&lt;/h2&gt;\n";</td></tr>
+<tr><td class="ln">52</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">53</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">54</td><td class="cd">        if (line.substr(0, 4) == "### ") {</td><td class="cmt">h3</td></tr>
+<tr><td class="ln">55</td><td class="cd" colspan="2">            html += "&lt;h3&gt;" + line.substr(4) + "&lt;/h3&gt;\n";</td></tr>
+<tr><td class="ln">56</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">57</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">58</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">59</td><td class="cd" colspan="2">        // 无序列表</td></tr>
+<tr><td class="ln">60</td><td class="cd">        if (line.substr(0, 2) == "- ") {</td><td class="cmt">以 - 开头</td></tr>
+<tr><td class="ln">61</td><td class="cd">            html += "&lt;li&gt;" + line.substr(2) + "&lt;/li&gt;\n";</td><td class="cmt">简化为 <li></td></tr>
+<tr><td class="ln">62</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">63</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">64</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">65</td><td class="cd" colspan="2">        // 空行</td></tr>
+<tr><td class="ln">66</td><td class="cd" colspan="2">        if (line.empty()) {</td></tr>
+<tr><td class="ln">67</td><td class="cd">            html += "&lt;br&gt;\n";</td><td class="cmt">空行转成换行</td></tr>
+<tr><td class="ln">68</td><td class="cd" colspan="2">            continue;</td></tr>
+<tr><td class="ln">69</td><td class="cd" colspan="2">        }</td></tr>
+<tr><td class="ln">70</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">71</td><td class="cd" colspan="2">        // 普通段落</td></tr>
+<tr><td class="ln">72</td><td class="cd">        html += "&lt;p&gt;" + line + "&lt;/p&gt;\n";</td><td class="cmt">未匹配的行当作段落</td></tr>
+<tr><td class="ln">73</td><td class="cd" colspan="2">    }</td></tr>
+<tr><td class="ln">74</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">75</td><td class="cd" colspan="2">    html += "&lt;/body&gt;\n&lt;/html&gt;";</td></tr>
+<tr><td class="ln">76</td><td class="cd" colspan="2">    return html;</td></tr>
+<tr><td class="ln">77</td><td class="cd" colspan="2">}</td></tr>
+<tr><td class="ln">78</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">79</td><td class="cd" colspan="2">int main() {</td></tr>
+<tr><td class="ln">80</td><td class="cd">    string md = R"(</td><td class="cmt">原始字符串字面量</td></tr>
+<tr><td class="ln">81</td><td class="cd" colspan="2"># Welcome to Markdown</td></tr>
+<tr><td class="ln">82</td><td class="cd" colspan="2">## Features</td></tr>
+<tr><td class="ln">83</td><td class="cd" colspan="2">- Simple</td></tr>
+<tr><td class="ln">84</td><td class="cd" colspan="2">- Fast</td></tr>
+<tr><td class="ln">85</td><td class="cd" colspan="2">- Lightweight</td></tr>
+<tr><td class="ln">86</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">87</td><td class="cd" colspan="2">### Code Example</td></tr>
+<tr><td class="ln">88</td><td class="cd" colspan="2">```</td></tr>
+<tr><td class="ln">89</td><td class="cd" colspan="2">cout &lt;&lt; "Hello World";</td></tr>
+<tr><td class="ln">90</td><td class="cd" colspan="2">```</td></tr>
+<tr><td class="ln">91</td><td class="cd">)");</td><td class="cmt">R"( ... )" 中的 ) 要避免冲突，这里用分号分隔。注意：这个原始字符串有问题</td></tr>
+<tr><td class="ln">92</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">93</td><td class="cd" colspan="2">    auto html = mdToHTML(md);</td></tr>
+<tr><td class="ln">94</td><td class="cd" colspan="2">    cout &lt;&lt; html &lt;&lt; endl;</td></tr>
+<tr><td class="ln">95</td><td class="cd" colspan="2"></td></tr>
+<tr><td class="ln">96</td><td class="cd" colspan="2">    return 0;</td></tr>
+<tr><td class="ln">97</td><td class="cd" colspan="2">}</td></tr>
+</table></div></div>
+<div class="section"><h2>新语法精讲</h2>
+<div class="grammar-section">
+<div class="grammar-item">
+<h3>C++11 原始字符串字面量 R"(...)"</h3>
+<div class="rule"><strong>语法规则：</strong>Raw String Literal <code>R"( ... )"</code> 内的所有字符保持原样，<strong>反斜杠不会转义，换行直接保留</strong>。非常适合嵌入 HTML、JSON、正则表达式等多行文本。分隔符可自定义：<code>R"delim( ... )delim"</code>。</div>
+<pre class="example"><code>// 原始字符串：不需要转义反斜杠和引号
+string json = R"(
+{
+  "name": "Alice",
+  "age": 25
+}
+)";
+// 等效的普通字符串（需要大量转义）
+string json2 = "\n{\n  \"name\": \"Alice\",\n  \"age\": 25\n}\n";</code></pre>
+</div>
+<div class="grammar-item">
+<h3>std::regex 正则表达式基础</h3>
+<div class="rule"><strong>语法规则：</strong><strong>regex_match</strong>（完全匹配）、<strong>regex_search</strong>（部分匹配）、<strong>regex_replace</strong>（替换）。构造 regex 对象较慢，应尽量复用。原始字符串特别适合写正则表达式。</div>
+<pre class="example"><code>regex boldPattern(R"(\*\*(.+?)\*\*)");
+string text = "Hello **World**!";
+string result = regex_replace(text, boldPattern, "<b>$1</b>");
+// result = "Hello <b>World</b>!"</code></pre>
+</div>
+<div class="grammar-item">
+<h3>istringstream：字符串当作流来读</h3>
+<div class="rule"><strong>语法规则：</strong><strong>istringstream</strong> 将 string 包装为输入流，可以像读文件一样用 <code>>></code> 或 <code>getline</code> 读取。适合需要按行/按词解析字符串的场景。</div>
+<pre class="example"><code>string data = "apple\nbanana\ncherry";
+istringstream ss(data);
+string line;
+while (getline(ss, line)) {
+    cout << line << endl;
+}</code></pre>
+</div>
+</div></div>
+<div class="section">
+<div class="extend-section">
+<h2>举一反三</h2>
+<ul>
+<li><strong>使用 cmark / md4c 等成熟的 C Markdown 库：</strong><pre><code>#include <cmark.h>
+char* html = cmark_markdown_to_html(md, len, CMARK_OPT_DEFAULT);
+// 或 <md4c-html.h>：
+md_html(md, len, callback, userdata, MD_FLAG_COLLAPSEWHITESPACE, 0);</code></pre><p>手写 Markdown 解析器适合学习状态机和递归下降解析。生产环境应使用经过充分测试的 C 库并通过 C++ 封装。</p></li>
+<li><strong>完整 Markdown 解析器需要的特性：</strong><pre><code>需要支持：加粗(**text**)、斜体(*text*)、链接([text](url))、图片、有序列表、嵌套列表、表格、引用块、行内代码、HTML 标签过滤等。完整实现一般需要 1000+ 行代码。</code></pre><p>可以作为一个长期项目，逐步添加功能，这也是练习编译原理中词法分析和语法分析的好方法。</p></li>
+</ul>
+</div></div>
+
+<nav class="prev-next">
+  <a href="case_052.html">← 案例 52</a><a href="case_054.html">案例 54 →</a>
+</nav>
+</main>
+</body>
+</html>
