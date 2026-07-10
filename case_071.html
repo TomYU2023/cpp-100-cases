@@ -3,209 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 71：工厂模式 — 对象注册表</title>
-        <link rel="stylesheet" href="style.css">
+    <title>案例 71：std::function 回调系统 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-phase">
-            <span class="phase-label">Phase 4:</span>
-            <a href="case_061.html">线程池</a>
-            <a href="case_062.html">内存池</a>
-            <a href="case_063.html">无锁队列</a>
-            <a href="case_064.html">对象池</a>
-            <a href="case_065.html">TCP聊天</a>
-            <a href="case_066.html">HTTP服务</a>
-            <a href="case_067.html">REST客户端</a>
-            <a href="case_068.html">gRPC</a>
-            <a href="case_069.html">观察者</a>
-            <a href="case_070.html">策略</a>
-        </div>
-        <div class="nav-links">
-            <a href="case_065.html"><a href="case_070.html">← 上一案例</a></a>
-            <span class="sep">|</span>
-            <a href="case_067.html"><a href="case_072.html">下一案例 →</a></a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 71：std::function 回调系统</span>
         </div>
     </nav>
     <main class="container">
-        <h1>案例 71：工厂模式 — 对象注册表</h1>
-        <section class="intro">
-            <p>实现一个可自动注册的产品工厂，新增 Animal 子类无需修改工厂代码，演示开闭原则和插件式架构。</p>
-            <p><strong>核心知识点：</strong>工厂模式、注册表模式、函数内静态变量、结构化绑定 C++17、匿名命名空间、宏自动注册</p>
-        </section>
-        <section class="code-section">
-            <h2>完整代码（含逐行注释）</h2>
-            <pre class="code-block"><code class="language-cpp">// 案例 71：工厂模式 — 对象注册表
-// 工厂模式：定义一个创建对象的接口，让子类决定实例化哪个类。
-// 本案例实现一个&quot;自动注册工厂&quot;——新增产品类无需修改工厂代码。
-
+        <div class="content">
+            <h1>案例 71：std::function 回调系统</h1>
+            <section class="intro">
+<p>使用 function 构建灵活的事件回调系统，支持注册、注销和触发。</p>
+            <p><strong>核心知识点：</strong>function、事件系统、回调注册、token 模式</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 71：std::function 回调系统
+// 可注册和注销的事件回调管理器
 #include &lt;iostream&gt;
-#include &lt;string&gt;
-#include &lt;memory&gt;
-#include &lt;unordered_map&gt;
 #include &lt;functional&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+using namespace std;
 
-/* ── 语法规则：工厂模式家族 ──
-   简单工厂：一个工厂类根据参数创建不同产品（需要修改工厂代码）
-   工厂方法：每个产品有一个对应的工厂（产品与工厂一对一）
-   抽象工厂：创建一族相关产品（如 UI 工厂创建按钮+文本框+窗口）
-
-   本案例展示的是&quot;注册式工厂&quot;——结合了简单工厂的便利性和工厂方法的扩展性。
-   新加产品只需注册，完全符合开闭原则（对扩展开放，对修改关闭）。
-
-   示例：
-     // 传统方式（需要改工厂代码）
-     if (type == &quot;car&quot;) return new Car();
-     else if (type == &quot;bike&quot;) return new Bike();
-
-     // 注册式（不改工厂代码）
-     Factory::register(&quot;car&quot;, []{ return make_unique&lt;Car&gt;(); });
-     Factory::register(&quot;bike&quot;, []{ return make_unique&lt;Bike&gt;(); });
-     auto p = Factory::create(&quot;car&quot;);
-
-   举一反三：几乎所有插件系统都基于注册式工厂。
-   游戏引擎的 Component 系统、浏览器的 MIME 处理器都用这种模式。
-*/
-
-// 步骤 1：产品基类
-class Animal {
+// 事件管理器
+template &lt;typename... Args&gt;
+class EventManager {
 public:
-    virtual ~Animal() = default;
-    virtual void speak() const = 0;
-    virtual std::string type() const = 0;
-};
-
-// 步骤 2：具体产品
-class Dog : public Animal {
-public:
-    void speak() const override { std::cout &lt;&lt; &quot;汪汪！&quot; &lt;&lt; std::endl; }
-    std::string type() const override { return &quot;Dog&quot;; }
-};
-
-class Cat : public Animal {
-public:
-    void speak() const override { std::cout &lt;&lt; &quot;喵喵～&quot; &lt;&lt; std::endl; }
-    std::string type() const override { return &quot;Cat&quot;; }
-};
-
-class Duck : public Animal {
-public:
-    void speak() const override { std::cout &lt;&lt; &quot;嘎嘎！&quot; &lt;&lt; std::endl; }
-    std::string type() const override { return &quot;Duck&quot;; }
-};
-
-// 步骤 3：注册式工厂
-class AnimalFactory {
-public:
-    // 创建器类型：不接受参数，返回 unique_ptr&lt;Animal&gt;
-    using Creator = std::function&lt;std::unique_ptr&lt;Animal&gt;()&gt;;
-
-    // 注册产品：绑定类型名和创建函数
-    static void registerAnimal(const std::string&amp; name, Creator creator) {
-        registry()[name] = std::move(creator);
-    }
-
-    // 创建产品：根据名字查找并调用创建器
-    static std::unique_ptr&lt;Animal&gt; create(const std::string&amp; name) {
-        auto it = registry().find(name);
-        if (it == registry().end()) {
-            std::cerr &lt;&lt; &quot;未知动物类型: &quot; &lt;&lt; name &lt;&lt; std::endl;
-            return nullptr;
-        }
-        return it-&gt;second();  // 调用创建函数
-    }
-
-    // 列出所有已注册的产品
-    static void listAll() {
-        std::cout &lt;&lt; &quot;已注册的动物类型:&quot; &lt;&lt; std::endl;
-        for (const auto&amp; [name, _] : registry()) {
-            std::cout &lt;&lt; &quot;  - &quot; &lt;&lt; name &lt;&lt; std::endl;
-        }
-    }
+    using Callback = function&lt;void(Args...)&gt;;
+    using Token = int;
 
 private:
-    // 注册表：类型名 → 创建函数 的映射
-    // 用函数内静态变量确保全局唯一且延迟初始化
-    static std::unordered_map&lt;std::string, Creator&gt;&amp; registry() {
-        static std::unordered_map&lt;std::string, Creator&gt; reg;
-        return reg;
-    }
-};
+    map&lt;Token, Callback&gt; callbacks;
+    Token nextToken = 1;
 
-// 步骤 4：自动注册宏（可选，让注册更优雅）
-// 定义一个宏，在全局作用域中自动注册产品
-#define REGISTER_ANIMAL(ClassName, DisplayName) \
-    namespace {  // 匿名命名空间，限制作用域在本文件 \
-        struct AutoReg_##ClassName { \
-            AutoReg_##ClassName() { \
-                AnimalFactory::registerAnimal(DisplayName, [] { \
-                    return std::make_unique&lt;ClassName&gt;(); \
-                }); \
-            } \
-        } autoReg_##ClassName;  // 全局对象，构造时自动注册 \
+public:
+    // 注册回调，返回 token
+    Token subscribe(Callback cb) {
+        Token token = nextToken++;
+        callbacks[token] = move(cb);
+        return token;
     }
 
-// 使用宏自动注册（编译时自动执行）
-REGISTER_ANIMAL(Dog, &quot;dog&quot;)
-REGISTER_ANIMAL(Cat, &quot;cat&quot;)
-REGISTER_ANIMAL(Duck, &quot;duck&quot;)
+    // 注销回调
+    bool unsubscribe(Token token) {
+        return callbacks.erase(token) &gt; 0;
+    }
 
-int main() {
-    // 手动注册一个（展示不用宏的方式）
-    AnimalFactory::registerAnimal(&quot;custom&quot;, [] {
-        // 可以用 lambda 创建匿名子类
-        struct CustomAnimal : Animal {
-            void speak() const override { std::cout &lt;&lt; &quot;我是自定义动物!&quot; &lt;&lt; std::endl; }
-            std::string type() const override { return &quot;Custom&quot;; }
-        };
-        return std::make_unique&lt;CustomAnimal&gt;();
-    });
-
-    AnimalFactory::listAll();
-
-    // 创建并调用
-    std::cout &lt;&lt; &quot;\n=== 批量创建 ===&quot; &lt;&lt; std::endl;
-    auto animals = {
-        AnimalFactory::create(&quot;dog&quot;),
-        AnimalFactory::create(&quot;cat&quot;),
-        AnimalFactory::create(&quot;duck&quot;),
-        AnimalFactory::create(&quot;custom&quot;)
-    };
-
-    for (auto&amp; animal : animals) {
-        if (animal) {
-            std::cout &lt;&lt; animal-&gt;type() &lt;&lt; &quot; says: &quot;;
-            animal-&gt;speak();
+    // 触发事件（通知所有回调）
+    void emit(Args... args) {
+        for (auto&amp; [token, cb] : callbacks) {
+            cb(args...); // 调用每个回调
         }
     }
 
-    // 测试不存在的类型
-    std::cout &lt;&lt; &quot;\n=== 测试错误处理 ===&quot; &lt;&lt; std::endl;
-    auto unknown = AnimalFactory::create(&quot;dragon&quot;);
+    // 获取注册的回调数量
+    size_t count() const { return callbacks.size(); }
+};
+
+// 简单的按钮类
+class Button {
+private:
+    string label;
+public:
+    EventManager&lt;&gt; onClick; // 点击事件
+
+    explicit Button(string l) : label(move(l)) {}
+
+    void click() {
+        cout &lt;&lt; "按钮 [" &lt;&lt; label &lt;&lt; "] 被点击" &lt;&lt; endl;
+        onClick.emit();
+    }
+};
+
+int main() {
+    // 1. 带参数的事件
+    EventManager&lt;int, string&gt; logger;
+
+    auto token1 = logger.subscribe([](int code, const string&amp; msg) {
+        cout &lt;&lt; "[控制台] 错误 " &lt;&lt; code &lt;&lt; ": " &lt;&lt; msg &lt;&lt; endl;
+    });
+
+    auto token2 = logger.subscribe([](int code, const string&amp; msg) {
+        cout &lt;&lt; "[文件日志] " &lt;&lt; code &lt;&lt; " - " &lt;&lt; msg &lt;&lt; endl;
+    });
+
+    logger.emit(404, "页面未找到");
+    logger.emit(500, "服务器内部错误");
+
+    // 注销一个回调
+    logger.unsubscribe(token1);
+    cout &lt;&lt; "\n注销后再次触发:" &lt;&lt; endl;
+    logger.emit(403, "禁止访问");
+
+    // 2. 按钮点击事件
+    cout &lt;&lt; "\n=== 按钮事件 ===" &lt;&lt; endl;
+    Button btn("提交");
+
+    btn.onClick.subscribe([]() {
+        cout &lt;&lt; "  处理: 验证表单..." &lt;&lt; endl;
+    });
+    btn.onClick.subscribe([]() {
+        cout &lt;&lt; "  处理: 提交数据..." &lt;&lt; endl;
+    });
+    btn.onClick.subscribe([]() {
+        cout &lt;&lt; "  处理: 显示成功提示" &lt;&lt; endl;
+    });
+
+    btn.click();
 
     return 0;
 }</code></pre>
-        </section>
-        <section class="grammar-section">
-            <h3>语法规则：函数内静态变量（Meyers' Singleton）</h3>
-            <pre class="code-block"><code class="language-cpp">MyClass&amp; getInstance() {
-  static MyClass instance;  // 第一次调用时初始化，线程安全(C++11+)
-  return instance;
-}</code></pre>
-            <p class="tip">💡 举一反三：函数内 static 变量是最简单的单例模式实现。C++11 保证其初始化是线程安全的（magic statics）。比传统指针+双重检查锁定简洁太多。</p>
-            <h3>语法规则：结构化绑定 Structured Binding (C++17)</h3>
-            <pre class="code-block"><code class="language-cpp">std::map&lt;int, std::string&gt; m = {{1,&quot;a&quot;},{2,&quot;b&quot;}};
-for (const auto&amp; [key, value] : m) {  // 直接解包 pair
-  std::cout &lt;&lt; key &lt;&lt; &quot;: &quot; &lt;&lt; value &lt;&lt; '\n';
-}</code></pre>
-            <p class="tip">💡 举一反三：结构化绑定适用于 pair/tuple/数组/简单结构体。C++17 编译选项：-std=c++17。范围 for + 结构化绑定 = 遍历 map 的最优雅写法。</p>
-            <h3>语法规则：匿名命名空间（anonymous namespace）</h3>
-            <pre class="code-block"><code class="language-cpp">namespace {  // 没有名字的命名空间
-  int hiddenVar = 42;  // 等效于 static int hiddenVar;
-}</code></pre>
-            <p class="tip">💡 举一反三：匿名命名空间内的符号仅在当前翻译单元(.cpp文件)可见，替代 C 语言的 static 全局变量。推荐用匿名 namespace 而非 static。</p>
-        </section>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：function 作为回调类型</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+using Callback = function&lt;void(int, string)&gt;;
+// 可存储任何匹配签名的可调用对象
+Callback cb = [](int,string){}; // Lambda
+Callback cb = someFunction;     // 函数指针
+Callback cb = bind(&amp;Obj::method, &amp;obj, _1, _2);</code></pre>
+                    <p class="tip">举一反三：function 是回调系统的核心类型。支持 Lambda、函数指针、bind 结果、函数对象。有类型擦除的开销（虚函数调用），频繁调用场景考虑模板。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：Token 模式注销</h3>
+                    <pre class="code-block"><code class="language-cpp">using Token = int;
+Token subscribe(Callback cb) { /* 返回递增 ID */ }
+bool unsubscribe(Token t) { /* 按 ID 删除 */ }
+// 避免直接存储迭代器（容易失效）</code></pre>
+                    <p class="tip">举一反三：Token 模式是安全的注销方案。不暴露内部数据结构。Token 是轻量句柄，可传递和比较。Rust 的 Channel 和许多事件库都用类似模式。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：可变参数模板事件</h3>
+                    <pre class="code-block"><code class="language-cpp">template &lt;typename... Args&gt;
+class EventManager {
+    function&lt;void(Args...)&gt; cb;
+    void emit(Args... args);
+};
+// 一份代码适配任意参数组合</code></pre>
+                    <p class="tip">举一反三：可变参数模板使事件系统支持任意数量和类型的参数。Args... 在编译期展开。emit 中用完美转发（forward<Args>(args)...）可避免不必要的拷贝。</p>
+                </div>
+            </section>
+        </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_070.html" class="prev-link">&larr; 案例 70</a>
+<a href="case_072.html" class="next-link">案例 72 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -3,595 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 9：学生成绩管理系统（结构体版） - C++ 100工程案例</title>
+    <title>案例 9：学生成绩管理系统(struct版) - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link active">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_008.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_010.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 9：学生成绩管理系统(struct版)</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 9：学生成绩管理系统(struct版)</h1>
+            <section class="intro">
+<p>使用结构体实现一个学生成绩管理系统，支持添加、查询、排序、统计功能。</p>
+            <p><strong>核心知识点：</strong>struct 定义、vector 存储、sort 自定义排序</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 9：学生成绩管理系统 (struct 版)
+// 使用结构体 + vector + lambda 排序实现管理功能
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+#include &lt;iomanip&gt;
+using namespace std;
 
-        <h1>案例 9：学生成绩管理系统（结构体版）</h1>
+// 学生结构体
+struct Student {
+    string name;
+    int math;
+    int english;
+    int cs;
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include <string></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include <vector></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include <algorithm>  // sort</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>#include <iomanip>    // setw, setprecision</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>// 定义学生结构体</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>struct Student {</code></span>
-                        <span class="line-comment">struct 定义结构体，默认成员为 public</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    string name;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    int id;</code></span>
-                        <span class="line-comment">string name — string 类型成员，非 POD 类型也可用在 struct 中</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    double math, english, cpp;  // 三科成绩</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    // 计算总分</code></span>
-                        <span class="line-comment">const 成员函数，不修改对象状态</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    double total() const { return math + english + cpp; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>    // 计算平均分</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    double average() const { return total() / 3.0; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>};</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>// 打印单个学生信息</code></span>
-                        <span class="line-comment">const Student& — 传引用避免拷贝</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>void printStudent(const Student& s) {</code></span>
-                        <span class="line-comment">left 左对齐，setw(n) 设置字段宽度为 n</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    cout << left << setw(4) << s.id</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>         << setw(12) << s.name</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>         << setw(8) << s.math</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>         << setw(8) << s.english</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>         << setw(8) << s.cpp</code></span>
-                        <span class="line-comment">fixed 固定小数表示，setprecision(1) 保留1位小数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>         << setw(8) << s.total()</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>         << setw(8) << fixed << setprecision(1) << s.average()</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>         << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>// 打印所有学生</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>void printAll(const vector<Student>& students) {</code></span>
-                        <span class="line-comment">string(60, '=') 创建由 60 个 '=' 组成的字符串</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>    cout << "\n" << string(60, '=') << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    cout << left << setw(4) << "ID"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>         << setw(12) << "姓名"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>         << setw(8) << "数学"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>         << setw(8) << "英语"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>         << setw(8) << "C++"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>         << setw(8) << "总分"</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>         << setw(8) << "平均分" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>    cout << string(60, '-') << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    for (const auto& s : students) printStudent(s);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    vector<Student> students = {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>        {"张三", 1001, 85, 92, 78},</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>        {"李四", 1002, 90, 88, 95},</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>        {"王五", 1003, 76, 84, 90},</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>        {"赵六", 1004, 92, 79, 88},</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>        {"钱七", 1005, 88, 91, 85}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>    };</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    printAll(students);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    // 按总分排序（lambda 表达式）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>    sort(students.begin(), students.end(),</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>         [](const Student& a, const Student& b) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">61</span>
-                        <span class="line-code"><code>             return a.total() > b.total();  // 降序排列</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">62</span>
-                        <span class="line-code"><code>         });</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">63</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">sort 第三个参数是比较函数，Lambda 表达式 `[](参数){ 函数体 }`</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">64</span>
-                        <span class="line-code"><code>    cout << "\n========== 按总分排名 ==========";</code></span>
-                        <span class="line-comment">Lambda 的捕获列表 `[]` 表示不捕获外部变量</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">65</span>
-                        <span class="line-code"><code>    printAll(students);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">66</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">67</span>
-                        <span class="line-code"><code>    // 统计各科平均分</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">68</span>
-                        <span class="line-code"><code>    double avgMath = 0, avgEng = 0, avgCpp = 0;</code></span>
-                        <span class="line-comment">a.total() > b.total() 返回 true 表示 a 应排在 b 前面（降序）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">69</span>
-                        <span class="line-code"><code>    for (const auto& s : students) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">70</span>
-                        <span class="line-code"><code>        avgMath += s.math;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">71</span>
-                        <span class="line-code"><code>        avgEng += s.english;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">72</span>
-                        <span class="line-code"><code>        avgCpp += s.cpp;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">73</span>
-                        <span class="line-code"><code>    }</code></span>
-                        <span class="line-comment">for (const auto& s : students) — 用 auto 让编译器推导类型</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">74</span>
-                        <span class="line-code"><code>    int n = students.size();</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">75</span>
-                        <span class="line-code"><code>    cout << "\n各科平均分：数学 " << avgMath/n</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">76</span>
-                        <span class="line-code"><code>         << " 英语 " << avgEng/n</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">77</span>
-                        <span class="line-code"><code>         << " C++ " << avgCpp/n << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">78</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">79</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">80</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
+    // 计算总分
+    int total() const { return math + english + cs; }
+    // 计算平均分
+    double avg() const { return total() / 3.0; }
+};
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>struct 结构体</h3>
-                    <div class="rule-box">`struct 名称 { 成员列表 };` — C++ 中 struct 和 class 几乎一样，唯一区别是 struct 默认 public、class 默认 private。struct 通常用于纯数据聚合。</div>
-                    <pre><code>struct Point { int x, y; };
-Point p = {3, 5};
-cout << p.x;  // 3</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>Lambda 表达式</h3>
-                    <div class="rule-box">`[捕获列表](参数列表) -> 返回类型 { 函数体 }`。C++11 引入的匿名函数对象，常作为回调或比较器。返回类型可省略（自动推导）。</div>
-                    <pre><code>auto add = [](int a, int b) { return a + b; };
-cout << add(3, 5);
+// 打印单个学生信息
+void printStudent(const Student&amp; s) {
+    cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; s.name
+         &lt;&lt; setw(8) &lt;&lt; s.math
+         &lt;&lt; setw(8) &lt;&lt; s.english
+         &lt;&lt; setw(8) &lt;&lt; s.cs
+         &lt;&lt; setw(8) &lt;&lt; s.total()
+         &lt;&lt; fixed &lt;&lt; setprecision(1) &lt;&lt; s.avg() &lt;&lt; endl;
+}
 
-// 捕获外部变量
-int factor = 2;
-auto doubler = [factor](int x) { return x * factor; };</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>格式化输出 iomanip</h3>
-                    <div class="rule-box">`setw(n)`：设置字段宽度；`left/right`：对齐方向；`fixed`：固定小数；`setprecision(n)`：精度；`setfill(c)`：填充字符。</div>
-                    <pre><code>cout << setfill('0') << setw(4) << 42;  // 输出 0042</code></pre>
-                </div>
-            </div>
-        </section>
+int main() {
+    // 初始化学生数据
+    vector&lt;Student&gt; students = {
+        {"张三", 85, 92, 78},
+        {"李四", 90, 88, 95},
+        {"王五", 72, 85, 80},
+        {"赵六", 95, 91, 88}
+    };
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>添加增删改查功能</h4>
-                    <p>用交互式菜单（switch），实现 CRUD</p>
-                    <p><strong>思路：</strong>添加 addStudent / delStudent / updateStudent 函数</p>
-                </div>
-                <div class="extend-item">
-                    <h4>从文件读取数据</h4>
-                    <p>CSV 格式读写，ifstream + 按行解析</p>
-                    <p><strong>思路：</strong>getline + stringstream 分割</p>
-                </div>
-                <div class="extend-item">
-                    <h4>多科目排名</h4>
-                    <p>分别按各科排序并输出排名</p>
-                    <p><strong>思路：</strong>多个 sort + 打印排名序号</p>
-                </div>
-            </div>
-        </section>
+    // 按总分降序排序（lambda 表达式自定义比较规则）
+    sort(students.begin(), students.end(),
+         [](const Student&amp; a, const Student&amp; b) {
+             return a.total() &gt; b.total(); // 总分高的排前面
+         });
 
-        <div class="bottom-nav">
-            <a href="case_008.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_010.html" class="nav-link">下一个 →</a>
+    // 打印表头
+    cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; "姓名"
+         &lt;&lt; setw(8) &lt;&lt; "数学"
+         &lt;&lt; setw(8) &lt;&lt; "英语"
+         &lt;&lt; setw(8) &lt;&lt; "C++"
+         &lt;&lt; setw(8) &lt;&lt; "总分"
+         &lt;&lt; "平均分" &lt;&lt; endl;
+    cout &lt;&lt; string(50, '-') &lt;&lt; endl;
+
+    // 打印所有学生
+    for (const auto&amp; s : students) {
+        printStudent(s);
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：struct 定义与成员函数</h3>
+                    <pre class="code-block"><code class="language-cpp">struct Student {
+    string name;
+    int score;
+    int total() const { return score; }
+};</code></pre>
+                    <p class="tip">举一反三：C++ 中 struct 与 class 几乎相同，仅默认访问权限不同（struct 默认 public）。const 成员函数承诺不修改成员变量。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：sort + lambda 自定义排序</h3>
+                    <pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end(),
+     [](const T&amp; a, const T&amp; b) { return a.key &gt; b.key; });</code></pre>
+                    <p class="tip">举一反三：第三个参数 lambda 返回 true 表示 a 应排在 b 前面。也可传函数指针或函数对象。降序用 >，升序用 <。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：iomanip 格式化表格</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
+cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; name; // 左对齐，宽度 10</code></pre>
+                    <p class="tip">举一反三：left/right 控制对齐方向，setw 控制列宽，setprecision(n) 控制小数位数，fixed 固定小数格式。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_008.html" class="prev-link">&larr; 案例 8</a>
+<a href="case_010.html" class="next-link">案例 10 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

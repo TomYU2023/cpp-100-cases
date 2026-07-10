@@ -1,145 +1,155 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 59：进程内存使用监控 - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 59：原子操作与内存序 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 59：进程内存使用监控</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;iomanip&gt;</td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2">#include &lt;windows.h&gt;</td></tr>
-<tr><td class="ln">8</td><td class="cd">#include &lt;psapi.h&gt;</td><td class="cmt">GetProcessMemoryInfo</td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">#pragma comment(lib, "psapi.lib")</td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">12</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2">// 格式化显示内存大小</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">string formatBytes(SIZE_T bytes) {</td></tr>
-<tr><td class="ln">16</td><td class="cd">    const char* units[] = {"B", "KB", "MB", "GB"};</td><td class="cmt">单位数组</td></tr>
-<tr><td class="ln">17</td><td class="cd" colspan="2">    int unitIndex = 0;</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2">    double size = static_cast&lt;double&gt;(bytes);</td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">    while (size &gt;= 1024 &amp;&amp; unitIndex &lt; 3) {</td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">        size /= 1024;</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">        unitIndex++;</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">    ostringstream oss;</td></tr>
-<tr><td class="ln">26</td><td class="cd">    oss &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; size &lt;&lt; " " &lt;&lt; units[unitIndex];</td><td class="cmt">保留两位小数</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2">    return oss.str();</td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">// 获取指定 PID 的内存信息</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">void printProcessMemory(DWORD pid) {</td></tr>
-<tr><td class="ln">32</td><td class="cd">    HANDLE hProcess = OpenProcess(</td><td class="cmt">打开进程获取句柄</td></tr>
-<tr><td class="ln">33</td><td class="cd">        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,</td><td class="cmt">查询 + 读取内存</td></tr>
-<tr><td class="ln">34</td><td class="cd">        FALSE, pid);</td><td class="cmt">FALSE 表示不继承句柄</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">    if (!hProcess) {</td></tr>
-<tr><td class="ln">37</td><td class="cd">        return;</td><td class="cmt">权限不足或进程不存在</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2">    // 获取进程工作集</td></tr>
-<tr><td class="ln">41</td><td class="cd">    PROCESS_MEMORY_COUNTERS memInfo{};</td><td class="cmt">内存统计结构体</td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2">    if (GetProcessMemoryInfo(hProcess, &amp;memInfo, sizeof(memInfo))) {</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2">        cout &lt;&lt; "PID: " &lt;&lt; setw(6) &lt;&lt; right &lt;&lt; pid</td></tr>
-<tr><td class="ln">44</td><td class="cd">             &lt;&lt; " | Working Set: " &lt;&lt; setw(10) &lt;&lt; right &lt;&lt; formatBytes(memInfo.WorkingSetSize)</td><td class="cmt">工作集</td></tr>
-<tr><td class="ln">45</td><td class="cd">             &lt;&lt; " | Peak WS: "     &lt;&lt; setw(10) &lt;&lt; right &lt;&lt; formatBytes(memInfo.PeakWorkingSetSize)</td><td class="cmt">峰值</td></tr>
-<tr><td class="ln">46</td><td class="cd">             &lt;&lt; " | Pagefile: "    &lt;&lt; setw(10) &lt;&lt; right &lt;&lt; formatBytes(memInfo.PagefileUsage)</td><td class="cmt">页面文件</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2">             &lt;&lt; endl;</td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">50</td><td class="cd" colspan="2">    CloseHandle(hProcess);</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">// 枚举所有进程并显示内存占用</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2">void showAllProcesses() {</td></tr>
-<tr><td class="ln">55</td><td class="cd">    DWORD pids[1024], bytesReturned;</td><td class="cmt">最多列 1024 个进程</td></tr>
-<tr><td class="ln">56</td><td class="cd">    if (!EnumProcesses(pids, sizeof(pids), &amp;bytesReturned)) {</td><td class="cmt">获取所有进程 PID</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">        cerr &lt;&lt; "EnumProcesses failed" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">        return;</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">61</td><td class="cd">    int numProcesses = bytesReturned / sizeof(DWORD);</td><td class="cmt">计算进程数量</td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">    cout &lt;&lt; "Total processes: " &lt;&lt; numProcesses &lt;&lt; "\n" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">    for (int i = 0; i &lt; numProcesses; i++) {</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">        if (pids[i] != 0) printProcessMemory(pids[i]);</td></tr>
-<tr><td class="ln">66</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">    showAllProcesses();</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>PROCESS_MEMORY_COUNTERS 结构体</h3>
-<div class="rule"><strong>语法规则：</strong>Windows 进程内存的核心统计：<strong>WorkingSetSize</strong>（当前物理内存占用）、<strong>PeakWorkingSetSize</strong>（历史峰值）、<strong>PagefileUsage</strong>（页面文件使用）、<strong>PageFaultCount</strong>（缺页次数）。通过 GetProcessMemoryInfo 获取。</div>
-<pre class="example"><code>PROCESS_MEMORY_COUNTERS pmc{};
-GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
-// 当前进程的内存：
-cout << "Working Set: " << pmc.WorkingSetSize / 1024 << " KB";</code></pre>
-</div>
-<div class="grammar-item">
-<h3>EnumProcesses 进程枚举</h3>
-<div class="rule"><strong>语法规则：</strong><code>EnumProcesses</code> 获取系统所有进程 PID 到数组。返回数组大小需用 <code>bytesReturned / sizeof(DWORD)</code> 计算进程数。注意 PID 可重用，枚举到的进程可能在调用前已退出。</div>
-<pre class="example"><code>DWORD pids[4096], cb;
-EnumProcesses(pids, sizeof(pids), &cb);
-int count = cb / sizeof(DWORD);
-for (int i = 0; i < count; i++) {
-    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pids[i]);
-    // ... 查询进程信息 ...
-    CloseHandle(h);
-}</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>跨平台进程查询（Linux /proc）：</strong><pre><code>// Linux: 读取 /proc/[pid]/statm
-ifstream f("/proc/self/status");
-string line;
-while (getline(f, line)) {
-    if (line.starts_with("VmRSS:")) ss >> mem;
-}</code></pre><p>Linux 通过 /proc 文件系统提供进程信息，VmRSS 对应 Windows 的 WorkingSet。跨平台工具通常用条件编译区分。</p></li>
-<li><strong>实时监控 + 告警：</strong><pre><code>while (true) {
-    auto& hwInfo = getHardwareInfo();
-    double memUsage = hwInfo.usedMemory / hwInfo.totalMemory;
-    if (memUsage > 0.95) alert("Memory usage > 95%!");
-    this_thread::sleep_for(5s);
-}</code></pre><p>可以扩展为一个系统资源监控面板，结合条件变量或回调在超过阈值时触发告警。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 59：原子操作与内存序</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 59：原子操作与内存序</h1>
+            <section class="intro">
+<p>使用 atomic 实现无锁计数器，理解内存序的基本概念。</p>
+            <p><strong>核心知识点：</strong>atomic、memory_order、CAS、无锁编程</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 59：原子操作与内存序
+// lock-free 计数器和标志
+#include &lt;iostream&gt;
+#include &lt;atomic&gt;
+#include &lt;thread&gt;
+#include &lt;vector&gt;
+#include &lt;chrono&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_058.html">← 案例 58</a><a href="case_060.html">案例 60 →</a>
-</nav>
-</main>
+// 无锁计数器
+class AtomicCounter {
+private:
+    atomic&lt;long long&gt; count{0};
+
+public:
+    // fetch_add 原子地增加并返回旧值
+    long long increment() {
+        return count.fetch_add(1, memory_order_relaxed);
+    }
+
+    long long get() const { return count.load(memory_order_relaxed); }
+};
+
+// 自旋锁（使用 atomic_flag）
+class SpinLock {
+private:
+    atomic_flag flag = ATOMIC_FLAG_INIT;
+
+public:
+    void lock() {
+        // 自旋等待，直到成功设置标志
+        while (flag.test_and_set(memory_order_acquire)) {
+            // 让出 CPU（可选，减少忙等开销）
+            // this_thread::yield();
+        }
+    }
+
+    void unlock() {
+        flag.clear(memory_order_release);
+    }
+};
+
+// 无锁的「只执行一次」标志
+class RunOnce {
+private:
+    atomic&lt;bool&gt; executed{false};
+
+public:
+    // 尝试执行，如果已经执行过则返回 false
+    bool tryRun(function&lt;void()&gt; func) {
+        bool expected = false;
+        // CAS：如果 expected 和当前值相等，则设置为 true
+        if (executed.compare_exchange_strong(expected, true)) {
+            func(); // 只有第一次调用会执行
+            return true;
+        }
+        return false;
+    }
+};
+
+int main() {
+    // 1. 原子计数器
+    const int N = 8;
+    const int M = 100000;
+    AtomicCounter counter;
+
+    vector&lt;thread&gt; threads;
+    for (int i = 0; i &lt; N; i++) {
+        threads.emplace_back([&amp;counter, M]() {
+            for (int j = 0; j &lt; M; j++) {
+                counter.increment(); // 无锁递增
+            }
+        });
+    }
+    for (auto&amp; t : threads) t.join();
+
+    cout &lt;&lt; "计数器: " &lt;&lt; counter.get()
+         &lt;&lt; " (期望: " &lt;&lt; N * M &lt;&lt; ")" &lt;&lt; endl;
+
+    // 2. 只执行一次
+    RunOnce once;
+    auto initFunc = []() { cout &lt;&lt; "初始化（只执行一次）" &lt;&lt; endl; };
+    cout &lt;&lt; boolalpha;
+    cout &lt;&lt; "tryRun 1: " &lt;&lt; once.tryRun(initFunc) &lt;&lt; endl;
+    cout &lt;&lt; "tryRun 2: " &lt;&lt; once.tryRun(initFunc) &lt;&lt; endl;
+    cout &lt;&lt; "tryRun 3: " &lt;&lt; once.tryRun(initFunc) &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：atomic<T> 原子操作</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;atomic&gt;
+atomic&lt;int&gt; count{0};
+count.fetch_add(1);   // 原子递增
+count.load();          // 原子读取
+count.store(42);       // 原子写入</code></pre>
+                    <p class="tip">举一反三：atomic 保证操作不可分割。对 int 的 ++ 是三个步骤（读-改-写），非原子操作会因线程交错而出错。常用操作：fetch_add/sub/and/or/xor。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：compare_exchange (CAS)</h3>
+                    <pre class="code-block"><code class="language-cpp">bool expected = false;
+if (flag.compare_exchange_strong(expected, true)) {
+    // CAS 成功，执行关键操作
+}
+// 失败时 expected 被更新为当前值</code></pre>
+                    <p class="tip">举一反三：CAS (Compare And Swap) 是无锁编程的基础原语。compare_exchange_strong 用循环重试，compare_exchange_weak 可能假失败需配合循环。适合实现无锁栈/队列。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：memory_order 内存序</h3>
+                    <pre class="code-block"><code class="language-cpp">memory_order_relaxed: 只保证原子性，不保证顺序
+memory_order_acquire: 后续读写不重排到此操作前
+memory_order_release: 之前的读写不重排到此操作后
+memory_order_seq_cst: 全局顺序一致性（默认，最安全最慢）</code></pre>
+                    <p class="tip">举一反三：默认 seq_cst 最易理解但性能最低。计数器用 relaxed 即可。acquire-release 配对用于生产者-消费者同步。错误的内存序会导致难以调试的并发 bug。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_058.html" class="prev-link">&larr; 案例 58</a>
+<a href="case_060.html" class="next-link">案例 60 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

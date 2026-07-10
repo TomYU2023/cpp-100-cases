@@ -3,600 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 10：复数类（运算符重载） - C++ 100工程案例</title>
+    <title>案例 10：复数类(运算符重载) - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link active">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_009.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <span class="nav-link disabled">下一个 →</span>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 10：复数类(运算符重载)</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 10：复数类(运算符重载)</h1>
+            <section class="intro">
+<p>定义一个复数类，重载 +、-、*、<< 等运算符，深入理解运算符重载的语法和应用。</p>
+            <p><strong>核心知识点：</strong>运算符重载、友元函数、const 成员函数</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 10：复数类（运算符重载）
+// 重载 +、-、*、==、&lt;&lt; 运算符
+#include &lt;iostream&gt;
+using namespace std;
 
-        <h1>案例 10：复数类（运算符重载）</h1>
+class Complex {
+private:
+    double real; // 实部
+    double imag; // 虚部
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>class Complex {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>private:</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>    double real_;    // 实部</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>    double imag_;    // 虚部</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>public:</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    // 构造函数（支持默认参数）</code></span>
-                        <span class="line-comment">默认参数：Complex(double r=0, double i=0) 表示不传参数时 r=0, i=0</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    Complex(double r = 0, double i = 0) : real_(r), imag_(i) {}</code></span>
-                        <span class="line-comment">初始化列表 : real_(r), imag_(i) — 直接用参数值初始化成员</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    // 获取实部和虚部</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    double real() const { return real_; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    double imag() const { return imag_; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>    // 运算符重载：加法</code></span>
-                        <span class="line-comment">operator+ 是函数名，返回类型为 Complex</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    Complex operator+(const Complex& other) const {</code></span>
-                        <span class="line-comment">other 是另一个操作数，函数内用 this 的成员 + other 的成员</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>        return Complex(real_ + other.real_, imag_ + other.imag_);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>    // 运算符重载：减法</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    Complex operator-(const Complex& other) const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>        return Complex(real_ - other.real_, imag_ - other.imag_);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    // 运算符重载：乘法  (a+bi)*(c+di) = (ac-bd) + (ad+bc)i</code></span>
-                        <span class="line-comment">复数乘法公式：(a+bi)(c+di) = (ac-bd) + (ad+bc)i</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>    Complex operator*(const Complex& other) const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>        return Complex(</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>            real_ * other.real_ - imag_ * other.imag_,  // 实部</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>            real_ * other.imag_ + imag_ * other.real_   // 虚部</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>        );</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>    // 运算符重载：与实数的乘法</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    Complex operator*(double scalar) const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>        return Complex(real_ * scalar, imag_ * scalar);</code></span>
-                        <span class="line-comment">单目运算符 operator- 表示取负，没有参数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    // 运算符重载：取负</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>    Complex operator-() const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>        return Complex(-real_, -imag_);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    // 运算符重载：等于比较</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>    bool operator==(const Complex& other) const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>        return real_ == other.real_ && imag_ == other.imag_;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    }</code></span>
-                        <span class="line-comment">在 operator!= 中复用 operator==，代码复用</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    // 运算符重载：不等于</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>    bool operator!=(const Complex& other) const {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>        return !(*this == other);  // 复用 operator==</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    }</code></span>
-                        <span class="line-comment">friend 友元函数可以访问类的私有成员</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">ostream& 返回流引用，支持链式调用 cout << a << b;</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code>    // 友元函数：重载 << 运算符，用于输出</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    friend ostream& operator<<(ostream& os, const Complex& c) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>        os << c.real_;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>        if (c.imag_ >= 0) os << " + " << c.imag_ << "i";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>        else              os << " - " << -c.imag_ << "i";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>        return os;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">61</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">62</span>
-                        <span class="line-code"><code>};</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">63</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">64</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">65</span>
-                        <span class="line-code"><code>    Complex a(3, 4);   // 3 + 4i</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">66</span>
-                        <span class="line-code"><code>    Complex b(1, -2);  // 1 - 2i</code></span>
-                        <span class="line-comment">Complex a(3, 4) 调用构造函数，a.real_=3, a.imag_=4</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">67</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">68</span>
-                        <span class="line-code"><code>    cout << "a = " << a << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">69</span>
-                        <span class="line-code"><code>    cout << "b = " << b << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">70</span>
-                        <span class="line-code"><code>    cout << "a + b = " << a + b << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">71</span>
-                        <span class="line-code"><code>    cout << "a - b = " << a - b << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">72</span>
-                        <span class="line-code"><code>    cout << "a * b = " << a * b << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">73</span>
-                        <span class="line-code"><code>    cout << "a * 3 = " << a * 3 << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">74</span>
-                        <span class="line-code"><code>    cout << "-a = " << -a << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">75</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">76</span>
-                        <span class="line-code"><code>    if (a != b) cout << "a 和 b 不相等" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">77</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">78</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">79</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>运算符重载规则</h3>
-                    <div class="rule-box">C++ 允许重载大多运算符作为类成员或友元函数。不可重载的：`::` `.` `.*` `?:`。重载应保持运算符的语义直觉。</div>
-                    <pre><code>// 成员函数形式：返回类型 operator符号(参数)
-// 全局函数形式：返回类型 operator符号(参数1, 参数2)
-
-// 赋值运算符建议返回 *this 引用
-Complex& operator=(const Complex& other) {
-    real_ = other.real_; imag_ = other.imag_;
-    return *this;
-}</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>友元 friend</h3>
-                    <div class="rule-box">`friend` 声明让非成员函数或另一个类可以访问当前类的私有/保护成员。破坏封装但有时是必要的（如 `operator<<`）。</div>
-                    <pre><code>class A {
-    int secret;
-    friend void show(A& a);  // show 函数可以访问 A 的 private
-};
-void show(A& a) { cout << a.secret; }</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>this 指针</h3>
-                    <div class="rule-box">在成员函数内部，`this` 是指向当前对象的指针。`*this` 解引用得到对象本身。通常不需要显式使用，但返回自身引用时必须用 `return *this;`。</div>
-                    <pre><code>class Counter {
-    int n;
 public:
-    Counter& increment() { n++; return *this; }
+    Complex(double r = 0, double i = 0) : real(r), imag(i) {}
+
+    // 成员函数重载 + 运算符
+    Complex operator+(const Complex&amp; other) const {
+        return Complex(real + other.real, imag + other.imag);
+    }
+
+    // 成员函数重载 - 运算符
+    Complex operator-(const Complex&amp; other) const {
+        return Complex(real - other.real, imag - other.imag);
+    }
+
+    // 成员函数重载 * 运算符：(a+bi)(c+di) = (ac-bd)+(ad+bc)i
+    Complex operator*(const Complex&amp; other) const {
+        return Complex(
+            real * other.real - imag * other.imag,
+            real * other.imag + imag * other.real
+        );
+    }
+
+    // 重载 == 运算符
+    bool operator==(const Complex&amp; other) const {
+        return real == other.real &amp;&amp; imag == other.imag;
+    }
+
+    // 友元函数重载 &lt;&lt; 输出运算符
+    friend ostream&amp; operator&lt;&lt;(ostream&amp; os, const Complex&amp; c) {
+        os &lt;&lt; c.real;
+        if (c.imag &gt;= 0) os &lt;&lt; " + " &lt;&lt; c.imag &lt;&lt; "i";
+        else             os &lt;&lt; " - " &lt;&lt; -c.imag &lt;&lt; "i";
+        return os;
+    }
 };
-Counter c;
-c.increment().increment();  // 链式调用</code></pre>
-                </div>
-            </div>
-        </section>
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>添加除法</h4>
-                    <p>复数的除法：(a+bi)/(c+di)</p>
-                    <p><strong>思路：</strong>用共轭复数，结果实部 = (ac+bd)/(c²+d²)</p>
-                </div>
-                <div class="extend-item">
-                    <h4>添加模长计算</h4>
-                    <p>|z| = sqrt(a² + b²)</p>
-                    <p><strong>思路：</strong>添加 magnitude() 成员函数</p>
-                </div>
-                <div class="extend-item">
-                    <h4>添加自增运算符</h4>
-                    <p>operator++() 前缀版和 operator++(int) 后缀版</p>
-                    <p><strong>思路：</strong>前缀返回引用，后缀返回值</p>
-                </div>
-            </div>
-        </section>
+int main() {
+    Complex a(3, 2);  // 3 + 2i
+    Complex b(1, 4);  // 1 + 4i
 
-        <div class="bottom-nav">
-            <a href="case_009.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <span class="nav-link disabled">下一个 →</span>
+    Complex sum = a + b;    // 调用 operator+
+    Complex diff = a - b;   // 调用 operator-
+    Complex prod = a * b;   // 调用 operator*
+
+    cout &lt;&lt; "a = " &lt;&lt; a &lt;&lt; endl;
+    cout &lt;&lt; "b = " &lt;&lt; b &lt;&lt; endl;
+    cout &lt;&lt; "a + b = " &lt;&lt; sum &lt;&lt; endl;
+    cout &lt;&lt; "a - b = " &lt;&lt; diff &lt;&lt; endl;
+    cout &lt;&lt; "a * b = " &lt;&lt; prod &lt;&lt; endl;
+    cout &lt;&lt; "a == b ? " &lt;&lt; (a == b ? "true" : "false") &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：成员函数重载二元运算符</h3>
+                    <pre class="code-block"><code class="language-cpp">Complex operator+(const Complex&amp; other) const {
+    return Complex(real + other.real, imag + other.imag);
+}</code></pre>
+                    <p class="tip">举一反三：成员函数重载时左操作数是 this。一般 +、-、*、/ 返回新对象（const 函数，不改原对象），+=、-= 返回引用（修改自身）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：友元函数重载 <<</h3>
+                    <pre class="code-block"><code class="language-cpp">friend ostream&amp; operator&lt;&lt;(ostream&amp; os, const Complex&amp; c) {
+    os &lt;&lt; c.real &lt;&lt; " + " &lt;&lt; c.imag &lt;&lt; "i";
+    return os;
+}</code></pre>
+                    <p class="tip">举一反三：<< 的第一个操作数是 ostream，不能作为成员函数重载，必须用友元或全局函数。cin 的 >> 同理。返回 ostream& 支持链式调用。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：默认参数构造函数</h3>
+                    <pre class="code-block"><code class="language-cpp">Complex(double r = 0, double i = 0) : real(r), imag(i) {}</code></pre>
+                    <p class="tip">举一反三：默认参数让一个构造函数覆盖多种调用方式：Complex()，Complex(3)，Complex(3,2)。默认参数只能从右向左设置。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_009.html" class="prev-link">&larr; 案例 9</a>
+<a href="case_011.html" class="next-link">案例 11 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

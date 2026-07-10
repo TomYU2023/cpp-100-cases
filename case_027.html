@@ -3,454 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 27: sort 对比实验 | C++ 100 案例</title>
+    <title>案例 27：sort/stable_sort对比 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <div class="app">
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html"><h2>C++ 100 案例</h2></a>
-            </div>
-            <div class="sidebar-nav">
-<div class="section-title">阶段一：语法练兵场</div>
-<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
-<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
-<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
-<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
-<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
-<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
-<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
-<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
-<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
-<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
-<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
-<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
-<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
-<a href="case_014.html" class="nav-item ">14. 模板函数</a>
-<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
-<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
-<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
-<a href="case_018.html" class="nav-item ">18. 移动语义</a>
-<a href="case_019.html" class="nav-item ">19. 智能指针</a>
-<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
-<div class="section-title">阶段二：STL 熟练工</div>
-<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
-<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
-<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
-<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
-<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
-<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
-<a href="case_027.html" class="nav-item active">27. sort 对比实验</a>
-<a href="case_028.html" class="nav-item ">28. find_if 条件筛选</a>
-<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
-<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
-<a href="case_031.html" class="nav-item ">31. partition 分区</a>
-<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
-<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
-<a href="case_034.html" class="nav-item ">34. chrono 计时器</a>
-<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
-<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
-<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
-<a href="case_038.html" class="nav-item ">38. mutex 线程安全</a>
-<a href="case_039.html" class="nav-item ">39. condition_variable 生产者消费者</a>
-<a href="case_040.html" class="nav-item ">40. future/async 异步任务</a>
-<div class="section-title">阶段三：实用小工具</div>
-<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
-<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
-<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
-<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
-<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
-<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
-<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
-<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
-<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
-<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
-<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
-<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
-<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
-<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
-<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
-<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
-<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
-<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
-<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
-<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
-<div class="section-title">阶段四：工程能力锻造</div>
-<a href="case_061.html" class="nav-item ">61. 线程池</a>
-<a href="case_062.html" class="nav-item ">62. 内存池</a>
-<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
-<a href="case_064.html" class="nav-item ">64. 对象池</a>
-<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
-<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
-<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
-<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
-<a href="case_069.html" class="nav-item ">69. 事件总线</a>
-<a href="case_070.html" class="nav-item ">70. 策略模式</a>
-<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
-<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
-<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
-<a href="case_074.html" class="nav-item ">74. 状态机</a>
-<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
-<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
-<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
-<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
-<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
-<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
-<a href="case_081.html" class="nav-item ">81. 插件系统</a>
-<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
-<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
-<a href="case_084.html" class="nav-item ">84. 连接池</a>
-<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
-<div class="section-title">阶段五：综合项目</div>
-<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
-<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
-<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
-<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
-<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
-<a href="case_091.html" class="nav-item ">91. 协程库</a>
-<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
-<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
-<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
-<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
-<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
-<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
-<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
-<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
-<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
-            </div>
-        </nav>
-        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-        <main class="content">
-            <header class="case-header">
-                <span class="case-badge">案例 027</span>
-                <h1>sort 对比实验</h1>
-            </header>
-
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 27：sort/stable_sort对比</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 27：sort/stable_sort对比</h1>
+            <section class="intro">
+<p>对比 sort 和 stable_sort 在处理相等元素时的行为差异，深入理解排序算法稳定性。</p>
+            <p><strong>核心知识点：</strong>sort、stable_sort、稳定性、自定义比较器</p>
+            </section>
             <section class="code-section">
-                <h2>完整代码（逐行注释）</h2>
-                <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;algorithm&gt;</code></span>
-                        <span class="line-comment">sort, stable_sort, is_sorted</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include &lt;string&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>#include &lt;chrono&gt;</code></span>
-                        <span class="line-comment">计时</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>#include &lt;random&gt;</code></span>
-                        <span class="line-comment">随机数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>using namespace chrono;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    const int N = 100000;</code></span>
-                        <span class="line-comment">10 万条数据</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    vector&lt;int&gt; sorted(N), reversed(N), random(N);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    // 生成测试数据</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    for (int i = 0; i &lt; N; i++) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>        sorted[i] = i;</code></span>
-                        <span class="line-comment">已排序</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>        reversed[i] = N - i;</code></span>
-                        <span class="line-comment">完全逆序</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    mt19937 rng(42);</code></span>
-                        <span class="line-comment">固定种子保证可重复</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    iota(random.begin(), random.end(), 0);</code></span>
-                        <span class="line-comment">生成 0..N-1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>    shuffle(random.begin(), random.end(), rng);</code></span>
-                        <span class="line-comment">随机打乱</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    // 对比三种 sort 在不同数据上的性能</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>    auto testSort = [&amp;](const string&amp; name, vector&lt;int&gt; v, auto sorter) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>        auto start = high_resolution_clock::now();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>        sorter(v);</code></span>
-                        <span class="line-comment">执行排序</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>        auto elapsed = duration_cast&lt;microseconds&gt;(</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>            high_resolution_clock::now() - start).count();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "  " &lt;&lt; name &lt;&lt; ": " &lt;&lt; elapsed &lt;&lt; " μs" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        return v;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>    };</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "=== 已排序数据 ===\n";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    testSort("sort", sorted, [](auto&amp; v){ sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>    testSort("stable_sort", sorted, [](auto&amp; v){ stable_sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    testSort("partial_sort", sorted, [](auto&amp; v){</code></span>
-                        <span class="line-comment">只排序前 10 个</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>        partial_sort(v.begin(), v.begin()+10, v.end());</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n=== 逆序数据 ===\n";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>    testSort("sort", reversed, [](auto&amp; v){ sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    testSort("stable_sort", reversed, [](auto&amp; v){ stable_sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n=== 随机数据 ===\n";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    testSort("sort", random, [](auto&amp; v){ sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>    testSort("stable_sort", random, [](auto&amp; v){ stable_sort(v.begin(), v.end()); });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    // 自定义排序: 先按长度再按字典序</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>    vector&lt;string&gt; words = {"cpp", "python", "go", "rust", "java", "c", "haskell"};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    sort(words.begin(), words.end(), [](const string&amp; a, const string&amp; b) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>        if (a.size() != b.size()) return a.size() &lt; b.size();</code></span>
-                        <span class="line-comment">先按长度</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>        return a &lt; b;</code></span>
-                        <span class="line-comment">再按字典序</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n自定义排序结果: ";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code>    for (auto&amp; w : words) cout &lt;&lt; w &lt;&lt; ' ';</code></span>
-                        <span class="line-comment">c go cpp java rust python haskell</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-                </div>
-                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
-            </section>
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 27：sort / stable_sort 对比
+// 演示稳定排序与不稳定排序的区别
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;string&gt;
+using namespace std;
 
-            <section class="grammar-section">
-                <h2>新语法讲解</h2>
-            <div class="grammar-card">
-                <h3>sort vs stable_sort</h3>
-                <div class="grammar-rule"><strong>sort</strong>：Introsort（快排+堆排+插入排序混合），<strong>不保证稳定性</strong>，O(n log n)。<strong>stable_sort</strong>：归并排序或类似算法，<strong>保持相等元素的相对顺序</strong>，O(n log n) 但常数更大，需要额外 O(n) 内存。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>// 稳定排序示例
-vector<pair<int,string>> v = {{3,"c"},{1,"a"},{3,"b"}};
-sort(v.begin(), v.end()); // 可能: (1,"a"),(3,"b"),(3,"c") 或 (3,"c"),(3,"b")
-stable_sort(v.begin(),v.end()); // 保证: (1,"a"),(3,"c"),(3,"b")</code></pre>
-                </div>
-            </div>
-            <div class="grammar-card">
-                <h3>partial_sort 部分排序</h3>
-                <div class="grammar-rule"><strong>partial_sort(first, middle, last)</strong>：只把最小的 middle-first 个元素排好放到前面，其余元素顺序未定义。适用于只需要 Top K 的场景，比全排序快。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>vector<int> v = {9,3,7,1,5,8};
-partial_sort(v.begin(), v.begin()+3, v.end());
-// 前 3 个: {1,3,5}（最小 3 个且已排序）
-// 后面: {9,7,8}（顺序未定义）</code></pre>
-                </div>
-            </div>
-            </section>
+struct Person {
+    string name;
+    int grade;
+};
 
-            <section class="extend-section">
-                <h2>举一反三</h2>
-            <div class="extend-card">
-                <h3>nth_element 找第 K 大</h3>
-                <pre><code>nth_element(v.begin(), v.begin()+k, v.end(), greater<>());
-int kth = v[k]; // 第 k 大的值
-// 左边都 >= kth，右边都 <= kth，但不排序</code></pre>
-                <p>O(n) 的快速选择算法</p>
-            </div>
-            <div class="extend-card">
-                <h3>并行排序 (C++17)</h3>
-                <pre><code>#include <execution>
-sort(execution::par, v.begin(), v.end());
-// 利用多线程加速排序</code></pre>
-                <p>需要 TBB 库支持</p>
-            </div>
-            <div class="extend-card">
-                <h3>用 sort 实现排名</h3>
-                <pre><code>vector<int> indices(v.size());
-iota(indices.begin(),indices.end(),0);
-sort(indices.begin(),indices.end(),
-  [&](int a,int b){return v[a]>v[b];});
-// indices 是排序后的索引/排名</code></pre>
-                <p>不改变原数组，只排序索引</p>
-            </div>
-            </section>
+// 按 grade 排序的比较器
+bool byGrade(const Person&amp; a, const Person&amp; b) {
+    return a.grade &lt; b.grade;
+}
 
-            <nav class="case-nav">
-                <a href="case_026.html" class="nav-prev">← 上一案例</a>
-                <a href="index.html" class="nav-home">回首页</a>
-                <a href="case_028.html" class="nav-next">下一案例 →</a>
-            </nav>
-        </main>
-    </div>
-    <script>
-    function copyCode(container) {
-        const lines = container.querySelectorAll('.line-code code');
-        let code = '';
-        lines.forEach(l => code += l.textContent + '\n');
-        navigator.clipboard.writeText(code);
+void printList(const string&amp; label, const vector&lt;Person&gt;&amp; people) {
+    cout &lt;&lt; label &lt;&lt; ":" &lt;&lt; endl;
+    for (const auto&amp; p : people) {
+        cout &lt;&lt; "  " &lt;&lt; p.name &lt;&lt; " : " &lt;&lt; p.grade &lt;&lt; "分" &lt;&lt; endl;
     }
-    </script>
+    cout &lt;&lt; endl;
+}
+
+int main() {
+    // 原始数据：Alice 和 Charlie 成绩相同
+    vector&lt;Person&gt; people = {
+        {"Alice",   85},
+        {"Bob",     92},
+        {"Charlie", 85},
+        {"Dave",    78},
+        {"Eve",     92}
+    };
+
+    printList("原始顺序", people);
+
+    // 非稳定排序：相同 grade 时，原始顺序不保证
+    vector&lt;Person&gt; sorted = people;
+    sort(sorted.begin(), sorted.end(), byGrade);
+    printList("sort (非稳定)", sorted);
+
+    // 稳定排序：相同 grade 时，保持原始相对顺序
+    vector&lt;Person&gt; stableSorted = people;
+    stable_sort(stableSorted.begin(), stableSorted.end(), byGrade);
+    printList("stable_sort (稳定)", stableSorted);
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：sort 与 stable_sort</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+sort(v.begin(), v.end());       // 非稳定，O(n log n)
+stable_sort(v.begin(), v.end()); // 稳定，O(n log n) 但常数稍大</code></pre>
+                    <p class="tip">举一反三：sort 通常是 introsort（快速+堆+插入），stable_sort 是归并排序。多次排序（如先按姓名再按成绩）需稳定排序。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：排序的稳定性</h3>
+                    <pre class="code-block"><code class="language-cpp">// 稳定：相等元素的原始相对顺序不变
+// 例如先按姓名排序，再稳定按成绩排序：
+// 同成绩的人仍按姓名字母顺序排列</code></pre>
+                    <p class="tip">举一反三：稳定排序适用于「按优先级链式排序」——先用次要 key 稳定排序，再用主要 key 稳定排序，最终主要 key 相同则次要 key 有序。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：自定义比较器</h3>
+                    <pre class="code-block"><code class="language-cpp">bool cmp(const T&amp; a, const T&amp; b) {
+    return a.field &lt; b.field;
+}
+sort(v.begin(), v.end(), cmp);</code></pre>
+                    <p class="tip">举一反三：比较器必须满足严格弱序（strict weak ordering）：非自反、传递、反对称。不能返回 <= 或 >=，必须是 < 或 >。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_026.html" class="prev-link">&larr; 案例 26</a>
+<a href="case_028.html" class="next-link">案例 28 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

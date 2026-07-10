@@ -1,189 +1,135 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 94：简易数据库</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_093.html">&#8592; 上一案例</a>    <span class="sep">|</span>
-            <a href="case_095.html">下一案例 &#8594;</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 94：std::mem_fn 成员函数包装 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 94：std::mem_fn 成员函数包装</span>
         </div>
-    </nav><main class="container"><h1>案例 94：简易数据库</h1><section class="intro"><p>实现 SQL 子集解析（SELECT/FROM/WHERE）、内存表存储、B-Tree 索引和查询执行引擎。</p><p><strong>核心知识点：</strong>SQL 解析、std::istringstream、B-Tree 索引（map 模拟）、enum class、查询执行</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 94：简易数据库 —— SQL 解析 + 执行引擎
-// 实现 SELECT/FROM/WHERE 子集，包含内存表存储、B-Tree 索引雏形、查询执行。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 94：std::mem_fn 成员函数包装</h1>
+            <section class="intro">
+<p>使用 mem_fn 将成员函数包装为可调用对象，用于算法和回调。</p>
+            <p><strong>核心知识点：</strong>mem_fn、成员指针、bind、可调用对象</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 94：std::mem_fn 成员函数包装
+// 将成员函数转为可调用对象
 #include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;string&gt;
-#include &lt;map&gt;
-#include &lt;sstream&gt;
-#include &lt;algorithm&gt;
-#include &lt;cctype&gt;
 #include &lt;functional&gt;
-#include &lt;memory&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;string&gt;
+using namespace std;
 
-// --- 数据类型 ---
-enum class DataType { INT, STRING };
+class Student {
+private:
+    string name;
+    double score;
+public:
+    Student(string n, double s) : name(move(n)), score(s) {}
 
-struct Value {
-    DataType type;
-    int intVal = 0;
-    std::string strVal;
-};
-
-// --- 记录（一行）---
-struct Row {
-    std::map&lt;std::string, Value&gt; columns;
-};
-
-// --- 表 ---
-struct Table {
-    std::string name;
-    std::vector&lt;std::string&gt; columnNames;
-    std::vector&lt;Row&gt; rows;
-    // 简易 B-Tree 索引: 列名 -&gt; (值 -&gt; 行号列表)
-    std::map&lt;std::string, std::map&lt;int, std::vector&lt;int&gt;&gt;&gt; index;
-
-    void insert(const std::vector&lt;Value&gt;&amp; values) {
-        Row r;
-        for (size_t i = 0; i &lt; columnNames.size() &amp;&amp; i &lt; values.size(); i++)
-            r.columns[columnNames[i]] = values[i];
-        rows.push_back(r);
-        int rowIdx = (int)rows.size() - 1;
-        for (size_t i = 0; i &lt; columnNames.size() &amp;&amp; i &lt; values.size(); i++)
-            if (values[i].type == DataType::INT)
-                index[columnNames[i]][values[i].intVal].push_back(rowIdx);
+    double getScore() const { return score; }
+    const string&amp; getName() const { return name; }
+    bool isPass() const { return score &gt;= 60.0; }
+    void print() const {
+        cout &lt;&lt; name &lt;&lt; ": " &lt;&lt; score &lt;&lt; endl;
     }
 };
-
-// --- 数据库 ---
-std::map&lt;std::string, Table&gt; database;
-
-void createTable(const std::string&amp; name, const std::vector&lt;std::string&gt;&amp; cols) {
-    Table t;
-    t.name = name;
-    t.columnNames = cols;
-    database[name] = t;
-    std::cout &lt;&lt; &quot;表 &quot; &lt;&lt; name &lt;&lt; &quot; 已创建 (&quot; &lt;&lt; cols.size() &lt;&lt; &quot; 列)。&quot; &lt;&lt; std::endl;
-}
-
-// --- SQL 解析器 ---
-struct ParsedQuery {
-    std::string tableName;
-    std::vector&lt;std::string&gt; selectCols;
-    std::string whereCol;
-    std::string whereOp;   // =, &lt;, &gt;
-    std::string whereVal;
-};
-
-ParsedQuery parseSQL(const std::string&amp; sql) {
-    ParsedQuery q;
-    std::istringstream ss(sql);
-    std::string token;
-    ss &gt;&gt; token; // SELECT
-    ss &gt;&gt; token;
-    if (token == &quot;*&quot;) q.selectCols.clear();
-    else {
-        q.selectCols.push_back(token);
-        while (ss &gt;&gt; token &amp;&amp; token != &quot;FROM&quot;) {
-            if (token.back() == ',') token.pop_back();
-            q.selectCols.push_back(token);
-        }
-    }
-    if (token != &quot;FROM&quot;) ss &gt;&gt; token;
-    ss &gt;&gt; q.tableName;
-    if (ss &gt;&gt; token &amp;&amp; token == &quot;WHERE&quot;) {
-        ss &gt;&gt; q.whereCol &gt;&gt; q.whereOp &gt;&gt; q.whereVal;
-    }
-    return q;
-}
-
-// --- 查询执行器 ---
-void executeQuery(const ParsedQuery&amp; q) {
-    auto it = database.find(q.tableName);
-    if (it == database.end()) {
-        std::cout &lt;&lt; &quot;表 &quot; &lt;&lt; q.tableName &lt;&lt; &quot; 不存在。&quot; &lt;&lt; std::endl;
-        return;
-    }
-    Table&amp; table = it-&gt;second;
-    std::vector&lt;int&gt; candidates;
-
-    // 优先使用索引（等值查询 O(log n)）
-    if (!q.whereCol.empty() &amp;&amp; q.whereOp == &quot;=&quot;) {
-        auto idxIt = table.index.find(q.whereCol);
-        if (idxIt != table.index.end()) {
-            int val = std::stoi(q.whereVal);
-            auto valIt = idxIt-&gt;second.find(val);
-            if (valIt != idxIt-&gt;second.end())
-                candidates = valIt-&gt;second;
-        }
-    }
-    // 无索引则全表扫描
-    if (candidates.empty()) {
-        for (int i = 0; i &lt; (int)table.rows.size(); i++)
-            candidates.push_back(i);
-    }
-
-    auto&amp; outCols = q.selectCols.empty() ? table.columnNames : q.selectCols;
-    for (const auto&amp; col : outCols) std::cout &lt;&lt; col &lt;&lt; &quot;\t&quot;;
-    std::cout &lt;&lt; &quot;\n&quot; &lt;&lt; std::string(outCols.size() * 10, '-') &lt;&lt; std::endl;
-
-    int count = 0;
-    for (int idx : candidates) {
-        Row&amp; row = table.rows[idx];
-        if (!q.whereCol.empty() &amp;&amp; q.whereOp != &quot;=&quot;) {
-            int rowVal = row.columns.at(q.whereCol).intVal;
-            int condVal = std::stoi(q.whereVal);
-            if (q.whereOp == &quot;&lt;&quot; &amp;&amp; !(rowVal &lt; condVal)) continue;
-            if (q.whereOp == &quot;&gt;&quot; &amp;&amp; !(rowVal &gt; condVal)) continue;
-        }
-        for (const auto&amp; col : outCols) {
-            auto&amp; v = row.columns.at(col);
-            if (v.type == DataType::INT) std::cout &lt;&lt; v.intVal;
-            else std::cout &lt;&lt; v.strVal;
-            std::cout &lt;&lt; &quot;\t&quot;;
-        }
-        std::cout &lt;&lt; std::endl;
-        count++;
-    }
-    std::cout &lt;&lt; count &lt;&lt; &quot; 行。&quot; &lt;&lt; std::endl;
-}
 
 int main() {
-    std::cout &lt;&lt; &quot;=== 简易数据库 ===&quot; &lt;&lt; std::endl;
-    createTable(&quot;users&quot;, {&quot;id&quot;, &quot;name&quot;, &quot;age&quot;});
-    database[&quot;users&quot;].insert({Value{DataType::INT, 1}, Value{DataType::STRING,0,&quot;Alice&quot;}, Value{DataType::INT, 25}});
-    database[&quot;users&quot;].insert({Value{DataType::INT, 2}, Value{DataType::STRING,0,&quot;Bob&quot;}, Value{DataType::INT, 30}});
-    database[&quot;users&quot;].insert({Value{DataType::INT, 3}, Value{DataType::STRING,0,&quot;Charlie&quot;}, Value{DataType::INT, 22}});
+    vector&lt;Student&gt; students = {
+        {"Alice", 85.5},
+        {"Bob", 55.0},
+        {"Charlie", 92.0},
+        {"David", 58.5},
+        {"Eve", 73.0}
+    };
 
-    while (true) {
-        std::cout &lt;&lt; &quot;\nSQL&gt; &quot;;
-        std::string sql;
-        std::getline(std::cin, sql);
-        if (sql == &quot;quit&quot; || sql == &quot;exit&quot;) break;
-        if (sql.find(&quot;SELECT&quot;) == 0) {
-            auto q = parseSQL(sql);
-            executeQuery(q);
-        } else {
-            std::cout &lt;&lt; &quot;仅支持 SELECT ... FROM ... WHERE ...&quot; &lt;&lt; std::endl;
-        }
+    // 1. mem_fn 包装成员函数用于算法
+    cout &lt;&lt; "=== 所有学生 ===" &lt;&lt; endl;
+    for_each(students.begin(), students.end(),
+             mem_fn(&amp;Student::print));
+
+    // 2. 用 mem_fn 作为排序依据
+    sort(students.begin(), students.end(),
+         [](const Student&amp; a, const Student&amp; b) {
+             return a.getScore() &gt; b.getScore();
+         });
+
+    cout &lt;&lt; "\n=== 按分数排序 ===" &lt;&lt; endl;
+    for_each(students.begin(), students.end(),
+             mem_fn(&amp;Student::print));
+
+    // 3. 用 mem_fn 做筛选
+    auto passCount = count_if(students.begin(), students.end(),
+                              mem_fn(&amp;Student::isPass));
+    cout &lt;&lt; "\n及格人数: " &lt;&lt; passCount
+         &lt;&lt; " / " &lt;&lt; students.size() &lt;&lt; endl;
+
+    // 4. mem_fn vs lambda vs bind
+    // mem_fn: mem_fn(&amp;Student::getScore)
+    // lambda: [](const Student&amp; s) { return s.getScore(); }
+    // bind:   bind(&amp;Student::getScore, placeholders::_1)
+
+    // 用 mem_fn 基于成员函数返回值查找
+    auto it = find_if(students.begin(), students.end(),
+                      [](const Student&amp; s) {
+                          return s.getScore() &gt; 90.0;
+                      });
+    if (it != students.end()) {
+        cout &lt;&lt; "\n第一个超 90 分: " &lt;&lt; it-&gt;getName()
+             &lt;&lt; " (" &lt;&lt; it-&gt;getScore() &lt;&lt; ")" &lt;&lt; endl;
     }
-    return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：std::istringstream 字符串流解析</h3><pre class="code-block"><code class="language-cpp">#include &lt;sstream&gt;
-std::string sql = &quot;SELECT * FROM users WHERE id = 1&quot;;
-std::istringstream ss(sql);
-std::string token;
-while (ss &gt;&gt; token) {
-    // token 依次为 SELECT, *, FROM, users, WHERE, id, =, 1
-}</code></pre><p class="tip">举一反三：istringstream 将字符串当作输入流处理，>> 按空白分割。这是写词法分析器和简单解析器的最快方式。进阶用 std::regex 或手写状态机处理引号内的空格。</p>
-<h3>语法规则：B-Tree 索引（用 map 模拟）</h3><pre class="code-block"><code class="language-cpp">// 索引结构: 列名 -&gt; (值 -&gt; 行号列表)
-std::map&lt;std::string, std::map&lt;int, std::vector&lt;int&gt;&gt;&gt; index;
-// 插入时维护索引
-index[colName][intValue].push_back(rowIndex);
-// 查询时 O(log n) 定位
-auto it = index[colName].find(targetValue);</code></pre><p class="tip">举一反三：真正的 B-Tree 索引会将数据按页组织在磁盘上，每页 4KB/16KB。内存中用 std::map 模拟原理。当数据量超过内存时，B-Tree 的优势（减少磁盘 IO 次数）才会体现。</p>
-<h3>语法规则：enum class 强类型枚举</h3><pre class="code-block"><code class="language-cpp">enum class DataType { INT, STRING };
-DataType t = DataType::INT;
-// int n = t;           // 编译错误！不能隐式转换
-int n = (int)t;         // 必须显式转换
 
-// 对比传统 enum（弱类型，容易污染命名空间）
-enum OldEnum { A, B };   // A 直接暴露在外部作用域</code></pre><p class="tip">举一反三：enum class 是 C++11 引入的强类型枚举，作用域限定（DataType::INT），不隐式转换，更安全。传统 enum 的值直接泄漏到外层作用域，容易命名冲突。</p></section></main></body></html>
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::mem_fn 用法</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+auto printFn = mem_fn(&amp;Student::print);
+printFn(student); // 等价于 student.print()
+// 将成员函数包装为接受对象引用的可调用对象</code></pre>
+                    <p class="tip">举一反三：mem_fn 返回一个可调用对象，接受对象指针或引用作为第一个参数。与 bind 的区别：mem_fn 更轻量（无参数绑定开销）。用于将成员函数传给算法。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：mem_fn 与算法结合</h3>
+                    <pre class="code-block"><code class="language-cpp">for_each(v.begin(), v.end(), mem_fn(&amp;T::method));
+count_if(v.begin(), v.end(), mem_fn(&amp;T::predicate));
+transform(v.begin(), v.end(), output, mem_fn(&amp;T::getter));
+// C++20 ranges: v | views::transform(mem_fn(&amp;T::getter))</code></pre>
+                    <p class="tip">举一反三：mem_fn 将对象方法适配为算法需要的函数形式。比手写 Lambda 更简洁（但 Lambda 更灵活）。适合简单取值/判断的场景。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：mem_fn vs Lambda vs bind</h3>
+                    <pre class="code-block"><code class="language-cpp">// mem_fn: 最轻量，只能调用无参成员
+// Lambda: 最灵活，可捕获变量，可处理额外参数
+// bind: 可绑定部分参数，但语法复杂（C++11/14）
+// 推荐: Lambda &gt; mem_fn &gt; bind</code></pre>
+                    <p class="tip">举一反三：C++11 后 Lambda 让 bind 基本过时。mem_fn 在简单场景仍有可读性优势。成员函数有参数时 mem_fn 自动适配（第一个参数是对象，后续是方法参数）。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_093.html" class="prev-link">&larr; 案例 93</a>
+<a href="case_095.html" class="next-link">案例 95 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

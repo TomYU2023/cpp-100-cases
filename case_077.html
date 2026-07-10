@@ -1,142 +1,118 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 77：静态库与动态库打包发布</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_076.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_078.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 77：std::distance/advance 迭代器操作 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 77：std::distance/advance 迭代器操作</span>
         </div>
-    </nav><main class="container"><h1>案例 77：静态库与动态库打包发布</h1><section class="intro"><p>展示跨平台符号导出宏、CMake install 规则、以及如何生成 find_package 配置文件。</p><p><strong>核心知识点：</strong>静态库/动态库、dllexport/dllimport、CMake install、find_package 集成</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 77：静态库与动态库打包发布
-// 展示如何将 C++ 代码编译为库（.lib / .a / .dll / .so）并供其他项目使用。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 77：std::distance/advance 迭代器操作</h1>
+            <section class="intro">
+<p>掌握迭代器的距离计算和前进操作，理解各类迭代器的能力差异。</p>
+            <p><strong>核心知识点：</strong>distance、advance、next、prev、迭代器类别</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 77：std::distance / advance 迭代器操作
+// 迭代器的距离计算与跳跃
 #include &lt;iostream&gt;
-
-/* 语法规则：静态库 vs 动态库
-   静态库 (.lib / .a)：
-     - 编译时链接到可执行文件中
-     - 运行时不依赖外部文件
-     - 缺点：每个程序都有一份副本，总体积大，更新需重新编译
-
-   动态库 (.dll / .so)：
-     - 运行时加载，多个程序共享一份
-     - 优点：节省磁盘和内存，可热更新
-     - 缺点：部署复杂（DLL Hell），需要版本管理
-
-   符号导出（Windows）：
-     __declspec(dllexport) — 导出符号
-     __declspec(dllimport) — 导入符号
-     用宏统一：
-       #ifdef BUILD_MYLIB
-       #define MYLIB_API __declspec(dllexport)
-       #else
-       #define MYLIB_API __declspec(dllimport)
-       #endif
-
-   示例：CMake 构建库
-     add_library(mylib STATIC src/foo.cpp)   # 静态库
-     add_library(mylib SHARED src/foo.cpp)   # 动态库
-     target_compile_definitions(mylib PRIVATE BUILD_MYLIB)  # 定义宏
-
-   举一反三：大型项目通常提供静态库用于测试和内部工具，
-   动态库用于对外发布的 SDK 和插件系统。
-*/
-
-// ============ 库头文件：mylib/mathlib.h ============
-/*
-// 跨平台符号导出宏
-#ifdef _WIN32
-    #ifdef MATHLIB_BUILD
-        #define MATHLIB_API __declspec(dllexport)  // 构建时导出
-    #else
-        #define MATHLIB_API __declspec(dllimport)  // 使用时导入
-    #endif
-#else
-    #define MATHLIB_API  // Linux/macOS 默认所有符号可见
-#endif
-
-namespace mathlib {
-    // 使用 API 宏标记公开接口
-    MATHLIB_API int factorial(int n);
-    MATHLIB_API double power(double base, int exp);
-}
-*/
-
-// ============ 库源文件：mylib/mathlib.cpp ============
-/*
-#include &quot;mathlib.h&quot;
-
-namespace mathlib {
-    int factorial(int n) {
-        if (n &lt;= 1) return 1;
-        return n * factorial(n - 1);
-    }
-
-    double power(double base, int exp) {
-        if (exp == 0) return 1.0;
-        double result = 1.0;
-        for (int i = 0; i &lt; exp; ++i)
-            result *= base;
-        return result;
-    }
-}
-*/
-
-// ============ CMakeLists.txt（库项目）============
-/*
-cmake_minimum_required(VERSION 3.16)
-project(MathLib VERSION 1.0.0 LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-
-# 静态库版本
-add_library(mathlib_static STATIC src/mathlib.cpp)
-target_include_directories(mathlib_static PUBLIC include)
-
-# 动态库版本
-add_library(mathlib_shared SHARED src/mathlib.cpp)
-target_include_directories(mathlib_shared PUBLIC include)
-target_compile_definitions(mathlib_shared PRIVATE MATHLIB_BUILD)
-
-# 安装规则
-install(TARGETS mathlib_static mathlib_shared
-    LIBRARY DESTINATION lib    # .so
-    ARCHIVE DESTINATION lib    # .a / .lib
-    RUNTIME DESTINATION bin    # .dll
-)
-install(DIRECTORY include/ DESTINATION include)  # 头文件
-
-# 生成 CMake 配置文件，方便 find_package
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    MathLibConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/MathLibConfig.cmake
-    INSTALL_DESTINATION lib/cmake/MathLib
-)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MathLibConfig.cmake
-    DESTINATION lib/cmake/MathLib)
-*/
+#include &lt;vector&gt;
+#include &lt;list&gt;
+#include &lt;set&gt;
+#include &lt;iterator&gt;
+#include &lt;string&gt;
+using namespace std;
 
 int main() {
-    std::cout &lt;&lt; &quot;案例 77：静态库与动态库打包发布&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;================================&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;关键概念：&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  __declspec(dllexport) — 导出符号到 DLL&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  __declspec(dllimport) — 从 DLL 导入符号&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  install() — CMake 安装规则&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  configure_package_config_file — find_package 支持&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;\n库消费者使用方式：&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  find_package(MathLib REQUIRED)&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  target_link_libraries(myapp PRIVATE MathLib::mathlib_static)&quot; &lt;&lt; std::endl;
+    // 1. distance：计算两个迭代器之间的距离
+    vector&lt;int&gt; vec = {10, 20, 30, 40, 50, 60, 70, 80};
+
+    auto start = vec.begin();
+    auto target = find(vec.begin(), vec.end(), 60);
+
+    // 距离：从 begin 到找到元素的步数
+    ptrdiff_t dist = distance(start, target);
+    cout &lt;&lt; "60 在第 " &lt;&lt; dist &lt;&lt; " 个位置（0-based）" &lt;&lt; endl;
+
+    // 2. advance：移动迭代器
+    auto it = vec.begin();
+    advance(it, 3); // 前进 3 步
+    cout &lt;&lt; "前进 3 步: " &lt;&lt; *it &lt;&lt; endl; // 40
+
+    advance(it, -2); // 后退 2 步
+    cout &lt;&lt; "后退 2 步: " &lt;&lt; *it &lt;&lt; endl; // 20
+
+    // 3. next / prev（不修改原迭代器）
+    auto it2 = vec.begin();
+    auto nextIt = next(it2, 4); // 返回移动后的新迭代器
+    cout &lt;&lt; "\nnext(it, 4) = " &lt;&lt; *nextIt &lt;&lt; endl; // 50
+    cout &lt;&lt; "原 it 不变: " &lt;&lt; *it2 &lt;&lt; endl;         // 10
+
+    auto prevIt = prev(vec.end(), 2); // 从 end 前移 2 步
+    cout &lt;&lt; "prev(end, 2) = " &lt;&lt; *prevIt &lt;&lt; endl; // 70
+
+    // 4. O(1) vs O(N)：取决于迭代器类别
+    cout &lt;&lt; "\n=== 复杂度对比 ===" &lt;&lt; endl;
+
+    // vector 是随机访问迭代器: distance 和 advance 都是 O(1)
+    auto r1 = vec.begin();
+    auto r2 = vec.end();
+    cout &lt;&lt; "vector::distance O(1): " &lt;&lt; distance(r1, r2) &lt;&lt; endl;
+
+    // list 是双向迭代器: distance 和 advance 都是 O(N)
+    list&lt;int&gt; lst = {1, 2, 3, 4, 5};
+    auto l1 = lst.begin();
+    auto l2 = lst.end();
+    cout &lt;&lt; "list::distance O(N): " &lt;&lt; distance(l1, l2) &lt;&lt; endl;
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：__declspec(dllexport/dllimport) Windows 符号导出</h3><pre class="code-block"><code class="language-cpp">// Windows DLL 符号导出宏惯用模式
-#ifdef _WIN32
-  #ifdef MYLIB_EXPORTS
-    #define MYLIB_API __declspec(dllexport)
-  #else
-    #define MYLIB_API __declspec(dllimport)
-  #endif
-#else
-  #define MYLIB_API  // Linux 不需要
-#endif</code></pre><p class="tip">💡 举一反三：Windows 的 DLL 默认不导出符号，必须显式标记。Linux 默认全部导出（可用 -fvisibility=hidden 限制）。CMake 的 GENERATE_EXPORT_HEADER 可自动生成导出宏。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::distance</h3>
+                    <pre class="code-block"><code class="language-cpp">ptrdiff_t n = distance(first, last);
+// 返回从 first 到 last 需要的步数
+// 随机访问: O(1)，其他: O(N)
+// 要求 last 可以从 first 到达（否则 UB）</code></pre>
+                    <p class="tip">举一反三：distance 对随机访问迭代器只需指针减法（O(1)），对 list/set 等需遍历计数（O(N)）。返回类型 ptrdiff_t 是有符号整数。first 必须在 last 前面。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：std::advance</h3>
+                    <pre class="code-block"><code class="language-cpp">advance(it, n);
+// 将 it 前进 n 步（n 可正可负）
+// 随机访问: O(1)，其他: O(|n|)
+// n 为负数时要求迭代器是双向的</code></pre>
+                    <p class="tip">举一反三：advance 相当于 n 次 ++it（或 --it）。对非随机访问迭代器是 O(N)。修改原迭代器。超出范围时行为未定义。配合 distance 可实现二分搜索等算法。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：std::next / std::prev</h3>
+                    <pre class="code-block"><code class="language-cpp">auto it2 = next(it, 3);  // it 前进 3 步，返回新迭代器
+auto it3 = prev(it, 2);  // it 后退 2 步
+default: next(it)  // 前进 1 步
+// 不修改原迭代器（与 advance 的区别）</code></pre>
+                    <p class="tip">举一反三：next/prev 是 advance 的纯函数版本。更安全（不会无意修改迭代器）。prev 要求双向迭代器。C++11/14 标准函数，需 #include <iterator>。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_076.html" class="prev-link">&larr; 案例 76</a>
+<a href="case_078.html" class="next-link">案例 78 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

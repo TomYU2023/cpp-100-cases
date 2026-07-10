@@ -1,184 +1,136 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 47：简易日志系统（分级 + 文件输出） - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 47：CSV解析器 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 47：简易日志系统（分级 + 文件输出）</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd">#include &lt;fstream&gt;</td><td class="cmt">文件流</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd">#include &lt;chrono&gt;</td><td class="cmt">时间库</td></tr>
-<tr><td class="ln">5</td><td class="cd">#include &lt;iomanip&gt;</td><td class="cmt">格式化时间</td></tr>
-<tr><td class="ln">6</td><td class="cd">#include &lt;mutex&gt;</td><td class="cmt">线程安全锁</td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">9</td><td class="cd">using namespace chrono;</td><td class="cmt">时间命名空间</td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2">// 日志级别枚举</td></tr>
-<tr><td class="ln">12</td><td class="cd">enum class LogLevel {</td><td class="cmt">enum class（C++11）作用域枚举，防命名污染</td></tr>
-<tr><td class="ln">13</td><td class="cd">    DEBUG = 0,</td><td class="cmt">调试信息（开发时用）</td></tr>
-<tr><td class="ln">14</td><td class="cd">    INFO  = 1,</td><td class="cmt">一般信息</td></tr>
-<tr><td class="ln">15</td><td class="cd">    WARN  = 2,</td><td class="cmt">警告</td></tr>
-<tr><td class="ln">16</td><td class="cd">    ERROR = 3</td><td class="cmt">错误</td></tr>
-<tr><td class="ln">17</td><td class="cd" colspan="2">};</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">// 日志级别转字符串</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">string levelStr(LogLevel lv) {</td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">    switch (lv) {</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">        case LogLevel::DEBUG: return "DEBUG";</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">        case LogLevel::INFO:  return "INFO ";</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2">        case LogLevel::WARN:  return "WARN ";</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">        case LogLevel::ERROR: return "ERROR";</td></tr>
-<tr><td class="ln">26</td><td class="cd" colspan="2">        default: return "UNKN";</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">// 日志类（单例模式）</td></tr>
-<tr><td class="ln">31</td><td class="cd">class Logger {</td><td class="cmt">使用单例保证全局只有一个日志实例</td></tr>
-<tr><td class="ln">32</td><td class="cd">    ofstream file;</td><td class="cmt">日志文件流</td></tr>
-<tr><td class="ln">33</td><td class="cd">    LogLevel minLevel;</td><td class="cmt">最低输出级别</td></tr>
-<tr><td class="ln">34</td><td class="cd">    mutex mtx;</td><td class="cmt">互斥锁，保证多线程安全</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">36</td><td class="cd">    Logger() : minLevel(LogLevel::DEBUG) {}</td><td class="cmt">构造函数私有（单例关键）</td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">public:</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    // 禁止拷贝</td></tr>
-<tr><td class="ln">39</td><td class="cd">    Logger(const Logger&amp;) = delete;</td><td class="cmt">= delete 禁用拷贝构造</td></tr>
-<tr><td class="ln">40</td><td class="cd">    Logger&amp; operator=(const Logger&amp;) = delete;</td><td class="cmt">= delete 禁用赋值运算符</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2">    // 获取单例实例</td></tr>
-<tr><td class="ln">43</td><td class="cd">    static Logger&amp; getInstance() {</td><td class="cmt">静态局部变量：C++11 起保证线程安全</td></tr>
-<tr><td class="ln">44</td><td class="cd">        static Logger instance;</td><td class="cmt">首次调用时构造，之后返回同一个对象</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">        return instance;</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">    // 设置日志文件</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2">    void setFile(const string&amp; path) {</td></tr>
-<tr><td class="ln">50</td><td class="cd">        if (file.is_open()) file.close();</td><td class="cmt">关闭旧文件</td></tr>
-<tr><td class="ln">51</td><td class="cd">        file.open(path, ios::app);</td><td class="cmt">ios::app = 追加模式，不覆盖已有内容</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2">    // 日志输出</td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">    void log(LogLevel lv, const string&amp; msg) {</td></tr>
-<tr><td class="ln">56</td><td class="cd">        if (lv &lt; minLevel) return;</td><td class="cmt">级别太低则忽略</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">58</td><td class="cd">        lock_guard&lt;mutex&gt; lock(mtx);</td><td class="cmt">RAII 加锁，作用域结束自动解锁</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">60</td><td class="cd">        auto now = system_clock::now();</td><td class="cmt">获取当前时间</td></tr>
-<tr><td class="ln">61</td><td class="cd">        auto t = system_clock::to_time_t(now);</td><td class="cmt">转为 time_t</td></tr>
-<tr><td class="ln">62</td><td class="cd">        auto ms = duration_cast&lt;milliseconds&gt;(now.time_since_epoch()) % 1000;</td><td class="cmt">提取毫秒部分</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">        // 格式化时间戳</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">        ostringstream oss;</td></tr>
-<tr><td class="ln">66</td><td class="cd">        oss &lt;&lt; put_time(localtime(&amp;t), "%Y-%m-%d %H:%M:%S");</td><td class="cmt">put_time 格式化时间</td></tr>
-<tr><td class="ln">67</td><td class="cd">        oss &lt;&lt; '.' &lt;&lt; setw(3) &lt;&lt; setfill('0') &lt;&lt; ms.count();</td><td class="cmt">追加毫秒</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">69</td><td class="cd">        string logLine = "[" + oss.str() + "] [" + levelStr(lv) + "] " + msg;</td><td class="cmt">构造日志行</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">        // 同时输出到文件和控制台</td></tr>
-<tr><td class="ln">72</td><td class="cd">        if (file.is_open()) file &lt;&lt; logLine &lt;&lt; endl;</td><td class="cmt">写入文件</td></tr>
-<tr><td class="ln">73</td><td class="cd">        cout &lt;&lt; logLine &lt;&lt; endl;</td><td class="cmt">也输出到控制台</td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2">    // 便捷方法</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">    void debug(const string&amp; msg) { log(LogLevel::DEBUG, msg); }</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">    void info(const string&amp; msg)  { log(LogLevel::INFO,  msg); }</td></tr>
-<tr><td class="ln">79</td><td class="cd" colspan="2">    void warn(const string&amp; msg)  { log(LogLevel::WARN,  msg); }</td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2">    void error(const string&amp; msg) { log(LogLevel::ERROR, msg); }</td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">82</td><td class="cd">    ~Logger() { if (file.is_open()) file.close(); }</td><td class="cmt">析构时关闭文件</td></tr>
-<tr><td class="ln">83</td><td class="cd" colspan="2">};</td></tr>
-<tr><td class="ln">84</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">85</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">86</td><td class="cd">    auto&amp; log = Logger::getInstance();</td><td class="cmt">获取单例引用</td></tr>
-<tr><td class="ln">87</td><td class="cd">    log.setFile("app.log");</td><td class="cmt">设置日志文件</td></tr>
-<tr><td class="ln">88</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">89</td><td class="cd" colspan="2">    log.info("Application started");</td></tr>
-<tr><td class="ln">90</td><td class="cd" colspan="2">    log.debug("Loading config...");</td></tr>
-<tr><td class="ln">91</td><td class="cd" colspan="2">    log.warn("Memory usage high (85%)");</td></tr>
-<tr><td class="ln">92</td><td class="cd" colspan="2">    log.error("Connection timeout");</td></tr>
-<tr><td class="ln">93</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">94</td><td class="cd" colspan="2">    cout &lt;&lt; "Check app.log for full log." &lt;&lt; endl;</td></tr>
-<tr><td class="ln">95</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">96</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>单例模式 + static 局部变量（Meyer's Singleton）</h3>
-<div class="rule"><strong>语法规则：</strong>在函数内声明 <code>static</code> 局部变量，C++11 起<strong>保证线程安全初始化</strong>（编译器自动添加双重检查锁定）。这是 C++ 中最简洁可靠的单例实现，无需手动 new/delete，生命周期随程序结束自动析构。</div>
-<pre class="example"><code>class Singleton {
-    Singleton() {}  // 私有构造
-public:
-    Singleton(const Singleton&) = delete;  // 禁止拷贝
-    static Singleton& get() {
-        static Singleton instance;  // 只构造一次
-        return instance;
-    }
-};</code></pre>
-</div>
-<div class="grammar-item">
-<h3>= delete 禁用函数</h3>
-<div class="rule"><strong>语法规则：</strong><code>= delete</code> 明确禁用某个函数。相比传统的私有声明，= delete 在<strong>编译期</strong>就报错（而非链接期），错误信息更清晰，且对友元和成员函数同样生效。</div>
-<pre class="example"><code>class NonCopyable {
-public:
-    NonCopyable() = default;           // 使用默认构造
-    NonCopyable(const NonCopyable&) = delete;  // 禁止拷贝
-    NonCopyable& operator=(const NonCopyable&) = delete;
-};
-NonCopyable a;
-// NonCopyable b = a;  // 编译错误！</code></pre>
-</div>
-<div class="grammar-item">
-<h3>std::lock_guard 与 RAII 加锁</h3>
-<div class="rule"><strong>语法规则：</strong><strong>lock_guard</strong> 在构造时加锁（mutex.lock()），析构时自动解锁。即使函数中途 return 或抛异常，也能保证锁被释放——这是 RAII 的经典应用。</div>
-<pre class="example"><code>mutex mtx;
-void safeFunction() {
-    lock_guard<mutex> lock(mtx);  // 加锁
-    // 临界区代码
-}  // lock 析构，自动解锁
-// 替代：手动管理
-mtx.lock();
-// 如果这里抛异常，mtx.unlock() 永远不会执行！
-mtx.unlock();</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>使用 spdlog 工业级日志库：</strong><pre><code>#include <spdlog/spdlog.h>
-spdlog::info("Hello {}!", "World");
-// 同时输出到文件和控制台
-spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");</code></pre><p>spdlog 是 C++ 最快的日志库之一，header-only，支持异步日志、多 sink、自定义格式、彩色输出等，工业项目直接用它。</p></li>
-<li><strong>按日期轮转日志文件 + 条件编译关闭 Debug：</strong><pre><code>#ifdef NDEBUG
-#define LOG_DEBUG(msg) ((void)0)  // Release 模式下编译为空
-#else
-#define LOG_DEBUG(msg) Logger::getInstance().debug(msg)
-#endif</code></pre><p>用预处理器宏实现 Debug 日志在 Release 版本中零开销。文件轮转（RotatingFileSink）可以限制日志文件大小和数量。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 47：CSV解析器</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 47：CSV解析器</h1>
+            <section class="intro">
+<p>实现一个 CSV 格式解析器，正确处理引号包裹字段和转义字符。</p>
+            <p><strong>核心知识点：</strong>CSV 解析、字符串状态机、引号处理</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 47：CSV 解析器
+// 正确处理引号包裹字段和逗号转义
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;sstream&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_046.html">← 案例 46</a><a href="case_048.html">案例 48 →</a>
-</nav>
-</main>
+// 解析一行 CSV
+vector&lt;string&gt; parseCSVLine(const string&amp; line) {
+    vector&lt;string&gt; fields;
+    string field;
+    bool inQuotes = false; // 是否在引号内
+
+    for (size_t i = 0; i &lt; line.size(); i++) {
+        char c = line[i];
+
+        if (inQuotes) {
+            if (c == '"') {
+                // 检查是否是双引号转义 "" 
+                if (i + 1 &lt; line.size() &amp;&amp; line[i + 1] == '"') {
+                    field += '"'; // 转义为一个引号
+                    i++;          // 跳过下一个引号
+                } else {
+                    inQuotes = false; // 引号结束
+                }
+            } else {
+                field += c;
+            }
+        } else {
+            if (c == '"') {
+                inQuotes = true; // 开始引号
+            } else if (c == ',') {
+                fields.push_back(field); // 字段结束
+                field.clear();
+            } else {
+                field += c;
+            }
+        }
+    }
+    fields.push_back(field); // 最后一个字段
+    return fields;
+}
+
+int main() {
+    // 测试 CSV 数据
+    vector&lt;string&gt; csvLines = {
+        "Name,Age,City",
+        "Alice,25,\"New York\"",
+        "\"Bob, Jr.\",30,\"Los Angeles\"",
+        "\"Zhang \"\"San\"\"\",28,Beijing",
+        "\"Hello, World\",42,\"A,B,C\""
+    };
+
+    cout &lt;&lt; "=== CSV 解析结果 ===" &lt;&lt; endl;
+
+    for (const auto&amp; line : csvLines) {
+        auto fields = parseCSVLine(line);
+        for (size_t i = 0; i &lt; fields.size(); i++) {
+            cout &lt;&lt; "[" &lt;&lt; fields[i] &lt;&lt; "]";
+            if (i &lt; fields.size() - 1) cout &lt;&lt; " | ";
+        }
+        cout &lt;&lt; endl;
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：CSV 状态机解析</h3>
+                    <pre class="code-block"><code class="language-cpp">bool inQuotes = false;
+for (char c : line) {
+    if (c == '"') inQuotes = !inQuotes;
+    else if (c == ',' &amp;&amp; !inQuotes) { /* 新字段 */ }
+    else field += c;
+}</code></pre>
+                    <p class="tip">举一反三：状态机是解析结构化文本的通用方法。状态可以是：引号内/外、转义中、注释中等。状态机清晰表达「在什么状态下如何处理输入字符」。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：CSV 双引号转义</h3>
+                    <pre class="code-block"><code class="language-cpp">// CSV 标准：引号内的引号用两个引号表示 "" 
+if (c == '"' &amp;&amp; next == '"') {
+    field += '"';
+    i++;
+}</code></pre>
+                    <p class="tip">举一反三：这是 RFC 4180 CSV 标准的关键规则。其他常见转义：
+ → 
+、	 → 	。不同格式有不同的转义规则，需查阅对应规范。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：push_back + clear 模式</h3>
+                    <pre class="code-block"><code class="language-cpp">fields.push_back(field);
+field.clear(); // 清空复用
+// field 被 move 到 vector 中，clear 后重新使用</code></pre>
+                    <p class="tip">举一反三：复用 string 比反复创建临时 string 更高效。clear() 不释放内存，只重置 size。C++11 后 push_back(临时变量) 自动使用移动语义。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_046.html" class="prev-link">&larr; 案例 46</a>
+<a href="case_048.html" class="next-link">案例 48 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

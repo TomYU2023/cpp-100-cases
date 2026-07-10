@@ -3,424 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 19：shared_ptr/unique_ptr 实战 - C++ 100工程案例</title>
+    <title>案例 19：shared_ptr/unique_ptr - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
-    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
-    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
-    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
-    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
-    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
-    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
-    <a href="case_014.html" class="case-link ">14. 模板函数</a>
-    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
-    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
-    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
-    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
-    <a href="case_019.html" class="case-link active">19. shared_ptr/unique_ptr 实战</a>
-    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link ">21. vector 深入</a>
-    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
-    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
-    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
-    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
-    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
-    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
-    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
-    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
-    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
-    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
-    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
-    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
-    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
-    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
-    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
-    <a href="case_037.html" class="case-link ">37. thread 入门</a>
-    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
-    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
-    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
-    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
-    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
-    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
-    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
-    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
-    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
-    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
-    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
-    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
-    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
-    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
-    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
-    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
-    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
-    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
-    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
-    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
-    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
-    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
-    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
-    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
-    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
-    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
-    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
-    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
-    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
-    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
-    <a href="case_070.html" class="case-link ">70. 策略模式</a>
-    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
-    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
-    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
-    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
-    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
-    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
-    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
-    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
-    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
-    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
-    <a href="case_081.html" class="case-link ">81. 插件系统</a>
-    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
-    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
-    <a href="case_084.html" class="case-link ">84. 连接池</a>
-    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
-    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
-    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
-    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
-    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
-    <a href="case_091.html" class="case-link ">91. 协程库</a>
-    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
-    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
-    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
-    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
-    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
-    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
-    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
-    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
-    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_018.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_020.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 19：shared_ptr/unique_ptr</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 19：shared_ptr/unique_ptr</h1>
+            <section class="intro">
+<p>练习 C++11 智能指针的使用：unique_ptr 独占所有权、shared_ptr 共享所有权、weak_ptr 打破循环引用。</p>
+            <p><strong>核心知识点：</strong>智能指针、所有权模型、循环引用、自定义删除器</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 19：shared_ptr / unique_ptr
+// 理解两种智能指针的所有权模型
+#include &lt;iostream&gt;
+#include &lt;memory&gt;    // shared_ptr, unique_ptr, weak_ptr, make_shared
+#include &lt;string&gt;
+using namespace std;
 
-        <h1>案例 19：shared_ptr/unique_ptr 实战</h1>
+class Resource {
+    string name;
+public:
+    Resource(const string&amp; n) : name(n) {
+        cout &lt;&lt; "[" &lt;&lt; name &lt;&lt; "] 创建" &lt;&lt; endl;
+    }
+    ~Resource() { cout &lt;&lt; "[" &lt;&lt; name &lt;&lt; "] 销毁" &lt;&lt; endl; }
+    void use() { cout &lt;&lt; "使用 [" &lt;&lt; name &lt;&lt; "]" &lt;&lt; endl; }
+};
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;memory&gt;</code></span>
-                        <span class="line-comment">智能指针头文件</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>class Resource {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>    int id_;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    Resource(int id) : id_(id) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "Resource " &lt;&lt; id_ &lt;&lt; " 创建" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    ~Resource() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "Resource " &lt;&lt; id_ &lt;&lt; " 销毁" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    void work() { cout &lt;&lt; id_ &lt;&lt; " 工作中" &lt;&lt; endl; }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "=== unique_ptr（独占所有权）===" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    {</code></span>
-                        <span class="line-comment">块作用域</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>        auto u1 = make_unique&lt;Resource&gt;(1);</code></span>
-                        <span class="line-comment">创建 unique_ptr，自动管理 Resource 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>        u1-&gt;work();</code></span>
-                        <span class="line-comment">用 -&gt; 访问成员，和裸指针一样</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>        auto u2 = move(u1);</code></span>
-                        <span class="line-comment">所有权转移：u1 变为空，u2 持有 Resource 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>        if (!u1) cout &lt;&lt; "u1 已为空" &lt;&lt; endl;</code></span>
-                        <span class="line-comment">unique_ptr 可以转为 bool 判断</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>        u2-&gt;work();</code></span>
-                        <span class="line-comment">u2 仍然可以工作</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    }</code></span>
-                        <span class="line-comment">离开作用域，u2 自动销毁 Resource 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n=== shared_ptr（共享所有权）===" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        auto s1 = make_shared&lt;Resource&gt;(2);</code></span>
-                        <span class="line-comment">引用计数 = 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        cout &lt;&lt; \"引用计数: \" &lt;&lt; s1.use_count() &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>        {</code></span>
-                        <span class="line-comment">内层作用域</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>            auto s2 = s1;</code></span>
-                        <span class="line-comment">引用计数 = 2</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>            cout &lt;&lt; \"引用计数: \" &lt;&lt; s1.use_count() &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>            s2-&gt;work();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>        }</code></span>
-                        <span class="line-comment">s2 销毁，引用计数 = 1，Resource 2 不销毁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>        cout &lt;&lt; \"引用计数: \" &lt;&lt; s1.use_count() &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    }</code></span>
-                        <span class="line-comment">s1 销毁，引用计数 = 0，Resource 2 销毁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n=== weak_ptr（不增加引用计数）===" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>    weak_ptr&lt;Resource&gt; wp;</code></span>
-                        <span class="line-comment">空 weak_ptr</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    auto s3 = make_shared&lt;Resource&gt;(3);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>    wp = s3;</code></span>
-                        <span class="line-comment">weak_ptr 观察 s3，不增加计数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    cout &lt;&lt; \"use_count: \" &lt;&lt; s3.use_count() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">仍是 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>    if (auto sp = wp.lock()) {</code></span>
-                        <span class="line-comment">lock() 返回 shared_ptr，若对象已销毁则返回空</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>        sp-&gt;work();</code></span>
-                        <span class="line-comment">安全访问</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>    s3.reset();</code></span>
-                        <span class="line-comment">手动释放 Resource 3</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    if (wp.expired()) cout &lt;&lt; \"wp 指向的对象已销毁\" &lt;&lt; endl;</code></span>
-                        <span class="line-comment">expired() 检查对象是否销毁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-            </div>
-        </section>
+// 演示 shared_ptr 循环引用问题
+struct Node {
+    string name;
+    shared_ptr&lt;Node&gt; next;   // shared_ptr 会导致循环引用
+    weak_ptr&lt;Node&gt; prev;     // weak_ptr 打破循环引用
+    Node(const string&amp; n) : name(n) {}
+    ~Node() { cout &lt;&lt; "Node [" &lt;&lt; name &lt;&lt; "] 销毁" &lt;&lt; endl; }
+};
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                <div class="grammar-item">
-                    <h3>unique_ptr（独占所有权）</h3>
-                    <div class="rule-box">一个对象<strong>只能有一个</strong> unique_ptr 持有它。不可拷贝，只能 <code>move</code> 转移。离开作用域自动 delete。优先使用 <code>make_unique&lt;T&gt;(args...)</code> 创建。</div>
-                    <pre><code>auto p = make_unique&lt;int&gt;(42);
-auto p2 = move(p);  // p 变为 nullptr
-// auto p3 = p;   // 编译错误，unique_ptr 不可拷贝</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>shared_ptr（共享所有权）与引用计数</h3>
-                    <div class="rule-box">多个 shared_ptr 可以指向同一对象，<strong>引用计数</strong>跟踪持有者数量。计数归零时自动 delete。用 <code>use_count()</code> 查看，<code>make_shared&lt;T&gt;(args...)</code> 创建。</div>
-                    <pre><code>auto s1 = make_shared&lt;int&gt;(100);  // count=1
-auto s2 = s1;                      // count=2
-s1.reset();                        // count=1
-s2.reset();                        // count=0, 对象销毁</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>weak_ptr（打破循环引用）</h3>
-                    <div class="rule-box"><code>weak_ptr</code> 不增加引用计数，用于<strong>观察</strong> shared_ptr 管理的对象。解决 shared_ptr 循环引用导致的内存泄漏问题。用 <code>lock()</code> 获取 shared_ptr。</div>
-                    <pre><code>// 循环引用场景：父对象持有子对象的 shared_ptr
-// 子对象持有父对象的 shared_ptr → 永远回收不了
-// 解决：子对象改用 weak_ptr 指向父对象</code></pre>
-                </div>
-            </div>
-        </section>
+int main() {
+    // === unique_ptr：独占所有权，不可拷贝，可移动 ===
+    {
+        unique_ptr&lt;Resource&gt; u1 = make_unique&lt;Resource&gt;("独占资源");
+        u1-&gt;use();
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                <div class="extend-item">
-                    <h4>自定义删除器</h4>
-                    <p><strong>代码：</strong><code>auto p = unique_ptr<FILE, decltype(&fclose)>(fopen(...), fclose);</code></p>
-                    <p><strong>思路：</strong>释放 FILE* 而不是 delete，适合 C API 资源</p>
-                </div>
-                <div class="extend-item">
-                    <h4>enable_shared_from_this</h4>
-                    <p><strong>代码：</strong><code>class A : public enable_shared_from_this<A> { auto ptr = shared_from_this(); };</code></p>
-                    <p><strong>思路：</strong>从对象内部安全获取自身的 shared_ptr</p>
-                </div>
-                <div class="extend-item">
-                    <h4>make_shared 的优势</h4>
-                    <p><strong>代码：</strong><code>一次分配同时创建对象和控制块，比 new + shared_ptr 更高效且异常安全</code></p>
-                    <p><strong>思路：</strong>始终用 make_shared 代替 new</p>
-                </div>
-            </div>
-        </section>
+        // unique_ptr&lt;Resource&gt; u2 = u1; // 编译错误！不可拷贝
+        unique_ptr&lt;Resource&gt; u2 = move(u1); // 移动转移所有权
+        // u1 现在为空（nullptr）
+        if (!u1) cout &lt;&lt; "u1 已为空" &lt;&lt; endl;
+    } // u2 离开作用域，自动释放
 
-        <div class="bottom-nav">
-            <a href="case_018.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_020.html" class="nav-link">下一个 →</a>
+    cout &lt;&lt; "---" &lt;&lt; endl;
+
+    // === shared_ptr：共享所有权，引用计数 ===
+    {
+        shared_ptr&lt;Resource&gt; s1 = make_shared&lt;Resource&gt;("共享资源");
+        {
+            shared_ptr&lt;Resource&gt; s2 = s1; // 引用计数 +1
+            cout &lt;&lt; "引用计数 = " &lt;&lt; s1.use_count() &lt;&lt; endl;
+            s2-&gt;use();
+        } // s2 离开作用域，引用计数 -1
+        cout &lt;&lt; "引用计数 = " &lt;&lt; s1.use_count() &lt;&lt; endl;
+    } // 引用计数为 0，释放资源
+
+    cout &lt;&lt; "---" &lt;&lt; endl;
+
+    // === weak_ptr 打破循环引用 ===
+    {
+        auto node1 = make_shared&lt;Node&gt;("Node1");
+        auto node2 = make_shared&lt;Node&gt;("Node2");
+
+        node1-&gt;next = node2;   // shared_ptr，形成引用
+        node2-&gt;prev = node1;   // weak_ptr，不增加引用计数
+
+        // 没有循环引用，离开作用域后都正确析构
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：unique_ptr 独占所有权</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;memory&gt;
+auto p = make_unique&lt;Resource&gt;("r");
+unique_ptr&lt;Resource&gt; q = move(p); // 转移所有权</code></pre>
+                    <p class="tip">举一反三：unique_ptr 不可拷贝只可移动，确保资源唯一所有者。离开作用域自动释放。优先使用 make_unique（C++14）而非 new。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：shared_ptr 引用计数</h3>
+                    <pre class="code-block"><code class="language-cpp">auto s1 = make_shared&lt;Resource&gt;("r");
+auto s2 = s1; // ref=2
+cout &lt;&lt; s1.use_count(); // 2</code></pre>
+                    <p class="tip">举一反三：shared_ptr 通过引用计数实现共享所有权。use_count() 获取当前引用数。控制块额外分配内存（make_shared 可合并分配）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：weak_ptr 打破循环引用</h3>
+                    <pre class="code-block"><code class="language-cpp">weak_ptr&lt;Node&gt; prev;
+if (auto sp = prev.lock()) { sp-&gt;use(); }</code></pre>
+                    <p class="tip">举一反三：weak_ptr 不增加引用计数，通过 lock() 获取临时 shared_ptr。主要用于：打破循环引用、缓存场景、观察者模式。使用前须检查 lock() 返回值是否为空。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_018.html" class="prev-link">&larr; 案例 18</a>
+<a href="case_020.html" class="next-link">案例 20 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

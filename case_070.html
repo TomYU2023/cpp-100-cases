@@ -3,195 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 70：策略模式</title>
-        <link rel="stylesheet" href="style.css">
+    <title>案例 70：bitset 位图操作 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-phase">
-            <span class="phase-label">Phase 4:</span>
-            <a href="case_061.html">线程池</a>
-            <a href="case_062.html">内存池</a>
-            <a href="case_063.html">无锁队列</a>
-            <a href="case_064.html">对象池</a>
-            <a href="case_065.html">TCP聊天</a>
-            <a href="case_066.html">HTTP服务</a>
-            <a href="case_067.html">REST客户端</a>
-            <a href="case_068.html">gRPC</a>
-            <a href="case_069.html">观察者</a>
-            <a href="case_070.html">策略</a>
-        </div>
-        <div class="nav-links">
-            <a href="case_065.html"><a href="case_069.html">← 上一案例</a></a>
-            <span class="sep">|</span>
-            <a href="case_067.html"><a href="case_071.html">下一案例 →</a></a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 70：bitset 位图操作</span>
         </div>
     </nav>
     <main class="container">
-        <h1>案例 70：策略模式</h1>
-        <section class="intro">
-            <p>实现可插拔的排序策略系统——冒泡排序、快速排序、std::sort 可以随时切换，展示策略模式消除 if-else 分支的能力。</p>
-            <p><strong>核心知识点：</strong>策略模式、面向接口编程、std::make_unique、算法切换、开闭原则</p>
-        </section>
-        <section class="code-section">
-            <h2>完整代码（含逐行注释）</h2>
-            <pre class="code-block"><code class="language-cpp">// 案例 70：策略模式（Strategy Pattern）
-// 策略模式：定义一系列算法，把它们封装起来，并使它们可以互相替换。
-// 策略模式让算法独立于使用它的客户端而变化。
-// 典型场景：排序算法可切换、支付方式可选、压缩算法可选。
-
+        <div class="content">
+            <h1>案例 70：bitset 位图操作</h1>
+            <section class="intro">
+<p>使用 bitset 进行位操作，实现集合运算、权限管理和布隆过滤器基础。</p>
+            <p><strong>核心知识点：</strong>bitset、位运算、集合操作、权限管理</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 70：bitset 位图操作
+// 位图实现权限管理和集合运算
 #include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;memory&gt;
-#include &lt;algorithm&gt;
+#include &lt;bitset&gt;
+#include &lt;string&gt;
+using namespace std;
 
-/* ── 语法规则：策略模式结构 ──
-   Strategy（策略接口）：定义算法家族的公共接口
-   ConcreteStrategy（具体策略）：实现具体的算法
-   Context（上下文）：持有策略引用，调用策略执行算法
-
-   示例（支付方式）：
-     PaymentStrategy 接口         ← 定义 pay(amount) 方法
-     ├── CreditCardPayment        ← 信用卡支付
-     ├── PayPalPayment            ← PayPal 支付
-     └── WeChatPayment            ← 微信支付
-     ShoppingCart context          ← 购物车，setStrategy() 切换支付方式
-
-   举一反三：策略模式是 if-else 地狱的解药。任何需要&quot;根据不同条件选不同算法&quot;
-   的场景都适用。Java 的 Comparator、C++ 的 std::sort 第三个参数都是策略模式。
-*/
-
-// 步骤 1：定义排序策略接口
-class SortStrategy {
-public:
-    virtual ~SortStrategy() = default;
-    virtual void sort(std::vector&lt;int&gt;&amp; data) = 0;
-    virtual std::string name() const = 0;  // 返回策略名称
+// 权限系统
+enum Permission {
+    READ    = 0,  // 读
+    WRITE   = 1,  // 写
+    EXECUTE = 2,  // 执行
+    DELETE  = 3,  // 删除
+    ADMIN   = 4   // 管理
 };
-
-// 步骤 2：具体策略 1 — 冒泡排序 (O(n²)，稳定)
-class BubbleSort : public SortStrategy {
-public:
-    void sort(std::vector&lt;int&gt;&amp; data) override {
-        size_t n = data.size();
-        for (size_t i = 0; i &lt; n - 1; ++i) {
-            bool swapped = false;  // 优化：如果一轮没有交换说明已有序
-            for (size_t j = 0; j &lt; n - 1 - i; ++j) {
-                if (data[j] &gt; data[j + 1]) {
-                    std::swap(data[j], data[j + 1]);  // 相邻元素比较并交换
-                    swapped = true;
-                }
-            }
-            if (!swapped) break;  // 提前结束
-        }
-    }
-    std::string name() const override { return &quot;冒泡排序 (O(n²))&quot;; }
-};
-
-// 步骤 2：具体策略 2 — 快速排序 (O(n log n)，最快)
-class QuickSort : public SortStrategy {
-    void quickSort(std::vector&lt;int&gt;&amp; data, int low, int high) {
-        if (low &gt;= high) return;               // 递归终止条件
-
-        int pivot = data[high];                // 选择最后一个元素为基准
-        int i = low - 1;                       // i 指向小于 pivot 的区域的末尾
-
-        for (int j = low; j &lt; high; ++j) {     // 遍历 [low, high-1]
-            if (data[j] &lt; pivot) {
-                std::swap(data[++i], data[j]); // 小于 pivot 的元素移到左边
-            }
-        }
-        std::swap(data[i + 1], data[high]);    // pivot 归位
-        int pi = i + 1;
-
-        quickSort(data, low, pi - 1);          // 递归排序左半部分
-        quickSort(data, pi + 1, high);         // 递归排序右半部分
-    }
-
-public:
-    void sort(std::vector&lt;int&gt;&amp; data) override {
-        if (!data.empty()) quickSort(data, 0, data.size() - 1);
-    }
-    std::string name() const override { return &quot;快速排序 (O(n log n))&quot;; }
-};
-
-// 步骤 2：具体策略 3 — 标准库排序 (std::sort，最省事)
-class StdSort : public SortStrategy {
-public:
-    void sort(std::vector&lt;int&gt;&amp; data) override {
-        std::sort(data.begin(), data.end());   // 直接调用标准库
-    }
-    std::string name() const override { return &quot;std::sort (内省排序)&quot;; }
-};
-
-// 步骤 3：上下文 — 数据排序器，持有策略
-class DataSorter {
-    std::unique_ptr&lt;SortStrategy&gt; strategy;  // 当前策略（独占所有权）
-
-public:
-    // 设置排序策略：通过 unique_ptr 转移所有权
-    void setStrategy(std::unique_ptr&lt;SortStrategy&gt; s) {
-        strategy = std::move(s);
-    }
-
-    // 执行排序
-    void execute(std::vector&lt;int&gt;&amp; data) {
-        if (!strategy) {
-            std::cerr &lt;&lt; &quot;错误：未设置排序策略!&quot; &lt;&lt; std::endl;
-            return;
-        }
-        std::cout &lt;&lt; &quot;使用策略: &quot; &lt;&lt; strategy-&gt;name() &lt;&lt; std::endl;
-        strategy-&gt;sort(data);
-    }
-};
-
-// 辅助函数：打印 vector
-void print(const std::vector&lt;int&gt;&amp; v) {
-    for (int x : v) std::cout &lt;&lt; x &lt;&lt; &quot; &quot;;
-    std::cout &lt;&lt; std::endl;
-}
 
 int main() {
-    DataSorter sorter;
+    // 1. 基本操作
+    bitset&lt;8&gt; b1;             // 全 0
+    bitset&lt;8&gt; b2(42);         // 00101010
+    bitset&lt;8&gt; b3("1100");     // 00001100
 
-    // 准备两份相同数据用于对比
-    std::vector&lt;int&gt; data1 = {64, 34, 25, 12, 22, 11, 90};
-    std::vector&lt;int&gt; data2 = data1;  // 拷贝一份
-    std::vector&lt;int&gt; data3 = data1;
+    cout &lt;&lt; "b1: " &lt;&lt; b1 &lt;&lt; endl;
+    cout &lt;&lt; "b2: " &lt;&lt; b2 &lt;&lt; " (=" &lt;&lt; b2.to_ulong() &lt;&lt; ")" &lt;&lt; endl;
+    cout &lt;&lt; "b3: " &lt;&lt; b3 &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;原始数据: &quot;; print(data1);
+    // 2. 位操作
+    cout &lt;&lt; "\n=== 位运算 ===" &lt;&lt; endl;
+    cout &lt;&lt; "b2 | b3: " &lt;&lt; (b2 | b3) &lt;&lt; endl; // 或
+    cout &lt;&lt; "b2 &amp; b3: " &lt;&lt; (b2 &amp; b3) &lt;&lt; endl; // 与
+    cout &lt;&lt; "b2 ^ b3: " &lt;&lt; (b2 ^ b3) &lt;&lt; endl; // 异或
+    cout &lt;&lt; "~b2: " &lt;&lt; (~b2) &lt;&lt; endl;         // 取反
 
-    // 切换策略 1：冒泡排序
-    sorter.setStrategy(std::make_unique&lt;BubbleSort&gt;());
-    sorter.execute(data1);
-    std::cout &lt;&lt; &quot;排序结果: &quot;; print(data1);
+    // 3. 单比特操作
+    cout &lt;&lt; "\n=== 单比特操作 ===" &lt;&lt; endl;
+    bitset&lt;8&gt; bs;
+    bs.set(3);        // 设置第 3 位
+    bs.set(5, true);  // 显式设置
+    cout &lt;&lt; "set(3,5): " &lt;&lt; bs &lt;&lt; endl;
 
-    // 切换策略 2：快速排序
-    sorter.setStrategy(std::make_unique&lt;QuickSort&gt;());
-    sorter.execute(data2);
-    std::cout &lt;&lt; &quot;排序结果: &quot;; print(data2);
+    bs.reset(3);      // 清除第 3 位
+    cout &lt;&lt; "reset(3): " &lt;&lt; bs &lt;&lt; endl;
 
-    // 切换策略 3：标准库
-    sorter.setStrategy(std::make_unique&lt;StdSort&gt;());
-    sorter.execute(data3);
-    std::cout &lt;&lt; &quot;排序结果: &quot;; print(data3);
+    bs.flip(2);       // 翻转第 2 位
+    cout &lt;&lt; "flip(2): " &lt;&lt; bs &lt;&lt; endl;
+
+    cout &lt;&lt; "位 5 是否设置: " &lt;&lt; bs.test(5) &lt;&lt; endl;
+    cout &lt;&lt; "设置位数: " &lt;&lt; bs.count() &lt;&lt; endl;
+    cout &lt;&lt; "是否有任何位设置: " &lt;&lt; bs.any() &lt;&lt; endl;
+
+    // 4. 权限系统示例
+    cout &lt;&lt; "\n=== 权限系统 ===" &lt;&lt; endl;
+    bitset&lt;8&gt; userPerms; // 用户权限
+
+    // 授予读写权限
+    userPerms.set(READ);
+    userPerms.set(WRITE);
+
+    cout &lt;&lt; "用户权限: " &lt;&lt; userPerms &lt;&lt; endl;
+    cout &lt;&lt; "可读: " &lt;&lt; userPerms.test(READ) &lt;&lt; endl;
+    cout &lt;&lt; "可写: " &lt;&lt; userPerms.test(WRITE) &lt;&lt; endl;
+    cout &lt;&lt; "可执行: " &lt;&lt; userPerms.test(EXECUTE) &lt;&lt; endl;
+
+    // 检查是否有某组权限
+    bitset&lt;8&gt; requiredPerms;
+    requiredPerms.set(READ);
+    requiredPerms.set(WRITE);
+    bool hasPerms = ((userPerms &amp; requiredPerms) == requiredPerms);
+    cout &lt;&lt; "同时拥有读写权限: " &lt;&lt; boolalpha &lt;&lt; hasPerms &lt;&lt; endl;
 
     return 0;
 }</code></pre>
-        </section>
-        <section class="grammar-section">
-            <h3>语法规则：std::make_unique 工厂函数</h3>
-            <pre class="code-block"><code class="language-cpp">auto p = std::make_unique&lt;MyClass&gt;(arg1, arg2);  // C++14
-// 等价于 std::unique_ptr&lt;MyClass&gt; p(new MyClass(arg1, arg2));
-// make_unique 的好处：异常安全 + 一次分配</code></pre>
-            <p class="tip">💡 举一反三：永远优先使用 make_unique / make_shared 而不是手动 new。make_shared 还会把对象和控制块分配在一起，性能更好。</p>
-            <h3>语法规则：std::swap 交换两个值</h3>
-            <pre class="code-block"><code class="language-cpp">int a = 1, b = 2;
-std::swap(a, b);  // a=2, b=1
-// 原理：T temp = std::move(a); a = std::move(b); b = std::move(temp);</code></pre>
-            <p class="tip">💡 举一反三：std::swap 利用移动语义避免不必要的拷贝。对于 vector，swap 只交换三个指针，O(1) 复杂度。</p>
-        </section>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：bitset 构造</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;bitset&gt;
+bitset&lt;8&gt; b;          // 全 0
+bitset&lt;8&gt; b(42);      // 从整数
+bitset&lt;8&gt; b("1100");  // 从二进制字符串
+// 模板参数是编译期常量，大小固定</code></pre>
+                    <p class="tip">举一反三：bitset 是固定大小的位数组。与 vector<bool> 不同，bitset 是真正的位打包（每位 1 bit）。大小是编译期常量，适合已知位数的场景。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：位操作：set/reset/flip/test</h3>
+                    <pre class="code-block"><code class="language-cpp">b.set(3);       // 设置第 3 位为 1
+b.reset(3);     // 清除第 3 位（设为 0）
+b.flip(3);      // 翻转第 3 位
+b.test(3);      // 测试第 3 位是否为 1
+b.set();        // 全部设为 1
+b.reset();      // 全部清零</code></pre>
+                    <p class="tip">举一反三：所有单 bit 操作都是 O(1)。set(pos, bool) 可显式设置值。count() 返回置 1 位数，any() 检查是否有置 1，none() 检查是否全零。to_string() 转字符串。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：bitset 的位逻辑运算</h3>
+                    <pre class="code-block"><code class="language-cpp">b1 | b2  // 或
+b1 &amp; b2  // 与
+b1 ^ b2  // 异或
+~b1     // 取反
+b1 &lt;&lt;= 1 // 左移
+// 所有位运算都有对应的复合赋值</code></pre>
+                    <p class="tip">举一反三：位逻辑运算返回新的 bitset。左移右移不保留溢出位。可以用于集合运算（交集、并集、差集）和状态标志管理。to_ulong/to_ullong 转换回整数（可能抛异常）。</p>
+                </div>
+            </section>
+        </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_069.html" class="prev-link">&larr; 案例 69</a>
+<a href="case_071.html" class="next-link">案例 71 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

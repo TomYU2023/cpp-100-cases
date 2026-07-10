@@ -1,189 +1,123 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 90：简易 HTTP 反向代理</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_089.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_091.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 90：std::partial_sum 前缀和 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 90：std::partial_sum 前缀和</span>
         </div>
-    </nav><main class="container"><h1>案例 90：简易 HTTP 反向代理</h1><section class="intro"><p>实现基于 epoll 的非阻塞反向代理服务器，转发客户端请求到后端服务器，展示高性能网络编程的核心架构。</p><p><strong>核心知识点：</strong>epoll 多路复用、非阻塞 IO(fcntl)、socket 编程、HTTP 协议解析、字节序转换</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 90：简易 HTTP 反向代理
-// 在客户端和后端服务器之间建立中间层，转发请求和响应。
-// 展示非阻塞 IO、epoll 多路复用、HTTP 协议解析的核心概念。
-
-// 注意：本案例使用 Linux 的 epoll API，在 WSL 或 Linux 环境下编译运行。
-// 编译: g++ -std=c++17 proxy.cpp -o proxy
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 90：std::partial_sum 前缀和</h1>
+            <section class="intro">
+<p>使用 partial_sum 计算前缀和/累加序列，掌握差分与前缀和的互逆关系。</p>
+            <p><strong>核心知识点：</strong>partial_sum、前缀和、差分数组、相邻差</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 90：std::partial_sum 前缀和
+// 计算前缀和与相邻差
 #include &lt;iostream&gt;
-#include &lt;string&gt;
-#include &lt;cstring&gt;
-#include &lt;map&gt;
+#include &lt;numeric&gt;
 #include &lt;vector&gt;
-#include &lt;sstream&gt;
-#include &lt;unistd.h&gt;
-#include &lt;sys/socket.h&gt;
-#include &lt;sys/epoll.h&gt;
-#include &lt;netinet/in.h&gt;
-#include &lt;arpa/inet.h&gt;
-#include &lt;fcntl.h&gt;
-#include &lt;errno.h&gt;
+#include &lt;algorithm&gt;
+using namespace std;
 
-const int PORT = 8080;              // 代理监听端口
-const char* BACKEND_HOST = &quot;127.0.0.1&quot;;  // 后端服务器地址
-const int BACKEND_PORT = 9000;      // 后端服务器端口
-const int MAX_EVENTS = 1024;
-const int BUFFER_SIZE = 4096;
-
-// ─── 设置非阻塞 ──────────────────────────────────
-int setNonBlocking(int fd) {
-    int flags = fcntl(fd, F_GETFL, 0);
-    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
-
-// HTTP 请求（简化版，仅 GET）
-struct HttpRequest {
-    std::string method, path, version;
-    std::map&lt;std::string, std::string&gt; headers;
-    std::string body;
-};
-
-// ─── 解析 HTTP 请求 ──────────────────────────────
-HttpRequest parseRequest(const std::string&amp; raw) {
-    HttpRequest req;
-    std::istringstream ss(raw);
-    std::string line;
-
-    // 请求行: GET /index.html HTTP/1.1
-    std::getline(ss, line);
-    std::istringstream lineStream(line);
-    lineStream &gt;&gt; req.method &gt;&gt; req.path &gt;&gt; req.version;
-
-    // 解析头部
-    while (std::getline(ss, line) &amp;&amp; line != &quot;\r&quot;) {
-        auto colon = line.find(':');
-        if (colon != std::string::npos)
-            req.headers[line.substr(0, colon)] = line.substr(colon + 2);
-    }
-    return req;
-}
-
-// ─── 连接到后端 ──────────────────────────────────
-int connectBackend() {
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in addr = {};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(BACKEND_PORT);
-    inet_pton(AF_INET, BACKEND_HOST, &amp;addr.sin_addr);
-    if (connect(fd, (sockaddr*)&amp;addr, sizeof(addr)) &lt; 0) {
-        close(fd);
-        return -1;
-    }
-    return fd;
-}
-
-// ─── 创建 TCP 套接字并绑定 ──────────────────────
-// 创建一个监听套接字，用于接收客户端的连接请求
-int createListenSocket() {
-    int fd = socket(AF_INET, SOCK_STREAM, 0);  // AF_INET=IPv4, SOCK_STREAM=TCP
-    int opt = 1;
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &amp;opt, sizeof(opt));
-
-    sockaddr_in addr = {};
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;   // 监听所有网络接口
-    addr.sin_port = htons(PORT);
-
-    bind(fd, (sockaddr*)&amp;addr, sizeof(addr));
-    listen(fd, SOMAXCONN);  // 监听，最大连接队列
-    return fd;
-}
-
-// ─── epoll 事件循环 ──────────────────────────────
 int main() {
-    int listenFd = createListenSocket();
-    setNonBlocking(listenFd);
+    // 1. 基本前缀和
+    vector&lt;int&gt; data = {1, 2, 3, 4, 5};
+    vector&lt;int&gt; prefix(data.size());
 
-    // 创建 epoll 实例
-    int epollFd = epoll_create1(0);  // 0 或 EPOLL_CLOEXEC
+    partial_sum(data.begin(), data.end(), prefix.begin());
+    // prefix = {1, 1+2, 1+2+3, 1+2+3+4, 1+2+3+4+5}
 
-    // 注册监听套接字到 epoll
-    epoll_event ev = {};
-    ev.events = EPOLLIN;        // 关注可读事件
-    ev.data.fd = listenFd;
-    epoll_ctl(epollFd, EPOLL_CTL_ADD, listenFd, &amp;ev);
+    cout &lt;&lt; "原始数据: ";
+    for (int x : data) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; "\n前缀和: ";
+    for (int x : prefix) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;代理服务器运行在 0.0.0.0:&quot; &lt;&lt; PORT &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;后端: &quot; &lt;&lt; BACKEND_HOST &lt;&lt; &quot;:&quot; &lt;&lt; BACKEND_PORT &lt;&lt; std::endl;
+    // 2. 自定义操作：前缀乘积（阶乘）
+    vector&lt;int&gt; nums = {1, 2, 3, 4, 5, 6};
+    vector&lt;int&gt; factorial(nums.size());
 
-    epoll_event events[MAX_EVENTS];  // 就绪事件数组
+    partial_sum(nums.begin(), nums.end(), factorial.begin(),
+                multiplies&lt;int&gt;());
+    // factorial = {1, 1*2, 1*2*3, ..., 1*2*3*4*5*6}
 
-    while (true) {
-        // 等待事件（-1 表示无限等待直到有事件）
-        int nfds = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+    cout &lt;&lt; "\n阶乘序列: ";
+    for (int x : factorial) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-        for (int i = 0; i &lt; nfds; i++) {
-            int fd = events[i].data.fd;
+    // 3. adjacent_difference：逆操作（差分）
+    vector&lt;int&gt; diff(prefix.size());
+    adjacent_difference(prefix.begin(), prefix.end(), diff.begin());
+    cout &lt;&lt; "\n差分还原: ";
+    for (int x : diff) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; " (第一个是 prefix[0])" &lt;&lt; endl;
 
-            // 事件 1：新客户端连接
-            if (fd == listenFd) {
-                sockaddr_in clientAddr;
-                socklen_t len = sizeof(clientAddr);
-                int clientFd = accept(listenFd, (sockaddr*)&amp;clientAddr, &amp;len);
-                setNonBlocking(clientFd);
+    // 4. 实际应用：区间求和 O(1)
+    // 预处理前缀和 → 查询任意区间和只需 O(1)
+    vector&lt;int&gt; scores = {85, 92, 78, 95, 88, 72, 66, 90, 83, 76};
+    vector&lt;int&gt; preSum(scores.size() + 1, 0);
+    partial_sum(scores.begin(), scores.end(), preSum.begin() + 1);
 
-                // 连接到后端
-                int backendFd = connectBackend();
-                setNonBlocking(backendFd);
+    cout &lt;&lt; "\n=== 区间求和 (前缀和优化) ===" &lt;&lt; endl;
+    // 查询 [2, 5) 的和: scores[2]+scores[3]+scores[4]
+    int l = 2, r = 5;
+    int rangeSum = preSum[r] - preSum[l];
+    cout &lt;&lt; "scores[" &lt;&lt; l &lt;&lt; ".." &lt;&lt; r-1 &lt;&lt; "] 的和 = "
+         &lt;&lt; rangeSum &lt;&lt; endl;
+    cout &lt;&lt; "  验证: 78+95+88 = " &lt;&lt; (78+95+88) &lt;&lt; endl;
 
-                // 注册客户端和后端到 epoll
-                ev.events = EPOLLIN | EPOLLET;  // ET 边缘触发
-                ev.data.fd = clientFd;
-                epoll_ctl(epollFd, EPOLL_CTL_ADD, clientFd, &amp;ev);
-
-                ev.data.fd = backendFd;
-                epoll_ctl(epollFd, EPOLL_CTL_ADD, backendFd, &amp;ev);
-
-                std::cout &lt;&lt; &quot;[连接] 新连接 fd=&quot; &lt;&lt; clientFd
-                          &lt;&lt; &quot; → 后端 fd=&quot; &lt;&lt; backendFd &lt;&lt; std::endl;
-            }
-            // 事件 2：客户端或后端发来数据
-            else {
-                char buf[BUFFER_SIZE];
-                int n = recv(fd, buf, sizeof(buf) - 1, 0);
-
-                if (n &lt;= 0) {
-                    // 连接关闭
-                    std::cout &lt;&lt; &quot;[关闭] fd=&quot; &lt;&lt; fd &lt;&lt; std::endl;
-                    epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, nullptr);
-                    close(fd);
-                } else {
-                    buf[n] = '\0';
-                    std::cout &lt;&lt; &quot;[数据] fd=&quot; &lt;&lt; fd &lt;&lt; &quot; (&quot; &lt;&lt; n &lt;&lt; &quot; 字节)&quot; &lt;&lt; std::endl;
-
-                    // 简化：直接转发（生产环境需要关联 client↔backend 并管理状态机）
-                    // 实际代理应维护 fd 对映射，此处仅展示核心架构
-                }
-            }
-        }
-    }
-
-    close(epollFd);
-    close(listenFd);
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：epoll 多路复用模型</h3><pre class="code-block"><code class="language-cpp">int epfd = epoll_create1(0);
-epoll_event ev;
-ev.events = EPOLLIN;        // 关注可读
-ev.data.fd = sockfd;
-epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &amp;ev);
-
-// 事件循环
-epoll_event events[MAX];
-int n = epoll_wait(epfd, events, MAX, timeout);
-// events[0..n-1] 是就绪的事件</code></pre><p class="tip">💡 举一反三：epoll 是 Linux 上高性能网络编程的核心。相比 select/poll（O(n) 遍历所有 fd），epoll 的事件驱动机制是 O(1)。边缘触发（EPOLLET）要求一次读完所有数据，否则不会再通知，适合高吞吐场景。macOS 上用 kqueue，Windows 上用 IOCP。</p>
-<h3>语法规则：fcntl 设置非阻塞文件描述符</h3><pre class="code-block"><code class="language-cpp">#include &lt;fcntl.h&gt;
-int flags = fcntl(fd, F_GETFL, 0);
-fcntl(fd, F_SETFL, flags | O_NONBLOCK);</code></pre><p class="tip">💡 举一反三：非阻塞模式下，read/write/accept 在没有数据时立即返回 -1 并设 errno=EAGAIN/EWOULDBLOCK，而不是阻塞等待。这是异步 IO 的基础，必须配合 epoll/select 使用。</p>
-<h3>语法规则：inet_pton 和 htons 网络地址转换</h3><pre class="code-block"><code class="language-cpp">#include &lt;arpa/inet.h&gt;
-inet_pton(AF_INET, &quot;127.0.0.1&quot;, &amp;addr.sin_addr);  // 字符串 → 网络字节序
-addr.sin_port = htons(8080);  // host to network short — 端口字节序转换</code></pre><p class="tip">💡 举一反三：网络上传输的数据按大端序（网络字节序），而 x86 是小端序，htons/htonl 做转换。inet_pton 替代老旧的 inet_addr，支持 IPv4 和 IPv6。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::partial_sum</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+partial_sum(v.begin(), v.end(), output.begin());
+// output[0] = v[0]
+// output[i] = output[i-1] + v[i]
+// 默认操作为加法</code></pre>
+                    <p class="tip">举一反三：前缀和是算法竞赛和数据处理的基础工具。一次 O(N) 预处理后，任意区间和查询只需 O(1)。可自定义二元操作（乘积、最大值、位或等）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：adjacent_difference (差分)</h3>
+                    <pre class="code-block"><code class="language-cpp">adjacent_difference(v.begin(), v.end(), output.begin());
+// output[0] = v[0]
+// output[i] = v[i] - v[i-1] (默认减法)
+// 是前缀和的逆操作</code></pre>
+                    <p class="tip">举一反三：差分数组常用于区间修改 O(1)。差分 + 前缀和 = 原始数据。可以自定义二元操作（如除法、异或）。partial_sum + adjacent_difference 互为逆。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：前缀和区间查询</h3>
+                    <pre class="code-block"><code class="language-cpp">// 预处理
+vector&lt;int&gt; preSum(n+1, 0);
+partial_sum(v.begin(), v.end(), preSum.begin()+1);
+// 区间 [l, r) 的和 = preSum[r] - preSum[l]
+int sum = preSum[r] - preSum[l];</code></pre>
+                    <p class="tip">举一反三：这是前缀和最经典的用法。preSum[0]=0（哨兵）使公式统一。扩展到二维/高维：二维前缀和 O(NM) 预处理，O(1) 子矩阵求和。是「空间换时间」的典型。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_089.html" class="prev-link">&larr; 案例 89</a>
+<a href="case_091.html" class="next-link">案例 91 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

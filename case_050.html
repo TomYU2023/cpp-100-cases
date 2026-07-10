@@ -1,185 +1,166 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 50：简易压缩/解压工具（zlib 封装） - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 50：观察者模式 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 50：简易压缩/解压工具（zlib 封装）</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;fstream&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd">#include &lt;cstring&gt;</td><td class="cmt">memcpy</td></tr>
-<tr><td class="ln">6</td><td class="cd">#include &lt;zlib.h&gt;</td><td class="cmt">zlib 库头文件</td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">// zlib 简单压缩接口</td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2">vector&lt;uint8_t&gt; compress(const vector&lt;uint8_t&gt;&amp; data) {</td></tr>
-<tr><td class="ln">12</td><td class="cd">    uLongf srcLen = data.size();</td><td class="cmt">源数据长度（zlib 使用 uLongf 类型）</td></tr>
-<tr><td class="ln">13</td><td class="cd">    uLongf destLen = compressBound(srcLen);</td><td class="cmt">compressBound 返回最坏情况压缩后大小</td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">15</td><td class="cd">    vector&lt;uint8_t&gt; compressed(destLen);</td><td class="cmt">预分配最坏情况大小的缓冲区</td></tr>
-<tr><td class="ln">16</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">17</td><td class="cd">    int ret = ::compress(compressed.data(), &amp;destLen,</td><td class="cmt">zlib 的 compress 函数</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2">                        data.data(), srcLen);</td></tr>
-<tr><td class="ln">19</td><td class="cd">    if (ret != Z_OK) {</td><td class="cmt">Z_OK 表示成功</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">        cerr &lt;&lt; "Compression failed: " &lt;&lt; ret &lt;&lt; endl;</td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">        return {};</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">24</td><td class="cd">    compressed.resize(destLen);</td><td class="cmt">调整到实际压缩后的大小</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">    return compressed;</td></tr>
-<tr><td class="ln">26</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">// zlib 解压接口（需提供原始数据大小）</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2">vector&lt;uint8_t&gt; decompress(const vector&lt;uint8_t&gt;&amp; data, uLongf origSize) {</td></tr>
-<tr><td class="ln">30</td><td class="cd">    vector&lt;uint8_t&gt; decompressed(origSize);</td><td class="cmt">需要知道原始大小</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">    uLongf destLen = origSize;</td></tr>
-<tr><td class="ln">32</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">33</td><td class="cd">    int ret = ::uncompress(decompressed.data(), &amp;destLen,</td><td class="cmt">zlib 的 uncompress 函数</td></tr>
-<tr><td class="ln">34</td><td class="cd" colspan="2">                          data.data(), data.size());</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2">    if (ret != Z_OK) {</td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">        cerr &lt;&lt; "Decompression failed" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">        return {};</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2">    return decompressed;</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2">// 文件压缩（压缩后保存原始大小用于解压）</td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">bool compressFile(const string&amp; inPath, const string&amp; outPath) {</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">    // 读取源文件</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">    ifstream inFile(inPath, ios::binary);</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2">    if (!inFile) { cerr &lt;&lt; "Cannot open input\n"; return false; }</td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">    vector&lt;uint8_t&gt; data((istreambuf_iterator&lt;char&gt;(inFile)),</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2">                        istreambuf_iterator&lt;char&gt;());</td></tr>
-<tr><td class="ln">50</td><td class="cd" colspan="2">    inFile.close();</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">    auto compressed = compress(data);</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">    if (compressed.empty()) return false;</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">    // 写入格式：8 字节原始大小（uint64_t）+ 压缩数据</td></tr>
-<tr><td class="ln">56</td><td class="cd" colspan="2">    ofstream outFile(outPath, ios::binary);</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">    uint64_t origSize = data.size();</td></tr>
-<tr><td class="ln">58</td><td class="cd">    outFile.write(reinterpret_cast&lt;const char*&gt;(&amp;origSize), 8);</td><td class="cmt">先写 8 字节原始大小</td></tr>
-<tr><td class="ln">59</td><td class="cd">    outFile.write(reinterpret_cast&lt;const char*&gt;(compressed.data()), compressed.size());</td><td class="cmt">后写压缩数据</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2">    cout &lt;&lt; "Compressed: " &lt;&lt; data.size() &lt;&lt; " -&gt; " &lt;&lt; compressed.size()</td></tr>
-<tr><td class="ln">62</td><td class="cd">         &lt;&lt; " bytes (" &lt;&lt; (100.0 * compressed.size() / data.size()) &lt;&lt; "%)" &lt;&lt; endl;</td><td class="cmt">显示压缩率</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2">    return true;</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">66</td><td class="cd" colspan="2">// 文件解压</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2">bool decompressFile(const string&amp; inPath, const string&amp; outPath) {</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2">    ifstream inFile(inPath, ios::binary);</td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2">    if (!inFile) return false;</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">    // 读取原始大小</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">    uint64_t origSize = 0;</td></tr>
-<tr><td class="ln">73</td><td class="cd">    inFile.read(reinterpret_cast&lt;char*&gt;(&amp;origSize), 8);</td><td class="cmt">读取头 8 字节</td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">    // 读取压缩数据</td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2">    vector&lt;uint8_t&gt; compressed((istreambuf_iterator&lt;char&gt;(inFile)),</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">                            istreambuf_iterator&lt;char&gt;());</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">    inFile.close();</td></tr>
-<tr><td class="ln">79</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2">    auto decompressed = decompress(compressed, origSize);</td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2">    if (decompressed.empty()) return false;</td></tr>
-<tr><td class="ln">82</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">83</td><td class="cd" colspan="2">    ofstream outFile(outPath, ios::binary);</td></tr>
-<tr><td class="ln">84</td><td class="cd" colspan="2">    outFile.write(reinterpret_cast&lt;const char*&gt;(decompressed.data()),</td></tr>
-<tr><td class="ln">85</td><td class="cd" colspan="2">                 decompressed.size());</td></tr>
-<tr><td class="ln">86</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">87</td><td class="cd" colspan="2">    cout &lt;&lt; "Decompressed: " &lt;&lt; decompressed.size() &lt;&lt; " bytes" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">88</td><td class="cd" colspan="2">    return true;</td></tr>
-<tr><td class="ln">89</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">90</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">91</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">92</td><td class="cd" colspan="2">    string input  = "test_data.bin";</td></tr>
-<tr><td class="ln">93</td><td class="cd" colspan="2">    string comp   = "test_data.zlib";</td></tr>
-<tr><td class="ln">94</td><td class="cd" colspan="2">    string output = "test_data_restored.bin";</td></tr>
-<tr><td class="ln">95</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">96</td><td class="cd" colspan="2">    // 创建测试数据</td></tr>
-<tr><td class="ln">97</td><td class="cd" colspan="2">    {</td></tr>
-<tr><td class="ln">98</td><td class="cd" colspan="2">        ofstream f(input);</td></tr>
-<tr><td class="ln">99</td><td class="cd" colspan="2">        for (int i = 0; i &lt; 10000; i++)</td></tr>
-<tr><td class="ln">100</td><td class="cd">            f &lt;&lt; "Hello World! ";</td><td class="cmt">重复内容压缩率高</td></tr>
-<tr><td class="ln">101</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">102</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">103</td><td class="cd">    compressFile(input, comp);</td><td class="cmt">压缩</td></tr>
-<tr><td class="ln">104</td><td class="cd">    decompressFile(comp, output);</td><td class="cmt">解压</td></tr>
-<tr><td class="ln">105</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">106</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">107</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>第三方 C 库集成（zlib 示例）</h3>
-<div class="rule"><strong>语法规则：</strong>集成 C 库的步骤：<strong>(1) 安装头文件和库文件</strong>；(2) 编译时添加 <code>-lz</code> 链接选项；(3) 包含头文件并使用 C API。<code>::compress</code> 前面的双冒号表示调用全局命名空间的函数。</div>
-<pre class="example"><code>// 安装: vcpkg install zlib / apt install zlib1g-dev
-// 编译: g++ -std=c++17 main.cpp -lz
-#include <zlib.h>
-uLongf compressedLen = compressBound(srcLen);
-int ret = ::compress(dest, &compressedLen, src, srcLen);</code></pre>
-</div>
-<div class="grammar-item">
-<h3>reinterpret_cast 指针类型转换</h3>
-<div class="rule"><strong>语法规则：</strong><strong>reinterpret_cast</strong> 是最底层的类型转换，将指针按位重新解释为目标类型。主要用途：(1) uint8_t* ↔ char* 用于字节级 IO；(2) 整数 ↔ 指针（嵌入式开发）。<strong>注意</strong>：不改变任何 bit，只是换了个"看法"。</div>
-<pre class="example"><code>uint64_t x = 0x1234567890ABCDEF;
-// 按 char* 逐字节读取
-const char* p = reinterpret_cast<const char*>(&x);
-for (int i = 0; i < 8; i++)
-    printf("%02x ", (unsigned char)p[i]);
-// 小端机器输出: ef cd ab 90 78 56 34 12</code></pre>
-</div>
-<div class="grammar-item">
-<h3>ifstream::read 读取指定字节数</h3>
-<div class="rule"><strong>语法规则：</strong><code>read(char* s, streamsize n)</code> 从文件中读取恰好 n 字节到缓冲区。不同于 getline，read 不处理换行符，适合二进制数据。读取后可用 <code>gcount()</code> 检查实际读取了多少字节。</div>
-<pre class="example"><code>uint64_t value;
-ifstream f("data.bin", ios::binary);
-f.read(reinterpret_cast<char*>(&value), sizeof(value));
-if (f.gcount() == sizeof(value)) {
-    cout << "Read: " << value;
-}</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>使用 Boost.Iostreams 更优雅的压缩：</strong><pre><code>#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-filtering_ostream out;
-out.push(gzip_compressor());
-out.push(file_sink("data.gz"));
-out << "Hello World";</code></pre><p>Boost.Iostreams 提供了管道式的流过滤器，可以像普通流一样读写压缩数据，代码更加 C++ 化。</p></li>
-<li><strong>压缩级别控制：</strong><pre><code>int level = Z_BEST_COMPRESSION;  // 1-9
-int ret = ::compress2(dest, &destLen, src, srcLen, level);</code></pre><p>zlib 支持 1（最快）到 9（最优）的压缩级别，以及 Z_DEFAULT_COMPRESSION（默认 6）。compress2 函数可以指定级别。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 50：观察者模式</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 50：观察者模式</h1>
+            <section class="intro">
+<p>实现经典的观察者（发布-订阅）模式，理解松耦合的事件通知机制。</p>
+            <p><strong>核心知识点：</strong>观察者模式、回调函数、function</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 50：观察者模式
+// 使用 function 实现灵活的事件通知
+#include &lt;iostream&gt;
+#include &lt;functional&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_049.html">← 案例 49</a><a href="case_051.html">案例 51 →</a>
-</nav>
-</main>
+// 事件携带的数据
+struct StockData {
+    string symbol;  // 股票代码
+    double price;   // 最新价格
+    double change;  // 涨跌百分比
+};
+
+// 被观察者：股票行情源
+class StockMarket {
+private:
+    // 回调函数类型
+    using Observer = function&lt;void(const StockData&amp;)&gt;;
+    vector&lt;Observer&gt; observers;
+
+public:
+    // 注册观察者
+    void subscribe(Observer observer) {
+        observers.push_back(observer);
+    }
+
+    // 取消注册
+    void unsubscribe(const Observer* observer) {
+        // 简化：不支持根据函数对象取消（实际可用 token 模式）
+    }
+
+    // 通知所有观察者
+    void notifyAll(const StockData&amp; data) {
+        for (auto&amp; obs : observers) {
+            obs(data);
+        }
+    }
+
+    // 模拟行情更新
+    void updatePrice(const string&amp; symbol, double price, double change) {
+        StockData data{symbol, price, change};
+        cout &lt;&lt; "[行情] " &lt;&lt; symbol &lt;&lt; " 最新价=" &lt;&lt; price
+             &lt;&lt; " 涨跌=" &lt;&lt; change &lt;&lt; "%" &lt;&lt; endl;
+        notifyAll(data);
+    }
+};
+
+// 观察者1：控制台显示
+class ConsoleDisplay {
+    string name;
+public:
+    explicit ConsoleDisplay(const string&amp; n) : name(n) {}
+    void onPriceUpdate(const StockData&amp; data) {
+        cout &lt;&lt; "  [" &lt;&lt; name &lt;&lt; "] 收到 "
+             &lt;&lt; data.symbol &lt;&lt; " 价格更新: "
+             &lt;&lt; data.price &lt;&lt; endl;
+    }
+};
+
+// 观察者2：提醒服务
+class AlertService {
+    double threshold;
+public:
+    explicit AlertService(double t) : threshold(t) {}
+    void onPriceUpdate(const StockData&amp; data) {
+        if (data.change &gt;= threshold) {
+            cout &lt;&lt; "  [提醒] " &lt;&lt; data.symbol
+                 &lt;&lt; " 大幅上涨 " &lt;&lt; data.change &lt;&lt; "%!" &lt;&lt; endl;
+        } else if (data.change &lt;= -threshold) {
+            cout &lt;&lt; "  [提醒] " &lt;&lt; data.symbol
+                 &lt;&lt; " 大幅下跌 " &lt;&lt; data.change &lt;&lt; "%!" &lt;&lt; endl;
+        }
+    }
+};
+
+int main() {
+    StockMarket market;
+
+    // 创建观察者对象
+    ConsoleDisplay display("显示屏1");
+    AlertService alert(5.0); // 涨跌超 5% 触发提醒
+
+    // 使用 bind 将成员函数绑定为回调
+    market.subscribe(bind(&amp;ConsoleDisplay::onPriceUpdate, &amp;display,
+                           placeholders::_1));
+    market.subscribe(bind(&amp;AlertService::onPriceUpdate, &amp;alert,
+                           placeholders::_1));
+
+    // 使用 Lambda 作为观察者
+    market.subscribe([](const StockData&amp; d) {
+        cout &lt;&lt; "  [日志] 记录 " &lt;&lt; d.symbol &lt;&lt; " 价格变化" &lt;&lt; endl;
+    });
+
+    // 模拟行情数据
+    market.updatePrice("AAPL", 175.50, 2.3);
+    market.updatePrice("GOOG", 140.20, -6.1);
+    market.updatePrice("MSFT", 330.00, 1.5);
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：function 作为回调</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+using Observer = function&lt;void(const StockData&amp;)&gt;;
+vector&lt;Observer&gt; observers;
+// function 可存储 Lambda、函数指针、bind 结果等</code></pre>
+                    <p class="tip">举一反三：function 是通用可调用对象包装器。类型擦除机制使其可存储任何满足签名的可调用对象。有轻微虚函数开销，性能敏感场景用 template。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：bind 绑定成员函数</h3>
+                    <pre class="code-block"><code class="language-cpp">using namespace placeholders;
+bind(&amp;Class::method, &amp;obj, _1);
+// _1 是占位符，表示回调时的第一个参数
+// 成员函数需要对象指针作为第一个隐式参数</code></pre>
+                    <p class="tip">举一反三：bind 将成员函数和对象绑定生成可调用对象。C++14 后 Lambda 更直观：[&obj](auto x){ obj.method(x); }。_1、_2 等占位符对应回调参数位置。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：观察者模式要点</h3>
+                    <pre class="code-block"><code class="language-cpp">// 主题(subject)维护观察者列表
+// 状态变化 -&gt; 遍历列表 -&gt; 调用回调
+// 核心：松耦合，主题不需要知道观察者是谁</code></pre>
+                    <p class="tip">举一反三：观察者模式解耦了事件产生方和处理方。实际应用需注意：回调中的异常处理、避免在回调中修改观察者列表（迭代器失效）、观察者生命周期管理。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_049.html" class="prev-link">&larr; 案例 49</a>
+<a href="case_051.html" class="next-link">案例 51 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

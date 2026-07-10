@@ -1,186 +1,117 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 87：终端俄罗斯方块</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_086.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_088.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 87：std::is_sorted/sorted_until 顺序检查 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 87：std::is_sorted/sorted_until 顺序检查</span>
         </div>
-    </nav><main class="container"><h1>案例 87：终端俄罗斯方块</h1><section class="intro"><p>在控制台窗口内实现俄罗斯方块游戏，包含 7 种方块、旋转碰撞检测、消行计分、非阻塞输入和定时刷新。</p><p><strong>核心知识点：</strong>_kbhit 非阻塞输入、SetConsoleCursorPosition 光标控制、std::array、游戏循环架构</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 87：终端俄罗斯方块
-// 在控制台窗口内实现经典俄罗斯方块，包含 7 种方块形状、旋转、消行、计分。
-// 使用 Windows API 实现非阻塞键盘输入和定时刷新。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 87：std::is_sorted/sorted_until 顺序检查</h1>
+            <section class="intro">
+<p>使用 is_sorted 检查序列是否有序，找到第一个无序位置。</p>
+            <p><strong>核心知识点：</strong>is_sorted、is_sorted_until、有序性检查</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 87：std::is_sorted / sorted_until 顺序检查
+// 检测序列是否有序
 #include &lt;iostream&gt;
+#include &lt;algorithm&gt;
 #include &lt;vector&gt;
-#include &lt;array&gt;
-#include &lt;conio.h&gt;     // _kbhit(), _getch() — Windows 控制台输入
-#include &lt;windows.h&gt;   // Sleep(), 光标控制
-#include &lt;ctime&gt;
+#include &lt;string&gt;
+using namespace std;
 
-// ─── 常量 ────────────────────────────────────────
-const int W = 10, H = 20;  // 面板宽高
-
-// ─── 7 种方块定义（4x4 矩阵）─────────────────────
-// 每种方块有 4 种旋转状态，这里仅展示初始状态
-const std::array&lt;std::array&lt;std::string, 4&gt;, 7&gt; PIECES = {{
-    // I 型
-    {&quot;....&quot;,&quot;XXXX&quot;,&quot;....&quot;,&quot;....&quot;},
-    // O 型
-    {&quot;....&quot;,&quot;.XX.&quot;,&quot;.XX.&quot;,&quot;....&quot;},
-    // T 型
-    {&quot;....&quot;,&quot;.X..&quot;,&quot;XXX.&quot;,&quot;....&quot;},
-    // S 型
-    {&quot;....&quot;,&quot;..XX&quot;,&quot;.XX.&quot;,&quot;....&quot;},
-    // Z 型
-    {&quot;....&quot;,&quot;XX..&quot;,&quot;.XX.&quot;,&quot;....&quot;},
-    // L 型
-    {&quot;....&quot;,&quot;..X.&quot;,&quot;XXX.&quot;,&quot;....&quot;},
-    // J 型
-    {&quot;....&quot;,&quot;X...&quot;,&quot;XXX.&quot;,&quot;....&quot;},
-}};
-
-// ─── 全局状态 ────────────────────────────────────
-int board[H][W] = {0};       // 固定面板 0=空 1~7=颜色
-int curPiece, curX=3, curY=0, curRot=0;
-int score = 0;
-
-// ─── 辅助函数 ────────────────────────────────────
-void gotoXY(int x, int y) {
-    COORD c = {(SHORT)x, (SHORT)y};
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
-}
-
-void hideCursor() {
-    CONSOLE_CURSOR_INFO info = {100, FALSE};
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &amp;info);
-}
-
-// ─── 碰撞检测 ────────────────────────────────────
-bool collide(int px, int py, int rot) {
-    for (int y = 0; y &lt; 4; y++)
-        for (int x = 0; x &lt; 4; x++)
-            if (PIECES[curPiece][rot][y] == 'X') {
-                int bx = px + x, by = py + y;
-                if (bx &lt; 0 || bx &gt;= W || by &gt;= H) return true;
-                if (by &gt;= 0 &amp;&amp; board[by][bx]) return true;
-            }
-    return false;
-}
-
-// ─── 固定方块到面板 ──────────────────────────────
-void lock() {
-    for (int y = 0; y &lt; 4; y++)
-        for (int x = 0; x &lt; 4; x++)
-            if (PIECES[curPiece][curRot][y] == 'X') {
-                int bx = curX + x, by = curY + y;
-                if (by &gt;= 0 &amp;&amp; by &lt; H)
-                    board[by][bx] = curPiece + 1;
-            }
-}
-
-// ─── 消行 ────────────────────────────────────────
-void clearLines() {
-    for (int y = H - 1; y &gt;= 0; y--) {
-        bool full = true;
-        for (int x = 0; x &lt; W; x++)
-            if (!board[y][x]) { full = false; break; }
-        if (full) {
-            // 下移上方所有行
-            for (int yy = y; yy &gt; 0; yy--)
-                for (int x = 0; x &lt; W; x++)
-                    board[yy][x] = board[yy-1][x];
-            for (int x = 0; x &lt; W; x++) board[0][x] = 0;
-            y++;  // 重新检查当前行
-            score += 100;
-        }
-    }
-}
-
-// ─── 渲染 ────────────────────────────────────────
-void draw() {
-    gotoXY(0, 0);
-    // 绘制面板
-    for (int y = 0; y &lt; H; y++) {
-        std::cout &lt;&lt; &quot;|&quot;;
-        for (int x = 0; x &lt; W; x++) {
-            bool isPiece = false;
-            for (int py = 0; py &lt; 4; py++)
-                for (int px = 0; px &lt; 4; px++)
-                    if (PIECES[curPiece][curRot][py] == 'X'
-                        &amp;&amp; curX+px == x &amp;&amp; curY+py == y)
-                        isPiece = true;
-            if (isPiece) std::cout &lt;&lt; &quot;#&quot;;
-            else if (board[y][x]) {
-                std::cout &lt;&lt; char('0' + board[y][x]);  // 数字表示颜色
-            }
-            else std::cout &lt;&lt; &quot;.&quot;;
-        }
-        std::cout &lt;&lt; &quot;|&quot; &lt;&lt; std::endl;
-    }
-    std::cout &lt;&lt; &quot;+----------+&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;得分: &quot; &lt;&lt; score &lt;&lt; &quot;   操作: ←→ 移动  ↑ 旋转  ↓ 加速&quot; &lt;&lt; std::endl;
-}
-
-// ─── 旋转方块（顺时针）───────────────────────────
-void rotate() {
-    int newRot = (curRot + 1) % 4;
-    if (!collide(curX, curY, newRot)) curRot = newRot;
-}
-
-// ─── 主循环 ──────────────────────────────────────
 int main() {
-    hideCursor();
-    srand((unsigned)time(0));
-    curPiece = rand() % 7;
+    // 1. is_sorted：检查是否有序
+    vector&lt;int&gt; v1 = {1, 2, 3, 4, 5};
+    vector&lt;int&gt; v2 = {1, 3, 2, 4, 5};
+    vector&lt;int&gt; v3 = {5, 4, 3, 2, 1};
 
-    // 游戏主循环
-    while (true) {
-        draw();
+    cout &lt;&lt; "检查有序性:" &lt;&lt; endl;
+    cout &lt;&lt; "v1 [1-5] 升序: " &lt;&lt; boolalpha
+         &lt;&lt; is_sorted(v1.begin(), v1.end()) &lt;&lt; endl;
+    cout &lt;&lt; "v2 [1,3,2,4,5] 升序: "
+         &lt;&lt; is_sorted(v2.begin(), v2.end()) &lt;&lt; endl;
+    cout &lt;&lt; "v3 [5 → 1] 降序: "
+         &lt;&lt; is_sorted(v3.begin(), v3.end(), greater&lt;int&gt;()) &lt;&lt; endl;
 
-        // 处理键盘输入（非阻塞）
-        if (_kbhit()) {
-            int key = _getch();
-            if (key == 224) {  // 方向键前缀
-                key = _getch();
-                if (key == 75 &amp;&amp; !collide(curX-1, curY, curRot)) curX--;  // 左
-                if (key == 77 &amp;&amp; !collide(curX+1, curY, curRot)) curX++;  // 右
-                if (key == 80 &amp;&amp; !collide(curX, curY+1, curRot)) curY++;  // 下
-                if (key == 72) rotate();  // 上
-            }
-            if (key == 27) break;  // ESC 退出
-        }
+    // 2. is_sorted_until：找到第一个无序的位置
+    auto it = is_sorted_until(v2.begin(), v2.end());
+    cout &lt;&lt; "\nv2 的第一个无序位置: "
+         &lt;&lt; distance(v2.begin(), it) &lt;&lt; " (值=" &lt;&lt; *it &lt;&lt; ")" &lt;&lt; endl;
 
-        // 自然下落
-        if (!collide(curX, curY + 1, curRot)) {
-            curY++;
-        } else {
-            lock();
-            clearLines();
-            // 生成新方块
-            curPiece = rand() % 7;
-            curX = 3; curY = 0; curRot = 0;
-            if (collide(curX, curY, curRot)) {
-                std::cout &lt;&lt; &quot;游戏结束！最终得分: &quot; &lt;&lt; score &lt;&lt; std::endl;
-                break;
-            }
-        }
-        Sleep(200);  // 控制下落速度（毫秒）
+    // 3. 实际应用：数据验证
+    // 检查成绩是否按从高到低排列
+    vector&lt;int&gt; scores = {95, 92, 88, 85, 80, 82, 75};
+    cout &lt;&lt; "\n成绩: ";
+    for (int s : scores) cout &lt;&lt; s &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    if (!is_sorted(scores.begin(), scores.end(), greater&lt;int&gt;())) {
+        auto unorderedPos = is_sorted_until(
+            scores.begin(), scores.end(), greater&lt;int&gt;());
+        cout &lt;&lt; "排序错误在位置 "
+             &lt;&lt; distance(scores.begin(), unorderedPos)
+             &lt;&lt; " (值=" &lt;&lt; *unorderedPos &lt;&lt; ")" &lt;&lt; endl;
     }
+
+    // 4. 检查部分有序
+    vector&lt;int&gt; data = {10, 20, 30, 5, 15, 25, 35};
+    // 检查前 3 个是否有序
+    cout &lt;&lt; "\n前 3 个有序? "
+         &lt;&lt; is_sorted(data.begin(), data.begin() + 3) &lt;&lt; endl;
+    // 检查后 4 个是否有序
+    cout &lt;&lt; "后 4 个有序? "
+         &lt;&lt; is_sorted(data.begin() + 3, data.end()) &lt;&lt; endl;
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：_kbhit() / _getch() 非阻塞键盘检测</h3><pre class="code-block"><code class="language-cpp">#include &lt;conio.h&gt;
-if (_kbhit()) {        // 有按键被按下？不等待返回
-    int key = _getch();  // 读取按键（阻塞但仅在 _kbhit 返回 true 时调）
-    if (key == 224) key = _getch();  // 方向键=224+方向码
-}</code></pre><p class="tip">💡 举一反三：_kbhit 是 Windows 特有的非阻塞键盘检测函数，返回 0 表示没有按键。游戏循环的核心是：每帧检查按键 → 更新状态 → 渲染 → Sleep。Linux 下用 ncurses 库替代，原理相同。</p>
-<h3>语法规则：SetConsoleCursorPosition 控制台光标定位</h3><pre class="code-block"><code class="language-cpp">#include &lt;windows.h&gt;
-void gotoXY(int x, int y) {
-    COORD c = {(SHORT)x, (SHORT)y};
-    SetConsoleCursorPosition(
-        GetStdHandle(STD_OUTPUT_HANDLE), c);
-}</code></pre><p class="tip">💡 举一反三：通过 Windows Console API 直接移动光标，实现原地刷新（而非滚屏清屏）。这比 system("cls") 效率高得多，不会有闪烁感。在 Linux 上用 ANSI 转义码 \033[y;xH 实现同样效果。</p>
-<h3>语法规则：std::array 定长数组</h3><pre class="code-block"><code class="language-cpp">#include &lt;array&gt;
-std::array&lt;int, 100&gt; arr;  // 编译期确定大小的数组
-arr.fill(0);                // 全部填 0
-int s = arr.size();         // 返回 100（编译期常量）</code></pre><p class="tip">💡 举一反三：array 是 C 数组的现代化包装，有 .size()、.at()（边界检查）、迭代器支持，且不额外占用内存。相比 vector，array 无堆分配，适合小块固定数据。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::is_sorted</h3>
+                    <pre class="code-block"><code class="language-cpp">bool sorted = is_sorted(v.begin(), v.end());
+// 检查整个范围是否非递减有序（升序）
+// O(N) 遍历，遇到无序立即停止
+// 可传自定义比较器</code></pre>
+                    <p class="tip">举一反三：is_sorted 可检查任何可比较的序列。默认用 operator< 判断非递减。空范围和单元素范围总是返回 true。降序检查用 greater<>()。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：is_sorted_until</h3>
+                    <pre class="code-block"><code class="language-cpp">auto it = is_sorted_until(v.begin(), v.end());
+// 返回最长有序前缀之后的迭代器
+// 如果全部有序，返回 v.end()
+// 结合 distance 可定位第一个无序元素</code></pre>
+                    <p class="tip">举一反三：is_sorted_until 比 is_sorted 多提供位置信息。适合调试和验证（精确定位排序错误）。可用于部分排序算法的验证（如检查某段是否已处理完毕）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：有序性检查应用</h3>
+                    <pre class="code-block"><code class="language-cpp">// 1. 数据验证：输入/输出是否按要求有序
+// 2. 算法前提检查：二分搜索前验证有序性
+// 3. 调试：排序算法错误定位
+// 4. 测试：验证排序结果</code></pre>
+                    <p class="tip">举一反三：在生产代码中添加 is_sorted 断言可提前发现数据问题。二分搜索（binary_search / lower_bound）要求有序，is_sorted 可在 Debug 模式检查。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_086.html" class="prev-link">&larr; 案例 86</a>
+<a href="case_088.html" class="next-link">案例 88 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

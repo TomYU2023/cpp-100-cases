@@ -1,164 +1,149 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 57：简易 Ping 工具（ICMP） - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 57：fstream 二进制读写 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 57：简易 Ping 工具（ICMP）</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">// Windows 使用 IcmpSendEcho，Linux 使用原始套接字</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;chrono&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2">#include &lt;winsock2.h&gt;</td></tr>
-<tr><td class="ln">7</td><td class="cd">#include &lt;iphlpapi.h&gt;</td><td class="cmt">ICMP API</td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2">#include &lt;icmpapi.h&gt;</td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">#pragma comment(lib, "ws2_32.lib")</td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2">#pragma comment(lib, "iphlpapi.lib")</td></tr>
-<tr><td class="ln">12</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">13</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">// Windows 风格的 Ping</td></tr>
-<tr><td class="ln">16</td><td class="cd" colspan="2">int ping(const string&amp; host, int count = 4, int timeoutMs = 1000) {</td></tr>
-<tr><td class="ln">17</td><td class="cd" colspan="2">    // 转换 IP 地址</td></tr>
-<tr><td class="ln">18</td><td class="cd">    unsigned long ipAddr = inet_addr(host.c_str());</td><td class="cmt">inet_addr: IP 字符串 → 32 位整数</td></tr>
-<tr><td class="ln">19</td><td class="cd">    if (ipAddr == INADDR_NONE) {</td><td class="cmt">转换失败</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">        // 尝试 DNS 解析</td></tr>
-<tr><td class="ln">21</td><td class="cd">        hostent* hostInfo = gethostbyname(host.c_str());</td><td class="cmt">DNS 查询</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">        if (!hostInfo) {</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">            cerr &lt;&lt; "Cannot resolve: " &lt;&lt; host &lt;&lt; endl;</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2">            return -1;</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">26</td><td class="cd">        ipAddr = *(unsigned long*)hostInfo-&gt;h_addr;</td><td class="cmt">取第一个 IP</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2">    // 创建 ICMP 句柄</td></tr>
-<tr><td class="ln">30</td><td class="cd">    HANDLE icmpHandle = IcmpCreateFile();</td><td class="cmt">创建 ICMP 句柄</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">    if (icmpHandle == INVALID_HANDLE_VALUE) {</td></tr>
-<tr><td class="ln">32</td><td class="cd" colspan="2">        cerr &lt;&lt; "IcmpCreateFile failed" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">33</td><td class="cd" colspan="2">        return -1;</td></tr>
-<tr><td class="ln">34</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">    // 发送缓冲区和数据</td></tr>
-<tr><td class="ln">37</td><td class="cd">    char sendData[32] = "Ping Data Packet";</td><td class="cmt">ICMP 载荷</td></tr>
-<tr><td class="ln">38</td><td class="cd">    char replyBuf[sizeof(ICMP_ECHO_REPLY) + sizeof(sendData)];</td><td class="cmt">回复缓冲区</td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">40</td><td class="cd">    int success = 0;</td><td class="cmt">成功次数</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">    for (int i = 0; i &lt; count; i++) {</td></tr>
-<tr><td class="ln">42</td><td class="cd">        auto start = chrono::steady_clock::now();</td><td class="cmt">开始计时</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">        // IcmpSendEcho 发送 ICMP Echo Request</td></tr>
-<tr><td class="ln">45</td><td class="cd">        DWORD replyCount = IcmpSendEcho(</td><td class="cmt">返回收到的回复数量</td></tr>
-<tr><td class="ln">46</td><td class="cd">            icmpHandle, ipAddr,</td><td class="cmt">句柄、目标 IP</td></tr>
-<tr><td class="ln">47</td><td class="cd">            sendData, sizeof(sendData),</td><td class="cmt">发送数据和大小</td></tr>
-<tr><td class="ln">48</td><td class="cd">            nullptr,</td><td class="cmt">IP 选项（无）</td></tr>
-<tr><td class="ln">49</td><td class="cd">            replyBuf, sizeof(replyBuf),</td><td class="cmt">回复缓冲区</td></tr>
-<tr><td class="ln">50</td><td class="cd">            timeoutMs);</td><td class="cmt">超时时间（毫秒）</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">        auto duration = chrono::duration_cast&lt;chrono::milliseconds&gt;(</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">            chrono::steady_clock::now() - start).count();</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">        if (replyCount &gt; 0) {</td></tr>
-<tr><td class="ln">56</td><td class="cd">            auto* reply = (ICMP_ECHO_REPLY*)replyBuf;</td><td class="cmt">解析回复</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">            cout &lt;&lt; "Reply from " &lt;&lt; host</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">                 &lt;&lt; ": bytes=" &lt;&lt; reply-&gt;DataSize</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">                 &lt;&lt; " time=" &lt;&lt; duration &lt;&lt; "ms"</td></tr>
-<tr><td class="ln">60</td><td class="cd">                 &lt;&lt; " TTL=" &lt;&lt; reply-&gt;Options.Ttl</td><td class="cmt">TTL = Time To Live</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2">                 &lt;&lt; endl;</td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">            success++;</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2">        } else {</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">            cout &lt;&lt; "Request timed out." &lt;&lt; endl;</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">66</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">67</td><td class="cd">        if (i &lt; count - 1) this_thread::sleep_for(chrono::seconds(1));</td><td class="cmt">每秒一个包</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">70</td><td class="cd">    IcmpCloseHandle(icmpHandle);</td><td class="cmt">关闭 ICMP 句柄</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">    return success;</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">73</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">    WSADATA wsaData;</td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2">    WSAStartup(MAKEWORD(2, 2), &amp;wsaData);</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">78</td><td class="cd">    int ok = ping("8.8.8.8", 4);</td><td class="cmt">Google DNS 服务器</td></tr>
-<tr><td class="ln">79</td><td class="cd" colspan="2">    cout &lt;&lt; "\nSent 4, Received " &lt;&lt; ok &lt;&lt; endl;</td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2">    WSACleanup();</td></tr>
-<tr><td class="ln">82</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">83</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>ICMP 协议与 Ping 原理</h3>
-<div class="rule"><strong>语法规则：</strong>Ping 使用 <strong>ICMP</strong>（Internet Control Message Protocol）：发送 Echo Request（类型 8），目标回复 Echo Reply（类型 0）。通过计算 RTT 评估网络延迟。ICMP 不是基于端口的，所以不需要 TCP/UDP 端口号。</div>
-<pre class="example"><code>ICMP 报文格式：
-| 类型(1B) | 代码(1B) | 校验和(2B) | 标识符(2B) | 序列号(2B) | 数据(变长) |
-Echo Request:   类型=8, 代码=0
-Echo Reply:     类型=0, 代码=0</code></pre>
-</div>
-<div class="grammar-item">
-<h3>TTL（Time To Live）生存时间</h3>
-<div class="rule"><strong>语法规则：</strong>TTL 是 IP 包头的字段，每经过一个路由器减 1，减到 0 则丢弃。<strong>初始 TTL</strong> 不同操作系统不同：Windows=128，Linux=64。通过收到的 TTL 可以推断目标 OS 类型。Ping 返回的 TTL 是目标机器的 TTL 减去路径跳数。</div>
-<pre class="example"><code>收到的 TTL = 目标 OS 默认 TTL - 路径跳数
-TTL=114 → 可能 Windows (128-14)
-TTL= 50 → 可能 Linux   (64-14)
-// traceroute 就是利用 TTL 原理</code></pre>
-</div>
-<div class="grammar-item">
-<h3>Windows ICMP API</h3>
-<div class="rule"><strong>语法规则：</strong><code>IcmpCreateFile</code> 创建 ICMP 句柄（不创建文件），<code>IcmpSendEcho</code> 同步发送 Echo Request 并等待回复。<code>IcmpCloseHandle</code> 关闭句柄。这是 Windows 特有的高层 API，比 Linux 的原始套接字方便很多。</div>
-<pre class="example"><code>// Linux 使用原始套接字
-int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-// 需要 root 权限！
-// 手动构造 ICMP 包头
-struct icmphdr { uint8_t type, code; uint16_t checksum; ... };</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>平台兼容：用 RAII 抽象 ICMP 句柄：</strong><pre><code>class IcmpSocket {
-    HANDLE h = IcmpCreateFile();
-public:
-    IcmpSocket() = default;
-    ~IcmpSocket() { if (h != INVALID_HANDLE_VALUE) IcmpCloseHandle(h); }
-    int ping(const string& host) { /* ... */ }
-};</code></pre><p>将 Windows 的 ICMP 句柄封装成 RAII 对象，确保异常时也能正确关闭。</p></li>
-<li><strong>Ping 监控 + 丢包率统计：</strong><pre><code>while (true) {
-    int sent = 0, received = 0;
-    auto now = chrono::system_clock::now();
-    // ... ping 一批包 ...
-    double loss = 100.0 * (sent - received) / sent;
-    cout << "[" << now << "] Loss: " << loss << "%\n";
-    sleep(60);
-}</code></pre><p>可以扩展成持续监控工具，记录延迟和丢包率，适合网络质量长期监控。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 57：fstream 二进制读写</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 57：fstream 二进制读写</h1>
+            <section class="intro">
+<p>使用 fstream 进行二进制文件的读写操作，包含 struct 序列化。</p>
+            <p><strong>核心知识点：</strong>fstream 二进制模式、read/write、reinterpret_cast</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 57：fstream 二进制读写
+// 结构体的二进制序列化
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_056.html">← 案例 56</a><a href="case_058.html">案例 58 →</a>
-</nav>
-</main>
+// 数据记录结构
+#pragma pack(push, 1) // 禁用内存对齐，确保跨平台大小一致
+struct Record {
+    int id;
+    char name[20];
+    double score;
+};
+#pragma pack(pop)
+
+// 写入二进制文件
+void writeRecords(const string&amp; filename, const vector&lt;Record&gt;&amp; records) {
+    ofstream out(filename, ios::binary);
+    if (!out) {
+        cerr &lt;&lt; "无法创建文件: " &lt;&lt; filename &lt;&lt; endl;
+        return;
+    }
+
+    // 写入记录数量
+    size_t count = records.size();
+    out.write(reinterpret_cast&lt;const char*&gt;(&amp;count), sizeof(count));
+
+    // 逐条写入记录
+    for (const auto&amp; rec : records) {
+        out.write(reinterpret_cast&lt;const char*&gt;(&amp;rec), sizeof(Record));
+    }
+    out.close();
+    cout &lt;&lt; "已写入 " &lt;&lt; count &lt;&lt; " 条记录" &lt;&lt; endl;
+}
+
+// 读取二进制文件
+vector&lt;Record&gt; readRecords(const string&amp; filename) {
+    vector&lt;Record&gt; records;
+    ifstream in(filename, ios::binary);
+    if (!in) {
+        cerr &lt;&lt; "无法打开文件: " &lt;&lt; filename &lt;&lt; endl;
+        return records;
+    }
+
+    // 读取记录数量
+    size_t count;
+    in.read(reinterpret_cast&lt;char*&gt;(&amp;count), sizeof(count));
+
+    // 逐条读取
+    for (size_t i = 0; i &lt; count; i++) {
+        Record rec;
+        in.read(reinterpret_cast&lt;char*&gt;(&amp;rec), sizeof(Record));
+        records.push_back(rec);
+    }
+    in.close();
+
+    cout &lt;&lt; "已读取 " &lt;&lt; records.size() &lt;&lt; " 条记录" &lt;&lt; endl;
+    return records;
+}
+
+int main() {
+    // 准备数据
+    vector&lt;Record&gt; data = {
+        {1, "Alice", 95.5},
+        {2, "Bob", 88.0},
+        {3, "Charlie", 92.3}
+    };
+
+    // 写入
+    string filename = "records.bin";
+    writeRecords(filename, data);
+
+    // 读取
+    auto loaded = readRecords(filename);
+
+    // 打印
+    cout &lt;&lt; "\n=== 读取结果 ===" &lt;&lt; endl;
+    for (const auto&amp; rec : loaded) {
+        cout &lt;&lt; "ID: " &lt;&lt; rec.id
+             &lt;&lt; "  Name: " &lt;&lt; rec.name
+             &lt;&lt; "  Score: " &lt;&lt; rec.score &lt;&lt; endl;
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：二进制文件模式 ios::binary</h3>
+                    <pre class="code-block"><code class="language-cpp">ofstream out("file.bin", ios::binary);
+ifstream in("file.bin", ios::binary);
+// 必须加 ios::binary，否则换行符会被转换（Windows: \n → \r\n）</code></pre>
+                    <p class="tip">举一反三：ios::binary 阻止文本模式的特殊处理。二进制模式保证字节原样写入/读取。忘记此标志会导致 Windows 上文件损坏或读取偏移。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：reinterpret_cast 字节转换</h3>
+                    <pre class="code-block"><code class="language-cpp">int x = 42;
+out.write(reinterpret_cast&lt;const char*&gt;(&amp;x), sizeof(x));
+// 把任意类型指针转为 char*（字节流）</code></pre>
+                    <p class="tip">举一反三：reinterpret_cast 是最危险的转换，应该仅在 I/O 和底层操作中使用。直接写入 struct 字节需要注意 endianness 和 padding 差异（不同平台/编译器可能不兼容）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：#pragma pack 控制对齐</h3>
+                    <pre class="code-block"><code class="language-cpp">#pragma pack(push, 1)
+struct Record { int id; char name[20]; double score; };
+#pragma pack(pop)
+// pack(1) 禁用填充，保证 sizeof 精确</code></pre>
+                    <p class="tip">举一反三：默认对齐会使 struct 大小 > 成员大小之和（填充字节）。序列化时禁用对齐确保可移植性，但可能降低访问效率。更好的做法是逐字段序列化而非整块写入。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_056.html" class="prev-link">&larr; 案例 56</a>
+<a href="case_058.html" class="next-link">案例 58 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

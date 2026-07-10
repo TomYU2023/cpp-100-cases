@@ -1,162 +1,120 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 91：有栈协程库</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_090.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_092.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 91：模板特化与偏特化 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 91：模板特化与偏特化</span>
         </div>
-    </nav><main class="container"><h1>案例 91：有栈协程库</h1><section class="intro"><p>基于 ucontext 实现用户态协程调度器，包含创建、yield、调度循环，理解 swapcontext 上下文切换的底层原理。</p><p><strong>核心知识点：</strong>ucontext/swapcontext 上下文切换、有栈协程、std::function 类型擦除、用户态调度</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 91：有栈协程库
-// 使用 ucontext 实现用户态协程调度，理解协程的上下文切换机制。
-// 协程 = 可以暂停和恢复的函数，比线程更轻量（切换开销 10ns 级别）。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 91：模板特化与偏特化</h1>
+            <section class="intro">
+<p>理解函数模板完全特化、类模板全特化与偏特化的规则和应用场景。</p>
+            <p><strong>核心知识点：</strong>全特化、偏特化、优先级、SFINAE 入门</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 91：模板特化与偏特化
+// 为特定类型或类型族提供定制实现
 #include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;queue&gt;
-#include &lt;functional&gt;
-#include &lt;ucontext.h&gt;
-#include &lt;cstring&gt;
+#include &lt;string&gt;
+#include &lt;type_traits&gt;
+using namespace std;
 
-const int STACK_SIZE = 1024 * 1024;  // 每个协程 1MB 栈
-const int MAX_COROUTINES = 100;
-
-// ─── 协程状态 ────────────────────────────────────
-enum class CoState { READY, RUNNING, SUSPENDED, DEAD };
-
-struct Coroutine {
-    int id;
-    CoState state;
-    ucontext_t ctx;            // 上下文（寄存器、栈指针等）
-    std::function&lt;void()&gt; func; // 协程体
-    char* stack;               // 独立栈空间
-
-    Coroutine() : id(0), state(CoState::READY), stack(nullptr) {}
+// 1. 主模板
+template &lt;typename T&gt;
+struct TypeInfo {
+    static const char* name() { return "未知类型"; }
 };
 
-// ─── 调度器 ──────────────────────────────────────
-std::vector&lt;Coroutine*&gt; coroutines;
-std::queue&lt;int&gt; readyQueue;   // 就绪队列
-int currentCo = -1;
-ucontext_t mainCtx;           // 主协程的上下文
+// 2. 全特化（针对特定类型）
+template &lt;&gt;
+struct TypeInfo&lt;int&gt; {
+    static const char* name() { return "整数 (int)"; }
+};
 
-// ─── 协程入口包装 ────────────────────────────────
-// 每个协程启动后先执行 func，然后标记为 DEAD 并让出
-void coEntry(Coroutine* co) {
-    co-&gt;func();          // 执行协程体
-    co-&gt;state = CoState::DEAD;
-    // 协程体执行完毕后切换回调度器的上下文（主协程）
-    setcontext(&amp;mainCtx);
-}
+template &lt;&gt;
+struct TypeInfo&lt;double&gt; {
+    static const char* name() { return "双精度浮点 (double)"; }
+};
 
-// ─── 创建协程 ────────────────────────────────────
-int createCoroutine(std::function&lt;void()&gt; f) {
-    auto* co = new Coroutine();
-    co-&gt;id = coroutines.size();
-    co-&gt;func = std::move(f);  // 移动而非拷贝，避免不必要的函数对象复制
-    co-&gt;stack = new char[STACK_SIZE];
+template &lt;&gt;
+struct TypeInfo&lt;string&gt; {
+    static const char* name() { return "字符串 (string)"; }
+};
 
-    // 初始化 ucontext
-    getcontext(&amp;co-&gt;ctx);
-    co-&gt;ctx.uc_link = nullptr;          // 无后续上下文（手动调度）
-    co-&gt;ctx.uc_stack.ss_sp = co-&gt;stack; // 栈的起始地址
-    co-&gt;ctx.uc_stack.ss_size = STACK_SIZE;
-    co-&gt;ctx.uc_stack.ss_flags = 0;
-
-    // 创建上下文：指定入口函数和参数
-    makecontext(&amp;co-&gt;ctx, (void(*)())coEntry, 1, co);
-
-    coroutines.push_back(co);
-    readyQueue.push(co-&gt;id);
-    return co-&gt;id;
-}
-
-// ─── 让出 CPU（yield）───────────────────────────
-void coYield() {
-    int prev = currentCo;
-    Coroutine* co = coroutines[prev];
-    co-&gt;state = CoState::SUSPENDED;
-    readyQueue.push(prev);   // 重新排到就绪队列末尾
-
-    // 调度下一个就绪协程
-    if (!readyQueue.empty()) {
-        int next = readyQueue.front();
-        readyQueue.pop();
-        currentCo = next;
-        coroutines[next]-&gt;state = CoState::RUNNING;
-        // 保存当前上下文（prev），恢复 next 的上下文
-        swapcontext(&amp;coroutines[prev]-&gt;ctx, &amp;coroutines[next]-&gt;ctx);
+// 3. 偏特化：针对所有指针类型
+template &lt;typename T&gt;
+struct TypeInfo&lt;T*&gt; {
+    static string name() {
+        return string("指向 ") + TypeInfo&lt;T&gt;::name() + " 的指针";
     }
-}
+};
 
-// ─── 调度循环（单线程）───────────────────────────
-void schedule() {
-    while (!readyQueue.empty()) {
-        int id = readyQueue.front();
-        readyQueue.pop();
-        currentCo = id;
-        coroutines[id]-&gt;state = CoState::RUNNING;
-
-        // 从 mainCtx 切换到协程 — 核心魔法在这一行
-        swapcontext(&amp;mainCtx, &amp;coroutines[id]-&gt;ctx);
-
-        // 协程 yield 或结束后回到这里
-        if (coroutines[id]-&gt;state == CoState::DEAD) {
-            delete[] coroutines[id]-&gt;stack;
-            delete coroutines[id];
-            coroutines[id] = nullptr;
-        }
+// 4. 偏特化：针对所有 const 类型
+template &lt;typename T&gt;
+struct TypeInfo&lt;const T&gt; {
+    static string name() {
+        return string("const ") + TypeInfo&lt;T&gt;::name();
     }
-}
+};
 
-// ─── 示例：3 个协程交替执行 ──────────────────────
 int main() {
-    // 协程 1：输出 3 次 A 并 yield
-    createCoroutine([]() {
-        for (int i = 0; i &lt; 3; i++) {
-            std::cout &lt;&lt; &quot;[协程1] A(&quot; &lt;&lt; i &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
-            coYield();
-        }
-    });
-
-    // 协程 2：输出 3 次 B 并 yield
-    createCoroutine([]() {
-        for (int i = 0; i &lt; 3; i++) {
-            std::cout &lt;&lt; &quot;[协程2] B(&quot; &lt;&lt; i &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
-            coYield();
-        }
-    });
-
-    // 协程 3：不 yield，一次性跑完
-    createCoroutine([]() {
-        std::cout &lt;&lt; &quot;[协程3] 一次跑完！&quot; &lt;&lt; std::endl;
-    });
-
-    std::cout &lt;&lt; &quot;==== 开始调度 ====&quot; &lt;&lt; std::endl;
-    schedule();
-    std::cout &lt;&lt; &quot;==== 调度结束 ====&quot; &lt;&lt; std::endl;
-
+    cout &lt;&lt; "int: " &lt;&lt; TypeInfo&lt;int&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "double: " &lt;&lt; TypeInfo&lt;double&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "char: " &lt;&lt; TypeInfo&lt;char&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "string: " &lt;&lt; TypeInfo&lt;string&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "int*: " &lt;&lt; TypeInfo&lt;int*&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "const double: " &lt;&lt; TypeInfo&lt;const double&gt;::name() &lt;&lt; endl;
+    cout &lt;&lt; "const int*: " &lt;&lt; TypeInfo&lt;const int*&gt;::name() &lt;&lt; endl;
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：ucontext 上下文切换</h3><pre class="code-block"><code class="language-cpp">#include &lt;ucontext.h&gt;
-ucontext_t ctx;
-getcontext(&amp;ctx);              // 保存当前上下文
-ctx.uc_stack.ss_sp = stack_ptr;  // 设置栈
-ctx.uc_stack.ss_size = SIZE;
-makecontext(&amp;ctx, func_ptr, argc, arg1, arg2, ...);
-
-// 切换上下文
-swapcontext(&amp;from, &amp;to);  // 保存 from，恢复 to
-setcontext(&amp;to);          // 仅恢复，不保存</code></pre><p class="tip">💡 举一反三：ucontext 是 POSIX 标准的用户态上下文切换 API（已被标记为废弃但仍广泛可用）。swapcontext 保存当前寄存器到 from，从 to 恢复寄存器——这就是协程切换的本质。现代方案用 boost.context 或汇编手写。</p>
-<h3>语法规则：std::function 和 lambda 回调</h3><pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
-std::function&lt;void()&gt; f;
-f = []() { std::cout &lt;&lt; &quot;Hello&quot; &lt;&lt; std::endl; };
-f();  // 调用
-
-// 传参时用 std::move 避免拷贝
-void setTask(std::function&lt;void()&gt; task) {
-    m_task = std::move(task);  // 移动语义，浅拷贝控制块
-}</code></pre><p class="tip">💡 举一反三：std::function 是一个类型擦除的通用回调容器，可以存储 lambda、函数指针、仿函数等。缺点是每次调用的虚函数开销（10~20ns），性能敏感场景用模板直接存具体类型。</p>
-<h3>语法规则：new/delete 数组形式</h3><pre class="code-block"><code class="language-cpp">char* buf = new char[1024];    // 分配 1024 字节
-buf[0] = 'a';
-delete[] buf;                 // 必须用 delete[]，不能用 delete</code></pre><p class="tip">💡 举一反三：new[] 返回的是数组指针，delete[] 会调用数组中每个元素的析构函数（需要从分配器读取元素数量）。用错会导致未定义行为（内存泄漏或崩溃）。协程的独立栈用 char 数组表示，无需析构，但语法上仍要用 delete[]。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：全特化 vs 偏特化</h3>
+                    <pre class="code-block"><code class="language-cpp">// 全特化: template&lt;&gt; 为特定类型提供定制
+template &lt;&gt; struct MyClass&lt;int&gt; { ... };
+// 偏特化: 为类型族提供定制（指针/const/引用）
+template &lt;typename T&gt; struct MyClass&lt;T*&gt; { ... };</code></pre>
+                    <p class="tip">举一反三：全特化实例化时完全匹配。偏特化覆盖一类类型。匹配规则：全特化优先级最高，然后最具体的偏特化，最后主模板。函数模板只支持全特化。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：偏特化模式</h3>
+                    <pre class="code-block"><code class="language-cpp">// T* : 所有指针类型
+template &lt;typename T&gt; struct S&lt;T*&gt; { ... };
+// const T : 所有 const 类型
+template &lt;typename T&gt; struct S&lt;const T&gt; { ... };
+// T&amp; : 所有引用类型</code></pre>
+                    <p class="tip">举一反三：偏特化不能用于函数模板（但可用重载代替）。偏特化是模板元编程的基础（配合 SFINAE）。常见模式：移除 const/引用（decay）、提取元素类型。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：匹配规则与歧义</h3>
+                    <pre class="code-block"><code class="language-cpp">// 当多个偏特化都匹配时，选择「更特化」的那个
+// 如 const int* 匹配 T* 也匹配 const T
+// 但 const T* 比两者都更特化
+// 编译器选择最特化的匹配</code></pre>
+                    <p class="tip">举一反三：匹配遵循「最特化优先」原则。如果无法确定哪个最特化，编译报错（歧义）。了解匹配规则有助于设计正确的特化层次。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_090.html" class="prev-link">&larr; 案例 90</a>
+<a href="case_092.html" class="next-link">案例 92 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,153 +1,166 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 42：彩色终端输出工具 - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 42：彩色终端输出 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 42：彩色终端输出工具</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd">#include &lt;iostream&gt;</td><td class="cmt">标准 IO</td></tr>
-<tr><td class="ln">2</td><td class="cd">#include &lt;string&gt;</td><td class="cmt">std::string</td></tr>
-<tr><td class="ln">3</td><td class="cd">#include &lt;sstream&gt;</td><td class="cmt">std::ostringstream 字符串流</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2">// ANSI 转义码常量</td></tr>
-<tr><td class="ln">8</td><td class="cd">namespace Color {</td><td class="cmt">颜色命名空间，避免命名冲突</td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2">    // 文字颜色（前景色）</td></tr>
-<tr><td class="ln">10</td><td class="cd">    const string BLACK   = "\033[30m";</td><td class="cmt">ANSI 码：\033 是 ESC 字符（八进制）</td></tr>
-<tr><td class="ln">11</td><td class="cd">    const string RED     = "\033[31m";</td><td class="cmt">红色文字</td></tr>
-<tr><td class="ln">12</td><td class="cd">    const string GREEN   = "\033[32m";</td><td class="cmt">绿色文字</td></tr>
-<tr><td class="ln">13</td><td class="cd">    const string YELLOW  = "\033[33m";</td><td class="cmt">黄色文字</td></tr>
-<tr><td class="ln">14</td><td class="cd">    const string BLUE    = "\033[34m";</td><td class="cmt">蓝色文字</td></tr>
-<tr><td class="ln">15</td><td class="cd">    const string MAGENTA = "\033[35m";</td><td class="cmt">品红色文字</td></tr>
-<tr><td class="ln">16</td><td class="cd">    const string CYAN    = "\033[36m";</td><td class="cmt">青色文字</td></tr>
-<tr><td class="ln">17</td><td class="cd">    const string WHITE   = "\033[37m";</td><td class="cmt">白色文字</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">    // 背景色</td></tr>
-<tr><td class="ln">20</td><td class="cd">    const string BG_RED    = "\033[41m";</td><td class="cmt">红色背景</td></tr>
-<tr><td class="ln">21</td><td class="cd">    const string BG_GREEN  = "\033[42m";</td><td class="cmt">绿色背景</td></tr>
-<tr><td class="ln">22</td><td class="cd">    const string BG_YELLOW = "\033[43m";</td><td class="cmt">黄色背景</td></tr>
-<tr><td class="ln">23</td><td class="cd">    const string BG_BLUE   = "\033[44m";</td><td class="cmt">蓝色背景</td></tr>
-<tr><td class="ln">24</td><td class="cd">    const string BG_WHITE  = "\033[47m";</td><td class="cmt">白色背景</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">26</td><td class="cd" colspan="2">    // 样式</td></tr>
-<tr><td class="ln">27</td><td class="cd">    const string BOLD      = "\033[1m";</td><td class="cmt">粗体</td></tr>
-<tr><td class="ln">28</td><td class="cd">    const string UNDERLINE = "\033[4m";</td><td class="cmt">下划线</td></tr>
-<tr><td class="ln">29</td><td class="cd">    const string RESET     = "\033[0m";</td><td class="cmt">重置所有样式</td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">    // 便捷函数：自动包裹颜色 + 重置</td></tr>
-<tr><td class="ln">32</td><td class="cd">    string red(const string&amp; s)   { return RED + s + RESET; }</td><td class="cmt">返回红色文字</td></tr>
-<tr><td class="ln">33</td><td class="cd">    string green(const string&amp; s) { return GREEN + s + RESET; }</td><td class="cmt">返回绿色文字</td></tr>
-<tr><td class="ln">34</td><td class="cd">    string blue(const string&amp; s)  { return BLUE + s + RESET; }</td><td class="cmt">返回蓝色文字</td></tr>
-<tr><td class="ln">35</td><td class="cd">    string bold(const string&amp; s)  { return BOLD + s + RESET; }</td><td class="cmt">返回粗体文字</td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">    // 流式 API：支持链式组合多个样式</td></tr>
-<tr><td class="ln">38</td><td class="cd">    class Styled {</td><td class="cmt">流式输出类，通过 operator<< 链式调用</td></tr>
-<tr><td class="ln">39</td><td class="cd">        ostringstream oss;</td><td class="cmt">内部字符串流缓冲</td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2">    public:</td></tr>
-<tr><td class="ln">41</td><td class="cd">        Styled&amp; color(const string&amp; c) {</td><td class="cmt">添加颜色码</td></tr>
-<tr><td class="ln">42</td><td class="cd">            oss &lt;&lt; c;</td><td class="cmt">写入 ANSI 颜色码</td></tr>
-<tr><td class="ln">43</td><td class="cd">            return *this;</td><td class="cmt">返回自身引用，支持链式调用（Fluent API）</td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">45</td><td class="cd">        Styled&amp; text(const string&amp; t) {</td><td class="cmt">添加普通文本</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">            oss &lt;&lt; t;</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2">            return *this;</td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">49</td><td class="cd">        string str() const {</td><td class="cmt">输出最终包裹好的字符串</td></tr>
-<tr><td class="ln">50</td><td class="cd">            return oss.str() + RESET;</td><td class="cmt">拼接缓冲内容，末尾追加重置码</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">    };</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">56</td><td class="cd" colspan="2">    // 方式一：便捷函数（最常用）</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">    cout &lt;&lt; Color::red("这是红色文字") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">    cout &lt;&lt; Color::green("这是绿色文字") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">    cout &lt;&lt; Color::blue("这是蓝色文字") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2">    cout &lt;&lt; Color::bold("这是粗体文字") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">    // 方式二：流式 API（组合多个样式）</td></tr>
-<tr><td class="ln">63</td><td class="cd">    auto warning = Color::Styled()</td><td class="cmt">创建流式对象</td></tr>
-<tr><td class="ln">64</td><td class="cd">        .color(Color::RED)</td><td class="cmt">设置红色</td></tr>
-<tr><td class="ln">65</td><td class="cd">        .color(Color::BOLD)</td><td class="cmt">叠加粗体</td></tr>
-<tr><td class="ln">66</td><td class="cd">        .text("ERROR: 文件未找到！")</td><td class="cmt">设置文本内容</td></tr>
-<tr><td class="ln">67</td><td class="cd">        .str();</td><td class="cmt">生成最终字符串</td></tr>
-<tr><td class="ln">68</td><td class="cd">    cout &lt;&lt; warning &lt;&lt; endl;</td><td class="cmt">输出：红色粗体的 ERROR 消息</td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">    // 方式三：直接拼接常量</td></tr>
-<tr><td class="ln">71</td><td class="cd">    cout &lt;&lt; Color::BG_YELLOW &lt;&lt; Color::BLACK</td><td class="cmt">黄底黑字</td></tr>
-<tr><td class="ln">72</td><td class="cd">         &lt;&lt; " 警告 " &lt;&lt; Color::RESET &lt;&lt; endl;</td><td class="cmt">输出后重置，否则后续文字也会受影响</td></tr>
-<tr><td class="ln">73</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>ANSI 转义序列</h3>
-<div class="rule"><strong>语法规则：</strong>终端中的颜色和样式通过 <strong>ANSI 转义序列</strong> 控制。格式：<code>ESC[参数m</code>，其中 ESC 字符写作 <code>\033</code>（八进制）或 <code>\x1b</code>（十六进制）。多个参数用分号分隔。强调：Windows 10 以下版本需调用 <code>system("")</code> 启用 ANSI 支持。</div>
-<pre class="example"><code>// ANSI 颜色/样式表
-// 前景: 30黑 31红 32绿 33黄 34蓝 35品红 36青 37白
-// 背景: 40黑 41红 42绿 43黄 44蓝 45品红 46青 47白
-// 样式: 0重置 1粗体 2弱化 3斜体 4下划线 5闪烁 7反色 9删除线
-cout << "\033[1;33;44m" << "粗体黄字蓝底" << "\033[0m";
-cout << "\033[4;31m" << "红色下划线" << "\033[0m";</code></pre>
-</div>
-<div class="grammar-item">
-<h3>std::ostringstream 字符串流</h3>
-<div class="rule"><strong>语法规则：</strong><strong>ostringstream</strong> 是一个输出字符串流，行为类似 <code>cout</code> 但输出到内存中的字符串。通过 <code>str()</code> 方法获取累积的字符串内容。这在需要动态构建字符串时非常有用，避免了频繁的字符串拼接开销。</div>
-<pre class="example"><code>ostringstream oss;
-oss << "Hello " << 42 << " World";
-string result = oss.str();  // "Hello 42 World"
-// 清空重用
-oss.str("");   // 清空内容
-oss.clear();  // 清除错误状态</code></pre>
-</div>
-<div class="grammar-item">
-<h3>方法链式调用（Fluent API / Builder 模式）</h3>
-<div class="rule"><strong>语法规则：</strong>让成员函数返回 <code>*this</code>（自身引用），实现 <code>obj.func1().func2().func3()</code> 的链式写法。这是 Builder 模式的核心技巧，常见于 cout（<code>cout << a << b << c</code>）和现代 C++ 库。</div>
-<pre class="example"><code>class Builder {
-    int x, y;
-public:
-    Builder& setX(int v) { x = v; return *this; }
-    Builder& setY(int v) { y = v; return *this; }
-};
-Builder().setX(1).setY(2);  // 链式调用</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>跨平台颜色库（fmt / rang）：</strong><pre><code>fmt::print(fg(fmt::color::red), "error!\n");
-// 或
-cout << rang::fg::red << "error!" << rang::style::reset;</code></pre><p>fmt 库（C++20 中成为 std::format 的基础）和 rang 库提供了跨平台的终端颜色支持，自动处理 Windows/Linux/macOS 差异。</p></li>
-<li><strong>Windows Console API 原生着色：</strong><pre><code>HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-SetConsoleTextAttribute(h, FOREGROUND_RED | FOREGROUND_INTENSITY);
-cout << "red text" << endl;</code></pre><p>Windows 提供原生 API 控制控制台颜色，不依赖 ANSI 码。适合需要精确控制或老旧 Windows 版本的场景。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 42：彩色终端输出</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 42：彩色终端输出</h1>
+            <section class="intro">
+<p>使用 ANSI 转义序列实现彩色终端输出，封装成易用的工具类。</p>
+            <p><strong>核心知识点：</strong>ANSI 转义码、命名空间封装、枚举类</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 42：彩色终端输出
+// 使用 ANSI 转义序列实现终端彩色文字
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_041.html">← 案例 41</a><a href="case_043.html">案例 43 →</a>
-</nav>
-</main>
+namespace Color {
+    // ANSI 转义码
+    const string RESET   = "\033[0m";
+    const string BOLD    = "\033[1m";
+    const string DIM     = "\033[2m";
+    const string UNDERLINE = "\033[4m";
+
+    // 前景色
+    namespace FG {
+        const string BLACK   = "\033[30m";
+        const string RED     = "\033[31m";
+        const string GREEN   = "\033[32m";
+        const string YELLOW  = "\033[33m";
+        const string BLUE    = "\033[34m";
+        const string MAGENTA = "\033[35m";
+        const string CYAN    = "\033[36m";
+        const string WHITE   = "\033[37m";
+
+        // 亮色版本
+        const string BRIGHT_BLACK   = "\033[90m";
+        const string BRIGHT_RED     = "\033[91m";
+        const string BRIGHT_GREEN   = "\033[92m";
+        const string BRIGHT_YELLOW  = "\033[93m";
+        const string BRIGHT_BLUE    = "\033[94m";
+        const string BRIGHT_MAGENTA = "\033[95m";
+        const string BRIGHT_CYAN    = "\033[96m";
+        const string BRIGHT_WHITE   = "\033[97m";
+    }
+
+    // 背景色
+    namespace BG {
+        const string RED     = "\033[41m";
+        const string GREEN   = "\033[42m";
+        const string YELLOW  = "\033[43m";
+        const string BLUE    = "\033[44m";
+        const string MAGENTA = "\033[45m";
+        const string CYAN    = "\033[46m";
+        const string WHITE   = "\033[47m";
+    }
+}
+
+// 带颜色的输出函数
+void printColored(const string&amp; text, const string&amp; color,
+                   const string&amp; style = "") {
+    cout &lt;&lt; style &lt;&lt; color &lt;&lt; text &lt;&lt; Color::RESET;
+}
+
+// 日志函数
+void logInfo(const string&amp; msg) {
+    printColored("[INFO]", Color::FG::GREEN, Color::BOLD);
+    cout &lt;&lt; " " &lt;&lt; msg &lt;&lt; endl;
+}
+
+void logWarn(const string&amp; msg) {
+    printColored("[WARN]", Color::FG::YELLOW, Color::BOLD);
+    cout &lt;&lt; " " &lt;&lt; msg &lt;&lt; endl;
+}
+
+void logError(const string&amp; msg) {
+    printColored("[ERROR]", Color::FG::RED, Color::BOLD);
+    cout &lt;&lt; " " &lt;&lt; msg &lt;&lt; endl;
+}
+
+void logDebug(const string&amp; msg) {
+    printColored("[DEBUG]", Color::FG::CYAN);
+    cout &lt;&lt; " " &lt;&lt; msg &lt;&lt; endl;
+}
+
+int main() {
+    cout &lt;&lt; "=== ANSI 彩色终端输出 ===" &lt;&lt; endl &lt;&lt; endl;
+
+    // 前景色演示
+    cout &lt;&lt; "基本颜色: ";
+    printColored("红色", Color::FG::RED);
+    cout &lt;&lt; " ";
+    printColored("绿色", Color::FG::GREEN);
+    cout &lt;&lt; " ";
+    printColored("蓝色", Color::FG::BLUE);
+    cout &lt;&lt; " ";
+    printColored("黄色", Color::FG::YELLOW);
+    cout &lt;&lt; endl;
+
+    // 样式组合
+    printColored("粗体蓝色", Color::FG::BLUE, Color::BOLD);
+    cout &lt;&lt; " ";
+    printColored("下划线青色", Color::FG::CYAN, Color::UNDERLINE);
+    cout &lt;&lt; endl &lt;&lt; endl;
+
+    // 日志输出演示
+    logInfo("服务启动成功");
+    logWarn("磁盘空间不足");
+    logError("连接超时");
+    logDebug("变量 x = 42");
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：ANSI 转义序列</h3>
+                    <pre class="code-block"><code class="language-cpp">\033[31m 红色文字 \033[0m
+// \033 是 ESC 字符（ASCII 27）
+// [ 是 CSI (Control Sequence Introducer)
+// m 表示设置图形属性</code></pre>
+                    <p class="tip">举一反三：ANSI 码在大多数现代终端模拟器上有效，Windows 10+ 通过启用虚拟终端序列（ENABLE_VIRTUAL_TERMINAL_PROCESSING）支持。颜色范围：30-37 前景，40-47 背景。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：命名空间组织常量</h3>
+                    <pre class="code-block"><code class="language-cpp">namespace Color {
+    namespace FG {
+        const string RED = "\033[31m";
+    }
+}
+// 使用: Color::FG::RED</code></pre>
+                    <p class="tip">举一反三：嵌套命名空间组织相关常量，避免命名冲突。C++17 可用 namespace Color::FG { } 简化语法。enum class 也可用于颜色枚举，但需映射到字符串。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：输出后务必 RESET</h3>
+                    <pre class="code-block"><code class="language-cpp">cout &lt;&lt; RED &lt;&lt; "text" &lt;&lt; RESET;
+// 忘记 RESET 会导致后续输出保持红色</code></pre>
+                    <p class="tip">举一反三：RAII 模式封装（构造时输出颜色码，析构时输出 RESET）可避免忘记重置。或包装成函数内部自动重置。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_041.html" class="prev-link">&larr; 案例 41</a>
+<a href="case_043.html" class="next-link">案例 43 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -1,155 +1,115 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 81：插件系统（动态加载 DLL）</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_080.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_082.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 81：std::nth_element 部分排序 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 81：std::nth_element 部分排序</span>
         </div>
-    </nav><main class="container"><h1>案例 81：插件系统（动态加载 DLL）</h1><section class="intro"><p>实现插件管理器，支持运行时加载 DLL 并调用其中的插件，理解动态库加载与面向接口编程。</p><p><strong>核心知识点：</strong>抽象基类、extern "C"、LoadLibrary/GetProcAddress、unique_ptr 自定义删除器、工厂模式</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 81：std::nth_element 部分排序</h1>
+            <section class="intro">
+<p>使用 nth_element 在 O(N) 时间内找到第 K 大的元素，无需完整排序。</p>
+            <p><strong>核心知识点：</strong>nth_element、部分排序、快速选择、中位数</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 81：std::nth_element 部分排序
+// O(N) 时间找到第 K 大/小元素
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
 #include &lt;string&gt;
-#include &lt;functional&gt;
-#include &lt;memory&gt;
-
-// Windows 下动态加载 DLL 的 API
-#ifdef _WIN32
-#include &lt;windows.h&gt;
-#define LOAD_LIB(path)    LoadLibraryA(path)
-#define GET_FUNC(lib, name) GetProcAddress(lib, name)
-#define FREE_LIB(lib)     FreeLibrary(lib)
-#else
-#include &lt;dlfcn.h&gt;
-#define LOAD_LIB(path)    dlopen(path, RTLD_LAZY)
-#define GET_FUNC(lib, name) dlsym(lib, name)
-#define FREE_LIB(lib)     dlclose(lib)
-#endif
-
-// ========== 1. 插件接口定义 ==========
-// 语法规则：纯虚函数 + = 0 — 声明接口
-// virtual void func() = 0; 表示该函数是纯虚函数，子类必须实现。
-// 含有纯虚函数的类叫&quot;抽象类&quot;，不能实例化。
-struct IPlugin {
-    virtual ~IPlugin() = default; // 虚析构保证正确释放子类资源
-    virtual const char* name() const = 0;   // 插件名称
-    virtual double execute(double x) = 0;   // 执行插件逻辑
-};
-
-// ========== 2. 插件管理器（RAII 封装） ==========
-// 语法规则：std::unique_ptr 自定义删除器
-// std::unique_ptr&lt;T, Deleter&gt; 第二个模板参数指定删除器类型。
-// 删除器是一个可调用对象，在 unique_ptr 销毁时调用。
-// 默认删除器是 std::default_delete&lt;T&gt;，即调用 delete。
-class PluginManager {
-    using PluginHandle = std::unique_ptr&lt;std::remove_pointer_t&lt;HMODULE&gt;,
-          std::function&lt;void(HMODULE)&gt;&gt;;
-    // std::remove_pointer_t&lt;HMODULE&gt; 移除指针得到 HMODULE__ 结构体类型
-    // 自定义删除器：std::function&lt;void(HMODULE)&gt;，内部调用 FreeLibrary
-
-    std::vector&lt;PluginHandle&gt; handles_;    // 动态库句柄
-    std::vector&lt;std::unique_ptr&lt;IPlugin&gt;&gt; plugins_; // 插件实例
-
-public:
-    // 加载插件：加载 DLL → 获取工厂函数 → 创建插件实例
-    bool load(const std::string&amp; dllPath) {
-        // 1. 加载动态库
-        // 语法规则：LoadLibraryA(path) — Windows API，加载 DLL 到进程地址空间
-        // 返回 HMODULE 句柄，失败返回 NULL。
-        HMODULE h = LOAD_LIB(dllPath.c_str());
-        if (!h) {
-            std::cerr &lt;&lt; &quot;加载 DLL 失败: &quot; &lt;&lt; dllPath &lt;&lt; &quot;\n&quot;;
-            return false;
-        }
-
-        // 2. 用 unique_ptr + 自定义删除器管理句柄（RAII）
-        // lambda 删除器：在句柄离开作用域时自动调用 FreeLibrary
-        handles_.emplace_back(h, [](HMODULE m) { FREE_LIB(m); });
-        // emplace_back 直接构造对象，避免临时对象的拷贝
-
-        // 3. 获取工厂函数
-        // 语法规则：GetProcAddress(hMod, funcName) — 获取 DLL 中导出函数的地址
-        // 返回 FARPROC（函数指针），需要用 reinterpret_cast 转成目标类型
-        using FactoryFunc = IPlugin* (*)(); // 函数指针类型定义
-        auto factory = reinterpret_cast&lt;FactoryFunc&gt;(
-            GET_FUNC(h, &quot;createPlugin&quot;));
-
-        if (!factory) {
-            std::cerr &lt;&lt; &quot;未找到 createPlugin 函数\n&quot;;
-            return false;
-        }
-
-        // 4. 调用工厂函数创建插件
-        plugins_.push_back(std::unique_ptr&lt;IPlugin&gt;(factory()));
-        std::cout &lt;&lt; &quot;插件加载成功: &quot; &lt;&lt; plugins_.back()-&gt;name() &lt;&lt; &quot;\n&quot;;
-        return true;
-    }
-
-    void runAll(double input) {
-        for (auto&amp; p : plugins_) {
-            std::cout &lt;&lt; p-&gt;name() &lt;&lt; &quot;(&quot; &lt;&lt; input &lt;&lt; &quot;) = &quot;
-                      &lt;&lt; p-&gt;execute(input) &lt;&lt; &quot;\n&quot;;
-        }
-    }
-};
-
-// ========== 3. 模拟一个插件的代码（正常应该在单独的 DLL 项目中） ==========
-// 为了演示，我们将插件逻辑内联；真实场景中下面代码在另一个 DLL 项目里
-class DoublePlugin : public IPlugin {
-public:
-    const char* name() const override { return &quot;Double&quot;; }
-    double execute(double x) override { return x * 2; }
-};
-
-// 导出函数：DLL 必须提供 createPlugin 和 destroyPlugin
-// 语法规则：extern &quot;C&quot; — 告诉编译器使用 C 链接方式（不进行 C++ 名称修饰）
-// 没有 extern &quot;C&quot;，C++ 编译器会对函数名进行 name mangling（如 createPlugin → ?createPlugin@@YA...）
-// GetProcAddress 按原始名称查找，所以必须 extern &quot;C&quot; 禁用修饰。
-extern &quot;C&quot; {
-    __declspec(dllexport) IPlugin* createPlugin() { return new DoublePlugin(); }
-    __declspec(dllexport) void destroyPlugin(IPlugin* p) { delete p; }
-}
+using namespace std;
 
 int main() {
-    std::cout &lt;&lt; &quot;=== 插件系统演示 ===\n\n&quot;;
+    vector&lt;int&gt; data = {33, 10, 55, 22, 44, 11, 66, 88, 5, 77};
 
-    // 核心概念：主程序只依赖接口（IPlugin），不依赖具体实现
-    // 新功能通过加载 DLL 来扩展，无需重新编译主程序
+    cout &lt;&lt; "原始数据: ";
+    for (int x : data) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    PluginManager pm;
+    // 1. 找到中位数（第 size/2 小的元素）
+    auto v1 = data;
+    auto mid = v1.begin() + v1.size() / 2;
+    nth_element(v1.begin(), mid, v1.end());
+    cout &lt;&lt; "\n中位数: " &lt;&lt; *mid &lt;&lt; endl;
+    cout &lt;&lt; "nth_element 后: ";
+    for (int x : v1) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    // 模拟：假设 DoublePlugin 编译成了 double_plugin.dll
-    // pm.load(&quot;double_plugin.dll&quot;);
+    // 2. 找到第 3 小的元素
+    auto v2 = data;
+    auto kth = v2.begin() + 2; // 第 3 小（0-based）
+    nth_element(v2.begin(), kth, v2.end());
+    cout &lt;&lt; "\n第 3 小: " &lt;&lt; *kth &lt;&lt; endl;
 
-    // 直接演示：手动创建插件并调用
-    DoublePlugin dp;
-    std::cout &lt;&lt; &quot;直接演示: &quot; &lt;&lt; dp.name() &lt;&lt; &quot;(&quot; &lt;&lt; 5.0 &lt;&lt; &quot;) = &quot;
-              &lt;&lt; dp.execute(5.0) &lt;&lt; &quot;\n&quot;;
+    // 3. 找到第 3 大的元素（用反向比较器）
+    auto v3 = data;
+    auto kthMax = v3.begin() + 2;
+    nth_element(v3.begin(), kthMax, v3.end(), greater&lt;int&gt;());
+    cout &lt;&lt; "第 3 大: " &lt;&lt; *kthMax &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;\n设计要点：\n&quot;
-              &lt;&lt; &quot;1. 接口与实现分离（面向接口编程）\n&quot;
-              &lt;&lt; &quot;2. 工厂函数模式创建实例\n&quot;
-              &lt;&lt; &quot;3. RAII 管理动态库生命周期\n&quot;
-              &lt;&lt; &quot;4. extern \&quot;C\&quot; 确保函数名可查找\n&quot;;
+    // 4. 找到 Top 3（最小的 3 个元素）
+    auto v4 = data;
+    nth_element(v4.begin(), v4.begin() + 3, v4.end());
+    cout &lt;&lt; "\n最小的 3 个: ";
+    for (int i = 0; i &lt; 3; i++) cout &lt;&lt; v4[i] &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 5. 实际应用：找到分数排名的分界点
+    vector&lt;int&gt; scores = {85, 92, 78, 95, 88, 72, 66, 90, 83, 76};
+    int topN = 3;
+    auto topBorder = scores.begin() + (scores.size() - topN);
+    nth_element(scores.begin(), topBorder, scores.end());
+    cout &lt;&lt; "\nTop 3 分数线: " &lt;&lt; *topBorder &lt;&lt; " 分以上" &lt;&lt; endl;
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：纯虚函数与抽象基类</h3><pre class="code-block"><code class="language-cpp">struct IShape {
-    virtual double area() const = 0; // 纯虚函数
-    virtual ~IShape() = default;
-};
-struct Circle : IShape {
-    double r;
-    double area() const override { return 3.14 * r * r; }
-};</code></pre><p class="tip">💡 举一反三：= 0 标记纯虚函数，子类必须 override。写接口（API 设计）时大量使用。类似于 Java 的 interface 或 Rust 的 trait。</p>
-<h3>语法规则：extern "C" — C 链接约定</h3><pre class="code-block"><code class="language-cpp">extern &quot;C&quot; {
-    void my_c_function(int x);  // C 链接，不进行名称修饰
-    int add(int a, int b);       // 能被 C 代码或 dlsym 找到
-}</code></pre><p class="tip">💡 举一反三：C++ 编译器会对函数名进行 name mangling（编码参数类型到函数名中）。extern "C" 告诉编译器用 C 风格的纯函数名，方便动态加载和跨语言调用。</p>
-<h3>语法规则：LoadLibrary / GetProcAddress / FreeLibrary</h3><pre class="code-block"><code class="language-cpp">HMODULE h = LoadLibraryA(&quot;mylib.dll&quot;);        // 加载 DLL
-using FuncType = int(*)(int, int);                // 函数指针类型
-FuncType add = (FuncType)GetProcAddress(h, &quot;add&quot;); // 获取函数
-int result = add(3, 4);                           // 调用
-FreeLibrary(h);                                   // 释放</code></pre><p class="tip">💡 举一反三：Windows 动态加载三部曲。Linux 对应 dlopen/dlsym/dlclose。注意函数指针类型必须与实际签名一致，否则行为未定义。</p>
-<h3>语法规则：std::unique_ptr 自定义删除器</h3><pre class="code-block"><code class="language-cpp">// 自定义删除器示例：关闭文件句柄
-auto fileDeleter = [](FILE* f) { if(f) fclose(f); };
-std::unique_ptr&lt;FILE, decltype(fileDeleter)&gt; fp(fopen(&quot;t.txt&quot;,&quot;r&quot;), fileDeleter);
-// fp 离开作用域时自动调用 fclose</code></pre><p class="tip">💡 举一反三：当资源释放不是简单的 delete 时（如句柄、socket、文件），使用自定义删除器。删除器类型作为第二个模板参数。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::nth_element</h3>
+                    <pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end());
+// 将第 k 小的元素放在 v[k] 位置
+// v[0..k-1] ≤ v[k] ≤ v[k+1..n-1]
+// 平均 O(N)，最坏 O(N^2)（但实现通常用 Introselect 保证 O(N)）</code></pre>
+                    <p class="tip">举一反三：nth_element 基于快速选择算法（Quickselect）。比 sort + v[k] 快（O(N log N) vs O(N)）。常用于找中位数、topK、分数排名。不保证前后部分的顺序。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：部分排序与完整排序的选择</h3>
+                    <pre class="code-block"><code class="language-cpp">// 只需要第 K 个元素 → nth_element (O(N))
+// 需要前 K 个元素但不关心顺序 → nth_element + 取前 K (O(N))
+// 需要前 K 个元素且需顺序 → partial_sort (O(N log K))
+// 需要全部排序 → sort (O(N log N))</code></pre>
+                    <p class="tip">举一反三：选择合适的算法避免过度排序。nth_element 是最优的「求第 K 个」方案。但注意 nth_element 后前 K 个元素是未排序的（仅保证都 ≤ v[k]）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：自定义比较器</h3>
+                    <pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end(), greater&lt;&gt;());
+// 第 k 大 = nth_element(..., greater&lt;&gt;())
+// 等价于: 第 (n-k-1) 小</code></pre>
+                    <p class="tip">举一反三：默认比较器 less<> 找第 K 小。greater<> 找第 K 大。配合自定义比较器可按任意条件界定「大小」。注意 0-based 索引和 1-based 第几的对应。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_080.html" class="prev-link">&larr; 案例 80</a>
+<a href="case_082.html" class="next-link">案例 82 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

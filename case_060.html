@@ -1,199 +1,162 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 60：剪贴板管理器 - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 60：协程 generator - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 60：剪贴板管理器</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;thread&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2">#include &lt;windows.h&gt;</td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">class ClipboardManager {</td></tr>
-<tr><td class="ln">11</td><td class="cd">    vector&lt;string&gt; history;</td><td class="cmt">剪贴板历史记录</td></tr>
-<tr><td class="ln">12</td><td class="cd">    size_t maxHistory = 20;</td><td class="cmt">最多保存 20 条</td></tr>
-<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2">public:</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">    // 从系统剪贴板读取文本</td></tr>
-<tr><td class="ln">16</td><td class="cd" colspan="2">    string getClipboardText() {</td></tr>
-<tr><td class="ln">17</td><td class="cd">        if (!OpenClipboard(nullptr)) return "";</td><td class="cmt">打开剪贴板</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">19</td><td class="cd">        HANDLE hData = GetClipboardData(CF_TEXT);</td><td class="cmt">CF_TEXT = ANSI 文本格式</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">        if (!hData) {</td></tr>
-<tr><td class="ln">21</td><td class="cd">            CloseClipboard();</td><td class="cmt">即使失败也要关闭</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">            return "";</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">        // GlobalLock 锁定全局内存块并获取指针</td></tr>
-<tr><td class="ln">26</td><td class="cd">        char* pszText = static_cast&lt;char*&gt;(GlobalLock(hData));</td><td class="cmt">锁定内存</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2">        if (!pszText) {</td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">            CloseClipboard();</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2">            return "";</td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">32</td><td class="cd">        string text(pszText);</td><td class="cmt">转为 C++ string</td></tr>
-<tr><td class="ln">33</td><td class="cd">        GlobalUnlock(hData);</td><td class="cmt">解锁</td></tr>
-<tr><td class="ln">34</td><td class="cd">        CloseClipboard();</td><td class="cmt">关闭剪贴板</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">        return text;</td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2">    // 写入系统剪贴板</td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2">    void setClipboardText(const string&amp; text) {</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">        if (!OpenClipboard(nullptr)) return;</td></tr>
-<tr><td class="ln">42</td><td class="cd">        EmptyClipboard();</td><td class="cmt">清空旧内容</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">        // GlobalAlloc 分配全局内存</td></tr>
-<tr><td class="ln">45</td><td class="cd">        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);</td><td class="cmt">+1 给 null 终止符</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">        if (!hMem) { CloseClipboard(); return; }</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">        // 复制文本到全局内存</td></tr>
-<tr><td class="ln">49</td><td class="cd">        memcpy(GlobalLock(hMem), text.c_str(), text.size() + 1);</td><td class="cmt">含 null 终止符</td></tr>
-<tr><td class="ln">50</td><td class="cd">        GlobalUnlock(hMem);</td><td class="cmt">解锁</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">52</td><td class="cd">        SetClipboardData(CF_TEXT, hMem);</td><td class="cmt">设置剪贴板数据</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">        CloseClipboard();</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">56</td><td class="cd" colspan="2">    // 添加一条历史记录（去重 + 限制数量）</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">    void addEntry(const string&amp; text) {</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">        if (text.empty()) return;</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">        // 去重：如果与上一条相同，不重复记录</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2">        if (!history.empty() &amp;&amp; history.back() == text) return;</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">        history.push_back(text);</td></tr>
-<tr><td class="ln">63</td><td class="cd">        while (history.size() &gt; maxHistory) {</td><td class="cmt">超出上限则删除最旧的</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">            history.erase(history.begin());</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">66</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2">    // 显示历史记录</td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2">    void showHistory() const {</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">        cout &lt;&lt; "=== Clipboard History ===" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">        for (size_t i = 0; i &lt; history.size(); i++) {</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">            // 截断过长内容</td></tr>
-<tr><td class="ln">73</td><td class="cd" colspan="2">            string preview = history[i];</td></tr>
-<tr><td class="ln">74</td><td class="cd">            if (preview.size() &gt; 60) {</td><td class="cmt">超过 60 字符则截断</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">                preview = preview.substr(0, 60) + "...";</td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">            // 替换换行符以便显示</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">            for (auto&amp; c : preview) {</td></tr>
-<tr><td class="ln">79</td><td class="cd">                if (c == '\n') c = ' ';</td><td class="cmt">单行显示</td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2">            cout &lt;&lt; i &lt;&lt; ": " &lt;&lt; preview &lt;&lt; endl;</td></tr>
-<tr><td class="ln">82</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">83</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">84</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">85</td><td class="cd" colspan="2">    // 粘贴索引为 index 的历史记录</td></tr>
-<tr><td class="ln">86</td><td class="cd" colspan="2">    void pasteEntry(size_t index) {</td></tr>
-<tr><td class="ln">87</td><td class="cd" colspan="2">        if (index &gt;= history.size()) {</td></tr>
-<tr><td class="ln">88</td><td class="cd" colspan="2">            cerr &lt;&lt; "Invalid index: " &lt;&lt; index &lt;&lt; endl;</td></tr>
-<tr><td class="ln">89</td><td class="cd" colspan="2">            return;</td></tr>
-<tr><td class="ln">90</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">91</td><td class="cd" colspan="2">        setClipboardText(history[index]);</td></tr>
-<tr><td class="ln">92</td><td class="cd" colspan="2">        cout &lt;&lt; "Copied to clipboard: " &lt;&lt; history[index].substr(0, 50) &lt;&lt; "..." &lt;&lt; endl;</td></tr>
-<tr><td class="ln">93</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">94</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">95</td><td class="cd" colspan="2">    // 监听剪贴板变化（轮询方式）</td></tr>
-<tr><td class="ln">96</td><td class="cd">    void startMonitor(int intervalMs = 500) {</td><td class="cmt">每 500ms 检查一次</td></tr>
-<tr><td class="ln">97</td><td class="cd" colspan="2">        cout &lt;&lt; "Monitoring clipboard... (press Ctrl+C to stop)" &lt;&lt; endl;</td></tr>
-<tr><td class="ln">98</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">99</td><td class="cd">        string lastText;</td><td class="cmt">上一次的剪贴板内容</td></tr>
-<tr><td class="ln">100</td><td class="cd" colspan="2">        while (true) {</td></tr>
-<tr><td class="ln">101</td><td class="cd">            string current = getClipboardText();</td><td class="cmt">读取当前剪贴板</td></tr>
-<tr><td class="ln">102</td><td class="cd">            if (current != lastText &amp;&amp; !current.empty()) {</td><td class="cmt">内容变了</td></tr>
-<tr><td class="ln">103</td><td class="cd">                addEntry(current);</td><td class="cmt">记录历史</td></tr>
-<tr><td class="ln">104</td><td class="cd" colspan="2">                cout &lt;&lt; "New clipboard entry (#" &lt;&lt; history.size() - 1 &lt;&lt; "): "</td></tr>
-<tr><td class="ln">105</td><td class="cd" colspan="2">                     &lt;&lt; current.substr(0, 50) &lt;&lt; (current.size() &gt; 50 ? "..." : "") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">106</td><td class="cd">                lastText = current;</td><td class="cmt">更新参照</td></tr>
-<tr><td class="ln">107</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">108</td><td class="cd">            this_thread::sleep_for(chrono::milliseconds(intervalMs));</td><td class="cmt">休息一会再查</td></tr>
-<tr><td class="ln">109</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">110</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">111</td><td class="cd" colspan="2">};</td></tr>
-<tr><td class="ln">112</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">113</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">114</td><td class="cd" colspan="2">    ClipboardManager cm;</td></tr>
-<tr><td class="ln">115</td><td class="cd">    cm.startMonitor();</td><td class="cmt">启动后台监听</td></tr>
-<tr><td class="ln">116</td><td class="cd" colspan="2">    // 注意：主程序会卡在这里一直监听</td></tr>
-<tr><td class="ln">117</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">118</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>Windows 剪贴板 API 流程</h3>
-<div class="rule"><strong>语法规则：</strong>剪贴板操作的标准流程：<strong>(1) OpenClipboard</strong> → (2) GetClipboardData/SetClipboardData → (3) CloseClipboard。每次 Open 后<strong>必须 Close</strong>（类似 RAII），否则其他程序无法使用剪贴板。</div>
-<pre class="example"><code>// 标准读取流程
-OpenClipboard(nullptr);
-HANDLE h = GetClipboardData(CF_TEXT);
-char* text = (char*)GlobalLock(h);
-string result(text);
-GlobalUnlock(h);
-CloseClipboard();
-// 标准设置流程
-OpenClipboard(nullptr);
-EmptyClipboard();
-HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len + 1);
-memcpy(GlobalLock(hMem), data, len + 1);
-GlobalUnlock(hMem);
-SetClipboardData(CF_TEXT, hMem);
-CloseClipboard();</code></pre>
-</div>
-<div class="grammar-item">
-<h3>GlobalAlloc / GlobalLock 与 Windows 全局堆</h3>
-<div class="rule"><strong>语法规则：</strong><strong>GlobalAlloc</strong> 在全局堆（Global Heap）中分配内存。这在 32/64 位 Windows 中已经不重要（进程地址空间独立），但剪贴板 API 仍沿用这个传统。SetClipboardData 传入的内存块<strong>所有权转移给系统</strong>，调用者不能再释放。</div>
-<pre class="example"><code>HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, size);
-// GMEM_MOVEABLE 允许系统移动内存块以优化碎片
-// 使用前必须 Lock：
-char* p = (char*)GlobalLock(hMem);
-strcpy(p, "data");
-GlobalUnlock(hMem);
-// 注意：SetClipboardData 后不要 GlobalFree！</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>使用 Ditto（开源剪贴板管理器）的架构思想：</strong><pre><code>Ditto 使用 SQLite 存储剪贴板历史，支持搜索、同步、加密。其核心思路：
-1. clipboard hook（注册剪贴板查看器）获取实时通知
-2. SQLite 持久化存储
-3. 全局快捷键唤出搜索界面
-我们的实现只是轮询版本，没有 hook。</code></pre><p>Ditto 是 Windows 上最流行的剪贴板管理工具，开源（C++），值得阅读源码学习。</p></li>
-<li><strong>跨平台剪贴板支持：</strong><pre><code>// Linux: X11
-// #include <X11/Xlib.h>
-XGetWindowProperty(display, window, property, ...)
-// macOS: NSPasteboard
-// [[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString]</code></pre><p>不同平台的剪贴板 API 差异巨大。跨平台项目通常使用 Qt（QClipboard）或 wxWidgets 提供的抽象层。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 60：协程 generator</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 60：协程 generator</h1>
+            <section class="intro">
+<p>使用 C++20 协程实现一个生成器，惰性生成数列。</p>
+            <p><strong>核心知识点：</strong>C++20 协程、co_yield、generator 模式</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 60：协程 Generator
+// C++20 协程实现惰性生成器
+#include &lt;iostream&gt;
+#include &lt;coroutine&gt;
+#include &lt;optional&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_059.html">← 案例 59</a><a href="case_061.html">案例 61 →</a>
-</nav>
-</main>
+// 简易 Generator（惰性生成序列）
+template &lt;typename T&gt;
+class Generator {
+public:
+    struct promise_type;
+    using Handle = coroutine_handle&lt;promise_type&gt;;
+
+    struct promise_type {
+        optional&lt;T&gt; current_value;
+
+        Generator get_return_object() {
+            return Generator(Handle::from_promise(*this));
+        }
+
+        suspend_always initial_suspend() { return {}; }
+        suspend_always final_suspend() noexcept { return {}; }
+
+        // co_yield value 时调用
+        suspend_always yield_value(T value) {
+            current_value = value;
+            return {};
+        }
+
+        void return_void() {}
+        void unhandled_exception() { terminate(); }
+    };
+
+private:
+    Handle handle;
+
+public:
+    explicit Generator(Handle h) : handle(h) {}
+    ~Generator() { if (handle) handle.destroy(); }
+
+    // 禁止拷贝
+    Generator(const Generator&amp;) = delete;
+    Generator&amp; operator=(const Generator&amp;) = delete;
+
+    // 支持移动
+    Generator(Generator&amp;&amp; other) noexcept : handle(other.handle) {
+        other.handle = nullptr;
+    }
+
+    // 获取下一个值
+    optional&lt;T&gt; next() {
+        if (!handle || handle.done()) return nullopt;
+        handle.resume(); // 恢复协程执行
+        if (handle.done()) return nullopt;
+        return handle.promise().current_value;
+    }
+};
+
+// 生成斐波那契数列的协程
+Generator&lt;long long&gt; fibonacci(int n) {
+    long long a = 0, b = 1;
+    for (int i = 0; i &lt; n; i++) {
+        co_yield a;          // 暂停并返回值
+        long long next = a + b;
+        a = b;
+        b = next;
+    }
+}
+
+// 生成自然数序列
+Generator&lt;int&gt; range(int start, int end, int step = 1) {
+    for (int i = start; i &lt; end; i += step) {
+        co_yield i;
+    }
+}
+
+int main() {
+    // 测试斐波那契生成器
+    cout &lt;&lt; "斐波那契数列前 10 项:" &lt;&lt; endl;
+    auto fib = fibonacci(10);
+    while (auto val = fib.next()) {
+        cout &lt;&lt; *val &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    // 测试范围生成器
+    cout &lt;&lt; "\nrange(5, 15, 2):" &lt;&lt; endl;
+    auto r = range(5, 15, 2);
+    while (auto val = r.next()) {
+        cout &lt;&lt; *val &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：C++20 协程基础</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;coroutine&gt;
+// co_yield: 暂停并产生值
+// co_await: 等待异步操作
+// co_return: 返回最终值
+// 协程在暂停点保存状态，恢复后继续执行</code></pre>
+                    <p class="tip">举一反三：C++20 协程是无栈协程，编译器将函数体转换为状态机。三个关键字：co_yield（生成）、co_await（等待）、co_return（返回）。需实现 promise_type。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：Generator 实现要点</h3>
+                    <pre class="code-block"><code class="language-cpp">struct promise_type {
+    suspend_always yield_value(T v) { curr = v; return {}; }
+    // initial_suspend: 是否开始时就暂停
+    // final_suspend: 结束后是否暂停
+};</code></pre>
+                    <p class="tip">举一反三：optimistic_suspend 返回 suspend_always 表示协程需要手动 resume() 才开始。suspend_never 表示立即开始。final_suspend 设为 suspend_always 防止协程自动销毁。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：协程与迭代器对比</h3>
+                    <pre class="code-block"><code class="language-cpp">// 迭代器：需手动维护状态
+// 协程 Generator：状态由编译器自动管理
+// 优势：代码简洁，惰性求值，无限序列
+// 劣势：学习曲线陡峭，调试困难</code></pre>
+                    <p class="tip">举一反三：Generator 模式的协程特别适合惰性序列（斐波那契、排列、文件行读取等）。Python 的 yield 和 C# 的 yield return 也是类似概念。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_059.html" class="prev-link">&larr; 案例 59</a>
+<a href="case_061.html" class="next-link">案例 61 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

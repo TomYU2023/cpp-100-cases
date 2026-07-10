@@ -3,479 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 40: future/async 异步任务 | C++ 100 案例</title>
+    <title>案例 40：future+async - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <div class="app">
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html"><h2>C++ 100 案例</h2></a>
-            </div>
-            <div class="sidebar-nav">
-<div class="section-title">阶段一：语法练兵场</div>
-<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
-<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
-<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
-<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
-<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
-<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
-<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
-<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
-<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
-<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
-<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
-<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
-<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
-<a href="case_014.html" class="nav-item ">14. 模板函数</a>
-<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
-<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
-<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
-<a href="case_018.html" class="nav-item ">18. 移动语义</a>
-<a href="case_019.html" class="nav-item ">19. 智能指针</a>
-<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
-<div class="section-title">阶段二：STL 熟练工</div>
-<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
-<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
-<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
-<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
-<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
-<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
-<a href="case_027.html" class="nav-item ">27. sort 对比实验</a>
-<a href="case_028.html" class="nav-item ">28. find_if 条件筛选</a>
-<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
-<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
-<a href="case_031.html" class="nav-item ">31. partition 分区</a>
-<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
-<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
-<a href="case_034.html" class="nav-item ">34. chrono 计时器</a>
-<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
-<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
-<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
-<a href="case_038.html" class="nav-item ">38. mutex 线程安全</a>
-<a href="case_039.html" class="nav-item ">39. condition_variable 生产者消费者</a>
-<a href="case_040.html" class="nav-item active">40. future/async 异步任务</a>
-<div class="section-title">阶段三：实用小工具</div>
-<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
-<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
-<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
-<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
-<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
-<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
-<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
-<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
-<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
-<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
-<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
-<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
-<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
-<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
-<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
-<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
-<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
-<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
-<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
-<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
-<div class="section-title">阶段四：工程能力锻造</div>
-<a href="case_061.html" class="nav-item ">61. 线程池</a>
-<a href="case_062.html" class="nav-item ">62. 内存池</a>
-<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
-<a href="case_064.html" class="nav-item ">64. 对象池</a>
-<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
-<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
-<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
-<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
-<a href="case_069.html" class="nav-item ">69. 事件总线</a>
-<a href="case_070.html" class="nav-item ">70. 策略模式</a>
-<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
-<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
-<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
-<a href="case_074.html" class="nav-item ">74. 状态机</a>
-<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
-<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
-<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
-<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
-<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
-<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
-<a href="case_081.html" class="nav-item ">81. 插件系统</a>
-<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
-<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
-<a href="case_084.html" class="nav-item ">84. 连接池</a>
-<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
-<div class="section-title">阶段五：综合项目</div>
-<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
-<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
-<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
-<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
-<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
-<a href="case_091.html" class="nav-item ">91. 协程库</a>
-<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
-<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
-<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
-<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
-<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
-<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
-<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
-<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
-<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
-            </div>
-        </nav>
-        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-        <main class="content">
-            <header class="case-header">
-                <span class="case-badge">案例 040</span>
-                <h1>future/async 异步任务</h1>
-            </header>
-
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 40：future+async</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 40：future+async</h1>
+            <section class="intro">
+<p>使用 future 和 async 实现异步任务，获取线程返回值，理解异步编程模型。</p>
+            <p><strong>核心知识点：</strong>async、future、promise、异步编程</p>
+            </section>
             <section class="code-section">
-                <h2>完整代码（逐行注释）</h2>
-                <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;future&gt;</code></span>
-                        <span class="line-comment">async, future, promise</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include &lt;numeric&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>#include &lt;chrono&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>#include &lt;thread&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>using namespace chrono;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>// 模拟耗时计算</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>int heavyComputation(int id, int ms) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    this_thread::sleep_for(milliseconds(ms));</code></span>
-                        <span class="line-comment">模拟耗时</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    return id * id;</code></span>
-                        <span class="line-comment">简单的计算</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>    // 1. async 异步执行（最常用）</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    auto f1 = async(launch::async, heavyComputation, 10, 500);</code></span>
-                        <span class="line-comment">在新线程执行</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    auto f2 = async(launch::async, heavyComputation, 20, 300);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    auto f3 = async(launch::async, heavyComputation, 30, 200);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "正在等待异步任务...\n";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    int r1 = f1.get();</code></span>
-                        <span class="line-comment">阻塞等待结果</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>    int r2 = f2.get();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>    int r3 = f3.get();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "结果: " &lt;&lt; r1 &lt;&lt; ", " &lt;&lt; r2 &lt;&lt; ", " &lt;&lt; r3 &lt;&lt; endl;</code></span>
-                        <span class="line-comment">100, 400, 900</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>    // 2. launch::deferred 延迟执行</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    auto deferred = async(launch::deferred, []() {</code></span>
-                        <span class="line-comment">不在新线程执行</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "deferred 任务在调用 get() 时执行\n";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        return 42;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    // 此时还没执行</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    int val = deferred.get();</code></span>
-                        <span class="line-comment">此时才在当前线程执行</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    // 3. packaged_task 包装任务</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    packaged_task&lt;int(int)&gt; task([](int x) { return x * x; });</code></span>
-                        <span class="line-comment">把函数包装为可获取 future 的对象</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    future&lt;int&gt; ft = task.get_future();</code></span>
-                        <span class="line-comment">获取关联的 future</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>    thread t(move(task), 7);</code></span>
-                        <span class="line-comment">把 task 传给线程执行</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "packaged_task 结果: " &lt;&lt; ft.get() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">49</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>    t.join();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>    // 4. promise 手动设值</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    promise&lt;string&gt; p;</code></span>
-                        <span class="line-comment">promise 端</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    future&lt;string&gt; fp = p.get_future();</code></span>
-                        <span class="line-comment">future 端</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>    thread provider([&amp;p]() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>        this_thread::sleep_for(100ms);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>        p.set_value("来自 promise 的数据");</code></span>
-                        <span class="line-comment">设置值</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>    });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "promise 结果: " &lt;&lt; fp.get() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">阻塞等待</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>    provider.join();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    // 5. wait_for 带超时检查</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>    auto slow = async(launch::async, []() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code>        this_thread::sleep_for(1s);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>        return 99;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>    });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    while (slow.wait_for(100ms) != future_status::ready) {</code></span>
-                        <span class="line-comment">每 100ms 检查一次</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "." &lt;&lt; flush;</code></span>
-                        <span class="line-comment">进度指示</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">61</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "\n慢任务结果: " &lt;&lt; slow.get() &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">62</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">63</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">64</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-                </div>
-                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
-            </section>
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 40：future + async
+// 异步执行任务并获取返回值
+#include &lt;iostream&gt;
+#include &lt;future&gt;
+#include &lt;vector&gt;
+#include &lt;numeric&gt;
+#include &lt;chrono&gt;
+using namespace std;
 
-            <section class="grammar-section">
-                <h2>新语法讲解</h2>
-            <div class="grammar-card">
-                <h3>async 启动策略</h3>
-                <div class="grammar-rule"><strong>launch::async</strong>：必定在新线程执行。<strong>launch::deferred</strong>：延迟到 get() 调用时在当前线程执行（懒求值）。<strong>launch::async | launch::deferred</strong>：由实现选择（默认行为，但不可预测）。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>// 推荐显式指定策略
-auto f = async(launch::async, work);    // 明确异步
-auto f = async(launch::deferred, work);  // 明确延迟
-// 不推荐
-auto f = async(work); // 行为不可预测</code></pre>
-                </div>
-            </div>
-            <div class="grammar-card">
-                <h3>future / promise 通信模型</h3>
-                <div class="grammar-rule"><strong>promise</strong> 是"生产者端"，通过 set_value() 设值；<strong>future</strong> 是"消费者端"，通过 get() 获取值。两者成对出现，是一个<strong>一次性的</strong>通信通道。get() 只能调用一次，之后再调用会抛异常。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>promise<int> p;
-future<int> f = p.get_future(); // 绑定
-thread t([&](){ p.set_value(42); });
-int val = f.get(); // 阻塞直到值到来
-// 第二次 f.get() 会抛 future_error</code></pre>
-                </div>
-            </div>
-            </section>
+// 模拟耗时计算
+int heavyComputation(int id, int workload) {
+    cout &lt;&lt; "任务 " &lt;&lt; id &lt;&lt; " 开始 (workload=" &lt;&lt; workload &lt;&lt; ")" &lt;&lt; endl;
 
-            <section class="extend-section">
-                <h2>举一反三</h2>
-            <div class="extend-card">
-                <h3>shared_future 多次获取</h3>
-                <pre><code>shared_future<int> sf = promise.get_future().share();
-// 可被多个线程同时 get()，不会抛异常</code></pre>
-                <p>适合广播模式：一个结果多个消费者</p>
-            </div>
-            <div class="extend-card">
-                <h3>async 实现并行 map-reduce</h3>
-                <pre><code>auto futures = vector<future<int>>();
-for (auto& chunk : chunks)
-  futures.push_back(async(launch::async, process, chunk));
-// get all results
-for (auto& f : futures) combine(f.get());</code></pre>
-                <p>函数式风格的并行处理</p>
-            </div>
-            <div class="extend-card">
-                <h3>when_all (C++20 协程 / 第三方库)</h3>
-                <pre><code>// C++ 标准库目前没有 when_all/when_any
-// 可自己实现或用 folly::collectAll
-// 等 C++26 的 std::execution 完善</code></pre>
-                <p>同时等待多个 future 是最常见的并发需求之一</p>
-            </div>
-            </section>
+    // 模拟耗时
+    this_thread::sleep_for(chrono::milliseconds(workload * 100));
 
-            <nav class="case-nav">
-                <a href="case_039.html" class="nav-prev">← 上一案例</a>
-                <a href="index.html" class="nav-home">回首页</a>
-                <a href="case_041.html" class="nav-next">下一案例 →</a>
-            </nav>
-        </main>
-    </div>
-    <script>
-    function copyCode(container) {
-        const lines = container.querySelectorAll('.line-code code');
-        let code = '';
-        lines.forEach(l => code += l.textContent + '\n');
-        navigator.clipboard.writeText(code);
+    int result = 0;
+    for (int i = 0; i &lt; workload * 1000000; i++) {
+        result += i;
     }
-    </script>
+
+    cout &lt;&lt; "任务 " &lt;&lt; id &lt;&lt; " 完成" &lt;&lt; endl;
+    return result;
+}
+
+int main() {
+    // 1. async 异步启动任务
+    cout &lt;&lt; "=== async 异步任务 ===" &lt;&lt; endl;
+    auto f1 = async(launch::async, heavyComputation, 1, 5);
+    auto f2 = async(launch::async, heavyComputation, 2, 3);
+    auto f3 = async(launch::async, heavyComputation, 3, 4);
+
+    // 主线程可以做其他事情...
+
+    // get() 获取结果（会阻塞直到任务完成）
+    int r1 = f1.get();
+    int r2 = f2.get();
+    int r3 = f3.get();
+
+    cout &lt;&lt; "结果: " &lt;&lt; r1 &lt;&lt; ", " &lt;&lt; r2 &lt;&lt; ", " &lt;&lt; r3 &lt;&lt; endl;
+
+    // 2. async 延迟执行
+    cout &lt;&lt; "\n=== 延迟执行 (deferred) ===" &lt;&lt; endl;
+    auto f4 = async(launch::deferred, heavyComputation, 4, 2);
+    cout &lt;&lt; "任务 4 还没开始执行..." &lt;&lt; endl;
+    // 只有在调用 get() 时才真正开始执行
+    int r4 = f4.get();
+    cout &lt;&lt; "任务 4 结果: " &lt;&lt; r4 &lt;&lt; endl;
+
+    // 3. 使用 future 等待多个并行任务
+    cout &lt;&lt; "\n=== 并行处理向量 ===" &lt;&lt; endl;
+    vector&lt;int&gt; data(10000000);
+    iota(data.begin(), data.end(), 0);
+
+    auto sumFuture = async(launch::async, [&amp;data]() {
+        return accumulate(data.begin(), data.begin() + data.size() / 2, 0LL);
+    });
+    auto sumFuture2 = async(launch::async, [&amp;data]() {
+        return accumulate(data.begin() + data.size() / 2, data.end(), 0LL);
+    });
+
+    long long total = sumFuture.get() + sumFuture2.get();
+    cout &lt;&lt; "总和: " &lt;&lt; total &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::async 启动策略</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;future&gt;
+auto f = async(launch::async, func, args...); // 新线程执行
+auto f = async(launch::deferred, func, args...); // 延迟执行
+auto f = async(func, args...); // 由实现决定</code></pre>
+                    <p class="tip">举一反三：launch::async 确保在新线程中执行。launch::deferred 只在 get()/wait() 时才执行（惰性求值）。默认是 async|deferred 组合。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：future::get() / wait()</h3>
+                    <pre class="code-block"><code class="language-cpp">future&lt;int&gt; f = async(task);
+f.wait();    // 等待完成，不获取结果
+int v = f.get(); // 获取结果（只能调用一次！）</code></pre>
+                    <p class="tip">举一反三：get() 会移动结果，再次调用会抛 future_error。shared_future 允许多次获取。f.valid() 检查是否可获取。wait_for/wait_until 支持超时。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：async 生命周期陷阱</h3>
+                    <pre class="code-block"><code class="language-cpp">// 小心：async 返回的 future 在析构时会阻塞等待任务完成
+// 所以需要有意保存 future 或使用 shared_future</code></pre>
+                    <p class="tip">举一反三：std::async 返回的 future 在析构时如果任务未完成会 join。这是一个坑——如果忘了保存 future 变量，主线程会在此处阻塞。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_039.html" class="prev-link">&larr; 案例 39</a>
+<a href="case_041.html" class="next-link">案例 41 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

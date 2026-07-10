@@ -1,89 +1,136 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 96：简易容器</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_095.html">&#8592; 上一案例</a>    <span class="sep">|</span>
-            <a href="case_097.html">下一案例 &#8594;</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 96：std::invoke 统一调用 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 96：std::invoke 统一调用</span>
         </div>
-    </nav><main class="container"><h1>案例 96：简易容器</h1><section class="intro"><p>用 clone() + Linux Namespace 实现容器隔离：PID 命名空间、UTS 命名空间、独立文件系统，理解 Docker 底层原理。</p><p><strong>核心知识点：</strong>clone() 系统调用、Linux Namespace、位掩码标志、errno/strerror、容器隔离原理</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 96：简易容器 —— 理解 Docker 核心原理
-// Docker 依赖 Linux Namespace（隔离）和 Cgroups（限制）。
-// 本案例用 clone() 系统调用创建隔离的进程空间。
-// 需在 Linux 下编译运行: g++ -std=c++17 container.cpp -o container
-
-#define _GNU_SOURCE
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 96：std::invoke 统一调用</h1>
+            <section class="intro">
+<p>使用 invoke 统一调用函数、成员函数、函数对象，理解 C++17 的统一调用语法。</p>
+            <p><strong>核心知识点：</strong>invoke、统一调用、INVOKE 协议、is_invocable</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 96：std::invoke 统一调用
+// 统一调用函数、成员函数、函数对象
 #include &lt;iostream&gt;
+#include &lt;functional&gt;
 #include &lt;string&gt;
-#include &lt;cstring&gt;
-#include &lt;sched.h&gt;      // clone()
-#include &lt;sys/wait.h&gt;   // waitpid()
-#include &lt;sys/mount.h&gt;  // mount()
-#include &lt;unistd.h&gt;
-#include &lt;signal.h&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-const int STACK_SIZE = 1024 * 1024;  // 子进程栈 1MB
-char childStack[STACK_SIZE];
+class Calculator {
+public:
+    int add(int a, int b) const {
+        cout &lt;&lt; "  Calculator::add(" &lt;&lt; a &lt;&lt; ", " &lt;&lt; b &lt;&lt; ")";
+        return a + b;
+    }
 
-// 子进程入口（容器内执行的程序）
-int childFunc(void* arg) {
-    // 1. 设置 hostname（UTS namespace 隔离）
-    sethostname(&quot;my-container&quot;, 11);
+    static int multiply(int a, int b) {
+        return a * b;
+    }
 
-    std::cout &lt;&lt; &quot;=== 容器内环境 ===&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;PID: &quot; &lt;&lt; getpid() &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;PPID: &quot; &lt;&lt; getppid() &lt;&lt; std::endl;
+    double factor = 1.5;
+};
 
-    // 容器内可以看到独立的 PID 命名空间
-    char hostname[256];
-    gethostname(hostname, sizeof(hostname));
-    std::cout &lt;&lt; &quot;Hostname: &quot; &lt;&lt; hostname &lt;&lt; std::endl;
-
-    std::cout &lt;&lt; &quot;容器启动成功！（输入 exit 退出）&quot; &lt;&lt; std::endl;
-    return 0;
+// 普通函数
+int subtract(int a, int b) {
+    return a - b;
 }
 
 int main() {
-    std::cout &lt;&lt; &quot;=== 简易容器模拟 ===&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;宿主机 PID: &quot; &lt;&lt; getpid() &lt;&lt; std::endl;
+    // 1. invoke 调用普通函数
+    auto result1 = invoke(subtract, 10, 3);
+    cout &lt;&lt; "invoke(普通函数): " &lt;&lt; result1 &lt;&lt; endl;
 
-    // Namespace 标志位（按位或组合）
-    // CLONE_NEWPID  — PID 命名空间（容器内 PID=1）
-    // CLONE_NEWUTS  — UTS 命名空间（独立 hostname）
-    // CLONE_NEWNS   — Mount 命名空间（独立文件系统挂载）
-    int flags = CLONE_NEWPID | CLONE_NEWUTS | CLONE_NEWNS | SIGCHLD;
+    // 2. invoke 调用 Lambda
+    auto lambda = [](int x) { return x * x; };
+    auto result2 = invoke(lambda, 7);
+    cout &lt;&lt; "invoke(Lambda): " &lt;&lt; result2 &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;创建容器进程...&quot; &lt;&lt; std::endl;
+    // 3. invoke 调用成员函数（通过对象引用）
+    Calculator calc;
+    auto result3 = invoke(&amp;Calculator::add, calc, 5, 3);
+    cout &lt;&lt; " = " &lt;&lt; result3 &lt;&lt; endl;
 
-    // clone() 创建子进程并加入新命名空间
-    pid_t childPid = clone(childFunc, childStack + STACK_SIZE, flags, nullptr);
+    // 4. invoke 调用成员函数（通过对象指针）
+    Calculator* pCalc = &amp;calc;
+    auto result4 = invoke(&amp;Calculator::add, pCalc, 10, 20);
+    cout &lt;&lt; " (指针) = " &lt;&lt; result4 &lt;&lt; endl;
 
-    if (childPid &lt; 0) {
-        std::cerr &lt;&lt; &quot;clone() 失败: &quot; &lt;&lt; strerror(errno) &lt;&lt; std::endl;
-        std::cerr &lt;&lt; &quot;提示: 需要 root 权限运行此程序。&quot; &lt;&lt; std::endl;
-        return 1;
-    }
+    // 5. invoke 调用静态成员函数
+    auto result5 = invoke(&amp;Calculator::multiply, 6, 7);
+    cout &lt;&lt; "invoke(静态): " &lt;&lt; result5 &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;容器进程 PID: &quot; &lt;&lt; childPid &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;等待容器进程退出...&quot; &lt;&lt; std::endl;
+    // 6. invoke 访问成员变量
+    auto&amp; factor = invoke(&amp;Calculator::factor, calc);
+    cout &lt;&lt; "invoke(成员变量): " &lt;&lt; factor &lt;&lt; endl;
 
-    int status;
-    waitpid(childPid, &amp;status, 0);
-    std::cout &lt;&lt; &quot;容器已退出 (状态码: &quot; &lt;&lt; WEXITSTATUS(status) &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+    // 7. 实际应用：通用回调调度
+    vector&lt;function&lt;void()&gt;&gt; tasks;
+    Calculator c;
+
+    // 将各种调用统一包装
+    tasks.push_back([&amp;]() {
+        cout &lt;&lt; invoke(&amp;Calculator::add, c, 1, 2) &lt;&lt; endl;
+    });
+    tasks.push_back([&amp;]() {
+        cout &lt;&lt; invoke(lambda, 9) &lt;&lt; endl;
+    });
+
+    for (auto&amp; task : tasks) task();
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：clone() 系统调用与 Linux Namespace</h3><pre class="code-block"><code class="language-cpp">#define _GNU_SOURCE
-#include &lt;sched.h&gt;
-char stack[1024*1024];
-int flags = CLONE_NEWPID | CLONE_NEWUTS | CLONE_NEWNS | SIGCHLD;
-pid_t pid = clone(childFunc, stack + sizeof(stack), flags, arg);</code></pre><p class="tip">举一反三：clone() 是 Linux 创建进程/线程的底层系统调用（fork() 和 pthread_create 都基于它）。flags 指定创建哪些独立命名空间：CLONE_NEWPID（容器内 PID 从 1 开始）、CLONE_NEWUTS（独立 hostname）、CLONE_NEWNS（独立挂载点）。Docker 就是组合这些标志位实现容器隔离。</p>
-<h3>语法规则：位掩码标志组合（Bitmask Flags）</h3><pre class="code-block"><code class="language-cpp">// 每个标志是 2 的不同次幂，按位或组合
-const int FLAG_A = 1 &lt;&lt; 0;  // 0x01
-const int FLAG_B = 1 &lt;&lt; 1;  // 0x02
-int flags = FLAG_A | FLAG_B;        // 组合
-if (flags &amp; FLAG_A) { /* A 已设置 */ }
-flags &amp;= ~FLAG_A;                   // 清除 A</code></pre><p class="tip">举一反三：位掩码是 C 语言和 Linux 系统调用的经典模式。每个标志位占一个 bit，按位或(|)组合，按位与(&)检测，按位取反再与清除。相比传多个 bool 参数，位掩码更高效且可扩展。</p>
-<h3>语法规则：errno 和 strerror 错误处理</h3><pre class="code-block"><code class="language-cpp">#include &lt;cerrno&gt;
-#include &lt;cstring&gt;
-if (clone(...) &lt; 0) {
-    std::cerr &lt;&lt; &quot;失败: &quot; &lt;&lt; strerror(errno) &lt;&lt; std::endl;
-}</code></pre><p class="tip">举一反三：系统调用失败时设置全局变量 errno（线程局部存储），strerror() 将错误码转为人类可读的描述（如 'Permission denied'）。在多线程环境中每个线程有独立的 errno。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::invoke 统一调用协议</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+invoke(callable, args...);     // 函数/函数对象
+invoke(memberFunc, obj, args...); // 成员函数 + 对象
+invoke(memberFunc, ptr, args...); // 成员函数 + 指针
+invoke(memberData, obj);          // 成员变量</code></pre>
+                    <p class="tip">举一反三：invoke (C++17) 提供统一的调用语法。自动处理 .* 和 ->* 的差异。invoke_result_t 获得调用结果类型。is_invocable 检查是否可调用。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：invoke 与成员指针</h3>
+                    <pre class="code-block"><code class="language-cpp">invoke(&amp;Class::method, instance, arg1, arg2);
+// 自动识别 instance 是对象（.method()）还是指针（-&gt;method()）
+// 也可传 reference_wrapper、智能指针</code></pre>
+                    <p class="tip">举一反三：invoke 简化了模板代码中对成员函数的调用。之前需要 SFINAE 或重载区分对象/指针。C++17 的 invoke 还支持智能指针和 reference_wrapper。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：invoke 在标准库中的应用</h3>
+                    <pre class="code-block"><code class="language-cpp">// apply: 用 tuple 参数调用函数
+apply(func, make_tuple(1, 2, 3));
+// call_once: 确保函数只调用一次
+call_once(flag, func, args...);
+// 内部都使用 INVOKE 协议</code></pre>
+                    <p class="tip">举一反三：INVOKE 是标准库的通用调用协议。std::function、thread、async 等都遵循此协议。自己写通用库时应使用 invoke 而非直接调用，以保证兼容性。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_095.html" class="prev-link">&larr; 案例 95</a>
+<a href="case_097.html" class="next-link">案例 97 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

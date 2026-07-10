@@ -3,344 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 2：猜数字游戏 - C++ 100工程案例</title>
+    <title>案例 2：猜数字游戏 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link active">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_001.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_003.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 2：猜数字游戏</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 2：猜数字游戏</h1>
+            <section class="intro">
+<p>生成一个随机数让用户猜测，每次反馈偏大或偏小，直到猜中为止。学习随机数和条件循环。</p>
+            <p><strong>核心知识点：</strong>rand/srand、while 循环、条件判断</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 2：猜数字游戏
+// 生成 1~100 随机数，用户猜测直至猜中
+#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;   // rand() 和 srand()
+#include &lt;ctime&gt;     // time() 用于随机种子
+using namespace std;
 
-        <h1>案例 2：猜数字游戏</h1>
+int main() {
+    // 使用当前时间作为随机数种子，确保每次运行结果不同
+    srand(static_cast&lt;unsigned&gt;(time(0)));
+    // 生成 1~100 之间的随机数
+    int target = rand() % 100 + 1;
+    int guess;
+    int attempts = 0; // 记录猜测次数
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include <cstdlib>   // rand(), srand()</code></span>
-                        <span class="line-comment">cstdlib 提供 rand() 和 srand() 函数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include <ctime>     // time()</code></span>
-                        <span class="line-comment">ctime 提供 time() 函数，用于获取系统时间作为随机种子</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>    // 用当前时间做随机种子，保证每次运行结果不同</code></span>
-                        <span class="line-comment">srand() 设置随机数生成器的种子，time(nullptr) 返回当前时间戳</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    srand(static_cast<unsigned>(time(nullptr)));</code></span>
-                        <span class="line-comment">static_cast 是 C++ 的类型转换，比 C 风格 (unsigned) 更安全</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>    // 生成 1~100 的随机数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    int secret = rand() % 100 + 1;</code></span>
-                        <span class="line-comment">rand() % 100 得到 0~99，+1 后变成 1~100</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    int guess, attempts = 0;</code></span>
-                        <span class="line-comment">同时声明两个同类型变量，用逗号分隔</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    cout << "猜数字游戏！范围 1~100" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    while (true) {</code></span>
-                        <span class="line-comment">while(true) 创建无限循环，需要内部用 break 跳出</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>        cout << "请输入你的猜测：";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>        cin >> guess;</code></span>
-                        <span class="line-comment">cin >> 从键盘读取输入到变量中</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>        attempts++;</code></span>
-                        <span class="line-comment">attempts++ 是后置自增，等价于 attempts = attempts + 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>        if (guess == secret) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>            cout << "恭喜！你猜中了！共用了 " << attempts << " 次" << endl;</code></span>
-                        <span class="line-comment">guess == secret 比较是否相等，注意是双等号</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>            break;  // 跳出循环</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>        } else if (guess < secret) {</code></span>
-                        <span class="line-comment">break 立即跳出最近的循环（这里是 while）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>            cout << "太小了，再试试！" << endl;</code></span>
-                        <span class="line-comment">else if 可以链式判断多个条件</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>        } else {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>            cout << "太大了，再试试！" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>        }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
+    cout &lt;&lt; "我已想好了一个 1~100 之间的数字，请猜！" &lt;&lt; endl;
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>cin 输入流</h3>
-                    <div class="rule-box">`cin >> 变量` 从标准输入（键盘）读取数据。`>>` 是流提取运算符。默认以空格/换行分隔。</div>
-                    <pre><code>int a; double b;
-cin >> a >> b;  // 连续读取两个值</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>随机数生成</h3>
-                    <div class="rule-box">C++ 标准库的随机数：`rand()` 返回 0~RAND_MAX 的整数。`rand() % N` 得到 0~N-1。现代 C++ 推荐用 `<random>` 库。</div>
-                    <pre><code>#include <random>
-random_device rd;
-mt19937 gen(rd());
-uniform_int_distribution<> dis(1, 100);
-int x = dis(gen);</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>类型转换 static_cast</h3>
-                    <div class="rule-box">`static_cast<目标类型>(值)` 是 C++ 的显式类型转换，在编译期执行，比 C 风格 `(类型)值` 更安全。</div>
-                    <pre><code>double d = 3.14;
-int i = static_cast<int>(d);  // i = 3</code></pre>
-                </div>
-            </div>
-        </section>
+    // 无限循环，直到猜中才 break
+    while (true) {
+        cout &lt;&lt; "请输入你的猜测：";
+        cin &gt;&gt; guess;
+        attempts++; // 每猜一次计数 +1
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>限制猜测次数</h4>
-                    <p>添加 maxAttempts 变量，超过次数后游戏结束</p>
-                    <p><strong>思路：</strong>while 条件改为 attempts < maxAttempts</p>
+        if (guess &gt; target) {
+            cout &lt;&lt; "太大了，再试试！" &lt;&lt; endl;
+        } else if (guess &lt; target) {
+            cout &lt;&lt; "太小了，再试试！" &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "恭喜你猜中了！共用了 " &lt;&lt; attempts &lt;&lt; " 次。" &lt;&lt; endl;
+            break; // 猜中后退出循环
+        }
+    }
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：rand() 和 srand()</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;cstdlib&gt;
+srand(time(0));
+int r = rand() % 100 + 1; // 1~100</code></pre>
+                    <p class="tip">举一反三：rand() 质量较低，C++11 后推荐使用 <random> 中的 mt19937 和 uniform_int_distribution。</p>
                 </div>
-                <div class="extend-item">
-                    <h4>记录猜测历史</h4>
-                    <p>用 vector<int> 存储每次猜测，最后输出历史</p>
-                    <p><strong>思路：</strong>vector<int> history; history.push_back(guess);</p>
+                <div class="grammar-point">
+                    <h3>语法规则：while(true) 无限循环</h3>
+                    <pre class="code-block"><code class="language-cpp">while (true) {
+    // 循环体
+    if (condition) break; // 必须提供退出条件
+}</code></pre>
+                    <p class="tip">举一反三：也可用 while(条件)、do...while 实现。break 退出当前循环，continue 跳过本次剩余语句进入下一轮。</p>
                 </div>
-                <div class="extend-item">
-                    <h4>现代随机数</h4>
-                    <p>用 <random> 库替换 rand()</p>
-                    <p><strong>思路：</strong>如上语法规则中的示例</p>
+                <div class="grammar-point">
+                    <h3>语法规则：if-else if-else 链</h3>
+                    <pre class="code-block"><code class="language-cpp">if (a &gt; b) { } else if (a &lt; b) { } else { }</code></pre>
+                    <p class="tip">举一反三：条件互斥时用 else if 而非多个独立 if，效率和逻辑都更好。注意所有分支都应初始化使用的变量。</p>
                 </div>
-            </div>
-        </section>
-
-        <div class="bottom-nav">
-            <a href="case_001.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_003.html" class="nav-link">下一个 →</a>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_001.html" class="prev-link">&larr; 案例 1</a>
+<a href="case_003.html" class="next-link">案例 3 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

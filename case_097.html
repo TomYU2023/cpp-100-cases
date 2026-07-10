@@ -1,80 +1,129 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 97：LLVM Pass 插件</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_096.html">&#8592; 上一案例</a>    <span class="sep">|</span>
-            <a href="case_098.html">下一案例 &#8594;</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 97：std::apply tuple 调用 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 97：std::apply tuple 调用</span>
         </div>
-    </nav><main class="container"><h1>案例 97：LLVM Pass 插件</h1><section class="intro"><p>编写一个 LLVM Function Pass，在编译期统计每个函数的 IR 指令数量，理解编译器插件化和 IR 遍历机制。</p><p><strong>核心知识点：</strong>LLVM Pass 架构、FunctionPass 继承、IR 遍历（BB->Inst）、RegisterPass 注册</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 97：LLVM Pass 插件 —— 编译器插件的入门
-// LLVM Pass 可以插入到编译流水线中，分析和转换 IR（中间表示）。
-// 本案例实现 Function Pass：统计每个函数的指令数量。
-//
-// 编译: clang++ -shared -fPIC FunctionCounter.cpp
-//       $(llvm-config --cxxflags --ldflags --libs) -o FunctionCounter.so
-// 运行: clang -Xclang -load -Xclang ./FunctionCounter.so test.c
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 97：std::apply tuple 调用</h1>
+            <section class="intro">
+<p>使用 apply 将 tuple 解包为函数参数，实现运行时动态参数调用。</p>
+            <p><strong>核心知识点：</strong>apply、tuple 解包、变参转发、通用调用</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 97：std::apply tuple 调用
+// 将 tuple 元素展开为函数参数
+#include &lt;iostream&gt;
+#include &lt;tuple&gt;
+#include &lt;functional&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-#include &quot;llvm/Pass.h&quot;
-#include &quot;llvm/IR/Function.h&quot;
-#include &quot;llvm/IR/BasicBlock.h&quot;
-#include &quot;llvm/IR/Instructions.h&quot;
-#include &quot;llvm/Support/raw_ostream.h&quot;
-#include &quot;llvm/IR/LegacyPassManager.h&quot;
-#include &quot;llvm/Transforms/IPO/PassManagerBuilder.h&quot;
+// 接受 3 个参数的函数
+void printPerson(const string&amp; name, int age, double height) {
+    cout &lt;&lt; "姓名: " &lt;&lt; name
+         &lt;&lt; ", 年龄: " &lt;&lt; age
+         &lt;&lt; ", 身高: " &lt;&lt; height &lt;&lt; "m" &lt;&lt; endl;
+}
 
-using namespace llvm;
+int sum(int a, int b, int c, int d) {
+    return a + b + c + d;
+}
 
-namespace {
+int main() {
+    // 1. 基本用法：tuple 展开为函数参数
+    auto person = make_tuple("Alice", 25, 1.68);
+    apply(printPerson, person);
 
-// Function Pass 定义：统计每个函数的指令数
-struct FunctionCounter : public FunctionPass {
-    static char ID;  // LLVM 用 ID 唯一标识每个 Pass
-    FunctionCounter() : FunctionPass(ID) {}
+    auto nums = make_tuple(1, 2, 3, 4);
+    cout &lt;&lt; "sum = " &lt;&lt; apply(sum, nums) &lt;&lt; endl;
 
-    // 每个函数调用一次，返回 true 表示修改了 IR
-    bool runOnFunction(Function &amp;F) override {
-        int instCount = 0;
+    // 2. apply 配合 Lambda
+    auto data = make_tuple(10, 20, 30);
 
-        // 遍历函数中所有基本块
-        for (BasicBlock &amp;BB : F)
-            // 遍历基本块中所有指令
-            for (Instruction &amp;I : BB)
-                instCount++;
+    // 展开 tuple 到 Lambda 参数
+    auto result = apply([](int x, int y, int z) {
+        return x * y + z;
+    }, data);
+    cout &lt;&lt; "10*20+30 = " &lt;&lt; result &lt;&lt; endl;
 
-        errs() &lt;&lt; &quot;函数 &quot; &lt;&lt; F.getName() &lt;&lt; &quot; 包含 &quot; &lt;&lt; instCount &lt;&lt; &quot; 条指令\n&quot;;
-        return false;  // 未修改 IR（纯分析型 Pass）
+    // 3. 动态调用：根据条件构建参数
+    vector&lt;tuple&lt;string, int, double&gt;&gt; people = {
+        {"Bob", 30, 1.75},
+        {"Charlie", 22, 1.82},
+        {"David", 28, 1.70}
+    };
+
+    cout &lt;&lt; "\n=== 批量调用 ===" &lt;&lt; endl;
+    for (const auto&amp; p : people) {
+        apply(printPerson, p);
     }
-};
 
-// 注册 Pass
-char FunctionCounter::ID = 0;
-static RegisterPass&lt;FunctionCounter&gt; X(&quot;func-counter&quot;,
-    &quot;统计每个函数包含的指令数量&quot;, false, false);
+    // 4. apply + invoke 的组合（元编程常见）
+    // 从 tuple 中调用对象的成员函数
+    struct Task {
+        void execute(int id, const string&amp; msg) {
+            cout &lt;&lt; "Task " &lt;&lt; id &lt;&lt; ": " &lt;&lt; msg &lt;&lt; endl;
+        }
+    };
 
-// 自动注册到 PassManager
-static RegisterStandardPasses Y(
-    PassManagerBuilder::EP_EarlyAsPossible,
-    [](const PassManagerBuilder &amp;Builder, legacy::PassManagerBase &amp;PM) {
-        PM.add(new FunctionCounter());
-    });
+    Task task;
+    auto params = make_tuple(42, "处理完成");
+    apply([&amp;task](auto&amp;&amp;... args) {
+        task.execute(forward&lt;decltype(args)&gt;(args)...);
+    }, params);
 
-} // anonymous namespace</code></pre></section>
-<section class="grammar-section"><h3>语法规则：LLVM Pass 的结构继承模式</h3><pre class="code-block"><code class="language-cpp">struct MyPass : public FunctionPass {
-    static char ID;
-    MyPass() : FunctionPass(ID) {}
-    bool runOnFunction(Function &amp;F) override {
-        // 分析/转换 F 的 IR
-        return false;  // false = 未修改
-    }
-};
-char MyPass::ID = 0;
-static RegisterPass&lt;MyPass&gt; X(&quot;mypass&quot;, &quot;描述&quot;, false, false);</code></pre><p class="tip">举一反三：LLVM 的 Pass 系统是编译器插件化的核心。每种 Pass 类型（Function/Module/Loop）对应不同粒度的 IR 遍历。runOnFunction 在每个函数上调用一次，返回 true 时 PassManager 知道 IR 变了需要重跑分析。</p>
-<h3>语法规则：LLVM IR 层级遍历（Function -> BasicBlock -> Instruction）</h3><pre class="code-block"><code class="language-cpp">for (Function &amp;F : M)           // 遍历模块中所有函数
-    for (BasicBlock &amp;BB : F)      // 遍历函数中所有基本块
-        for (Instruction &amp;I : BB) // 遍历基本块中所有指令
-            /* 处理 I */</code></pre><p class="tip">举一反三：LLVM IR 的层级结构：Module > Function > BasicBlock > Instruction。每条指令有 opcode（add/sub/call/br 等）和 operand（操作数）。这是编写编译器优化、静态分析工具、代码插桩的基础。</p>
-<h3>语法规则：RegisterStandardPasses 自动注入 Pass</h3><pre class="code-block"><code class="language-cpp">static RegisterStandardPasses Y(
-    PassManagerBuilder::EP_EarlyAsPossible,
-    [](const PassManagerBuilder &amp;B, legacy::PassManagerBase &amp;PM) {
-        PM.add(new MyPass());
-    });</code></pre><p class="tip">举一反三：RegisterStandardPasses 让 Pass 在编译时自动执行，无需 -load 显式指定。ExtensionPoint 决定 Pass 的插入位置：EP_EarlyAsPossible（最早）、EP_OptimizerLast（优化最后）等。</p></section></main></body></html>
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::apply</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;tuple&gt;
+apply(func, myTuple);
+// 等价于 func(get&lt;0&gt;(t), get&lt;1&gt;(t), ..., get&lt;N-1&gt;(t))
+// func 和 tuple 的元素数量必须匹配</code></pre>
+                    <p class="tip">举一反三：apply (C++17) 是 tuple 到函数调用的桥梁。类似 Python 的 func(*args)。参数数量和类型在编译期检查。常用于延迟调用和参数存储。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：apply + Lambda</h3>
+                    <pre class="code-block"><code class="language-cpp">apply([](int x, int y) { return x + y; }, make_tuple(1, 2));
+// Lambda 的参数从 tuple 展开
+// 不需要显式指定 Lambda 参数类型（从 tuple 推导）</code></pre>
+                    <p class="tip">举一反三：apply+Lambda 是最常见的组合。比直接传 tuple 到算法更灵活（因为算法通常需要原始参数）。可以配合完美转发（forward）实现高效参数传递。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：apply 与 invoke 的区别</h3>
+                    <pre class="code-block"><code class="language-cpp">// apply: 将 tuple 展开为函数的多个参数
+apply(func, tuple);
+// invoke: 统一调用（函数/成员函数/函数对象）
+invoke(func, arg1, arg2);
+// 两者组合: apply(invoke, tuple(成员函数, 对象, 参数...))</code></pre>
+                    <p class="tip">举一反三：apply 解决「参数打包」问题。invoke 解决「调用方式统一」问题。两者正交互补。make_from_tuple 类似 apply 但用于构造对象。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_096.html" class="prev-link">&larr; 案例 96</a>
+<a href="case_098.html" class="next-link">案例 98 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

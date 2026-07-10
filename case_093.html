@@ -1,224 +1,131 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 93：2D 游戏引擎基础</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_092.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_094.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 93：constexpr 编译期计算 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 93：constexpr 编译期计算</span>
         </div>
-    </nav><main class="container"><h1>案例 93：2D 游戏引擎基础</h1><section class="intro"><p>实现 ECS（实体组件系统）架构的游戏引擎核心：游戏循环、移动/输入/AI/渲染系统、终端精灵渲染。</p><p><strong>核心知识点：</strong>ECS 架构、模板类组件存储、游戏循环 + delta time、std::chrono 帧率控制、ANSI 控制台渲染</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 93：2D 游戏引擎基础
-// 实现游戏引擎的核心组件：游戏循环、实体组件系统（ECS）、精灵渲染、输入处理。
-// ECS 是现代游戏引擎的主流架构（Unity DOTS、Bevy、EnTT）。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 93：constexpr 编译期计算</h1>
+            <section class="intro">
+<p>利用 constexpr 在编译期完成计算，减少运行时开销，实现零成本抽象。</p>
+            <p><strong>核心知识点：</strong>constexpr、编译期计算、constexpr if、consteval</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 93：constexpr 编译期计算
+// 在编译期完成计算，零运行时开销
 #include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;map&gt;
-#include &lt;memory&gt;
-#include &lt;functional&gt;
-#include &lt;chrono&gt;
-#include &lt;thread&gt;
-#include &lt;algorithm&gt;
+#include &lt;array&gt;
+using namespace std;
 
-// ─── ECS 框架（精简版）───────────────────────────
-using Entity = int;
-Entity nextEntity = 0;
+// 1. constexpr 函数：编译期可求值
+constexpr int factorial(int n) {
+    int result = 1;
+    for (int i = 2; i &lt;= n; i++) {
+        result *= i;
+    }
+    return result;
+}
 
-// 组件：位置
-struct Position { float x = 0, y = 0; };
-
-// 组件：速度
-struct Velocity { float dx = 0, dy = 0; };
-
-// 组件：精灵（字符表示，控制台渲染用）
-struct Sprite {
-    char ch = '?';
-    int color = 7;  // 颜色编号
-};
-
-// 组件：玩家控制标签
-struct PlayerControlled {};
-
-// 组件：AI 移动标签
-struct AIMovement {
-    float timer = 0;
-    float interval = 2.0f;
-};
-
-// ─── 组件存储（Component Store）─────────────────
-// 每个组件类型一个存储，用 map&lt;Entity, T&gt; 管理
-template&lt;typename T&gt;
-class ComponentStore {
-    std::map&lt;Entity, T&gt; data;
+// 2. constexpr 构造函数和类
+class Point {
+private:
+    int x_, y_;
 public:
-    void add(Entity e, const T&amp; c) { data[e] = c; }
-    void remove(Entity e) { data.erase(e); }
-    T* get(Entity e) {
-        auto it = data.find(e);
-        return it != data.end() ? &amp;it-&gt;second : nullptr;
-    }
-    bool has(Entity e) { return data.find(e) != data.end(); }
-
-    // 遍历所有拥有该组件的实体
-    void forEach(std::function&lt;void(Entity, T&amp;)&gt; fn) {
-        for (auto&amp; [e, c] : data) fn(e, c);
+    constexpr Point(int x, int y) : x_(x), y_(y) {}
+    constexpr int x() const { return x_; }
+    constexpr int y() const { return y_; }
+    constexpr int distanceSquared() const {
+        return x_ * x_ + y_ * y_;
     }
 };
 
-// ─── 世界（World）─ 管理所有组件存储 ────────────
-struct World {
-    ComponentStore&lt;Position&gt; positions;
-    ComponentStore&lt;Velocity&gt; velocities;
-    ComponentStore&lt;Sprite&gt; sprites;
-    ComponentStore&lt;PlayerControlled&gt; players;
-    ComponentStore&lt;AIMovement&gt; aiMovements;
-
-    Entity createEntity() {
-        return nextEntity++;
-    }
-
-    void destroyEntity(Entity e) {
-        positions.remove(e);
-        velocities.remove(e);
-        sprites.remove(e);
-        players.remove(e);
-        aiMovements.remove(e);
-    }
+// 3. 模板 + constexpr：编译期斐波那契
+template &lt;int N&gt;
+struct Fibonacci {
+    static constexpr int value =
+        Fibonacci&lt;N-1&gt;::value + Fibonacci&lt;N-2&gt;::value;
 };
 
-// ─── 系统（Systems）──────────────────────────────
-// 移动系统：速度 → 位置
-void movementSystem(World&amp; world, float dt) {
-    world.velocities.forEach([&amp;](Entity e, Velocity&amp; v) {
-        auto* p = world.positions.get(e);
-        if (p) {
-            p-&gt;x += v.dx * dt;
-            p-&gt;y += v.dy * dt;
-        }
-    });
-}
+template &lt;&gt; struct Fibonacci&lt;0&gt; { static constexpr int value = 0; };
+template &lt;&gt; struct Fibonacci&lt;1&gt; { static constexpr int value = 1; };
 
-// 输入系统：读取键盘并更新玩家速度
-void inputSystem(World&amp; world) {
-    world.players.forEach([&amp;](Entity e, PlayerControlled&amp;) {
-        auto* v = world.velocities.get(e);
-        if (!v) return;
-        v-&gt;dx = v-&gt;dy = 0;
-        // 简化：随机模拟输入方向
-        static int frame = 0;
-        frame++;
-        if (frame % 60 &lt; 20) v-&gt;dx = 5;
-        else if (frame % 60 &lt; 40) v-&gt;dx = -5;
-        else if (frame % 60 &lt; 55) v-&gt;dy = 3;
-    });
-}
-
-// AI 系统：定时改变敌人方向
-void aiSystem(World&amp; world, float dt) {
-    world.aiMovements.forEach([&amp;](Entity e, AIMovement&amp; ai) {
-        ai.timer -= dt;
-        if (ai.timer &lt;= 0) {
-            ai.timer = ai.interval;
-            auto* v = world.velocities.get(e);
-            if (v) {
-                v-&gt;dx = (rand() % 3 - 1) * 3.0f;  // -3, 0, 3
-                v-&gt;dy = (rand() % 3 - 1) * 3.0f;
-            }
-        }
-    });
-}
-
-// 渲染系统：输出精灵位置
-void renderSystem(World&amp; world) {
-    std::cout &lt;&lt; &quot;\033[2J\033[H&quot;;  // 清屏 + 光标归位（ANSI 转义）
-    std::cout &lt;&lt; &quot;=== 2D Game Engine Demo ===\n&quot;;
-
-    // 构建 20x10 的网格
-    char grid[10][20];
-    for (int y = 0; y &lt; 10; y++)
-        for (int x = 0; x &lt; 20; x++)
-            grid[y][x] = '.';
-
-    world.sprites.forEach([&amp;](Entity e, Sprite&amp; s) {
-        auto* p = world.positions.get(e);
-        if (!p) return;
-        int gx = int(p-&gt;x), gy = int(p-&gt;y);
-        if (gx &gt;= 0 &amp;&amp; gx &lt; 20 &amp;&amp; gy &gt;= 0 &amp;&amp; gy &lt; 10)
-            grid[gy][gx] = s.ch;
-    });
-
-    for (int y = 0; y &lt; 10; y++) {
-        for (int x = 0; x &lt; 20; x++)
-            std::cout &lt;&lt; grid[y][x];
-        std::cout &lt;&lt; std::endl;
-    }
-}
-
-// ─── 主循环 ──────────────────────────────────────
 int main() {
-    World world;
-    srand((unsigned)time(0));
+    // 编译期计算阶乘
+    constexpr int fact10 = factorial(10);
+    cout &lt;&lt; "10! = " &lt;&lt; fact10 &lt;&lt; " (编译期计算)" &lt;&lt; endl;
 
-    // 创建玩家实体
-    Entity player = world.createEntity();
-    world.positions.add(player, {10, 5});
-    world.velocities.add(player, {0, 0});
-    world.sprites.add(player, {'@', 15});
-    world.players.add(player, {});
+    // 运行时调用同样有效
+    int n = 5;
+    cout &lt;&lt; n &lt;&lt; "! = " &lt;&lt; factorial(n) &lt;&lt; " (运行时计算)" &lt;&lt; endl;
 
-    // 创建 3 个敌人实体
-    for (int i = 0; i &lt; 3; i++) {
-        Entity enemy = world.createEntity();
-        world.positions.add(enemy, {float(rand() % 20), float(rand() % 10)});
-        world.velocities.add(enemy, {0, 0});
-        world.sprites.add(enemy, {'E', 12});
-        world.aiMovements.add(enemy, {float(rand() % 3 + 1), 2.0f});
-    }
+    // 编译期创建对象
+    constexpr Point p(3, 4);
+    constexpr int dist = p.distanceSquared();
+    cout &lt;&lt; "点(3,4) 距离平方 = " &lt;&lt; dist &lt;&lt; " (编译期计算)" &lt;&lt; endl;
 
-    // 游戏主循环
-    const float dt = 0.1f;  // 10 FPS（终端渲染慢）
-    int frame = 0;
-    while (frame &lt; 100) {
-        inputSystem(world);
-        aiSystem(world, dt);
-        movementSystem(world, dt);
-        renderSystem(world);
+    // 编译期数组大小（必须编译期已知）
+    constexpr int size = factorial(4); // 24
+    array&lt;int, size&gt; arr{}; // 编译期确定大小
+    cout &lt;&lt; "编译期数组大小: " &lt;&lt; arr.size() &lt;&lt; endl;
 
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(int(dt * 1000)));
-        frame++;
-    }
+    // 模板斐波那契
+    cout &lt;&lt; "\n斐波那契(10) = " &lt;&lt; Fibonacci&lt;10&gt;::value
+         &lt;&lt; " (编译期计算)" &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;\n演示结束。&quot; &lt;&lt; std::endl;
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：ECS（Entity Component System）架构模式</h3><pre class="code-block"><code class="language-cpp">// 传统 OOP 继承链（不推荐）：
-class Player : public GameObject { /* 位置+速度+精灵... */ };
-class Enemy : public GameObject { /* 位置+速度+精灵+AI... */ };
-// → 钻石继承、重复代码、难以组合
-
-// ECS 模式（推荐）：
-// Entity = ID（纯数字）
-// Component = 纯数据（Position, Velocity, Sprite...）
-// System = 纯逻辑（MovementSystem, RenderSystem...）</code></pre><p class="tip">💡 举一反三：ECS 的核心优势：(1) 组合优于继承 — 任意给实体添加组件组合；(2) 数据导向 — 组件连续存储，缓存友好；(3) 系统可并行 — 无数据竞争。现代的 EnTT 库在 C++ 中实现了生产级 ECS。</p>
-<h3>语法规则：模板类 ComponentStore<T></h3><pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
-class ComponentStore {
-    std::map&lt;Entity, T&gt; data;
-public:
-    void add(Entity e, const T&amp; c) { data[e] = c; }
-    T* get(Entity e) {
-        auto it = data.find(e);
-        return it != data.end() ? &amp;it-&gt;second : nullptr;
-    }
-    void forEach(std::function&lt;void(Entity, T&amp;)&gt; fn) {
-        for (auto&amp; [e, c] : data) fn(e, c);
-    }
-};</code></pre><p class="tip">💡 举一反三：模板让每种组件类型共享同一套增删查逻辑。生产级 ECS 使用稀疏集合（Sparse Set）或原型（Archetype）替代 map，以实现连续内存和 SIMD 优化。</p>
-<h3>语法规则：std::chrono 和 sleep_for 定时</h3><pre class="code-block"><code class="language-cpp">#include &lt;chrono&gt;
-#include &lt;thread&gt;
-std::this_thread::sleep_for(std::chrono::milliseconds(100));
-// 或者用时间点做帧率控制：
-auto start = std::chrono::steady_clock::now();
-// ... 帧逻辑 ...
-auto elapsed = std::chrono::steady_clock::now() - start;
-float dt = std::chrono::duration&lt;float&gt;(elapsed).count();</code></pre><p class="tip">💡 举一反三：游戏循环的黄金法则：总是用 delta time（dt）乘速度，而不是假设固定帧率。sleep_for 在终端游戏中使用，因为不需要 60fps。真正的游戏引擎用垂直同步（VSync）或忙等（spin wait）。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：constexpr 函数</h3>
+                    <pre class="code-block"><code class="language-cpp">constexpr int square(int x) {
+    return x * x;
+}
+// 当参数是编译期常量时，结果在编译期计算
+// 当参数是运行时变量时，结果在运行时计算</code></pre>
+                    <p class="tip">举一反三：C++11 的 constexpr 函数只能有 return 语句。C++14 允许循环、分支、局部变量。C++20 允许动态分配（编译期 new/delete）。consteval (C++20) 强制编译期求值。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：constexpr 类</h3>
+                    <pre class="code-block"><code class="language-cpp">class Point {
+    constexpr Point(int x, int y) : x_(x), y_(y) {}
+    constexpr int x() const { return x_; }
+};
+// 构造函数和成员函数均可 constexpr</code></pre>
+                    <p class="tip">举一反三：constexpr 类可在编译期创建和使用。成员函数标记 constexpr 使得编译期对象可以调用。析构函数也可 constexpr（C++20），支持编译期 RAII。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：编译期 vs 运行时</h3>
+                    <pre class="code-block"><code class="language-cpp">// 编译期计算：
+constexpr int val = factorial(10); // O(0) 运行时开销
+array&lt;int, factorial(5)&gt; arr;      // 编译期确定大小
+// 运行时计算：
+int x = readInput();
+int y = factorial(x); // 正常的运行时代码</code></pre>
+                    <p class="tip">举一反三：constexpr 提供「零成本抽象」：同一份代码根据需要编译为编译期或运行时版本。减少 magic number，用有意义的 constexpr 函数和常量替代硬编码值。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_092.html" class="prev-link">&larr; 案例 92</a>
+<a href="case_094.html" class="next-link">案例 94 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

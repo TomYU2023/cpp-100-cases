@@ -1,151 +1,126 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 79：内存泄漏检测器</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_078.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_080.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 79：std::rotate 旋转移位 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 79：std::rotate 旋转移位</span>
         </div>
-    </nav><main class="container"><h1>案例 79：内存泄漏检测器</h1><section class="intro"><p>重载全局 operator new/delete，在程序退出时报告所有未释放的内存，理解内存检测工具的底层原理。</p><p><strong>核心知识点：</strong>operator new/delete 重载、noexcept、内存泄漏检测、mutex 线程安全、malloc/free</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 79：内存泄漏检测器
-// 通过重载 new/delete 操作符实现轻量级内存泄漏检测。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 79：std::rotate 旋转移位</h1>
+            <section class="intro">
+<p>使用 rotate 实现数组旋转、循环移位等操作，理解其实现原理。</p>
+            <p><strong>核心知识点：</strong>rotate、循环移位、三次反转法、数组旋转</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 79：std::rotate 旋转移位
+// 数组元素的循环旋转
 #include &lt;iostream&gt;
-#include &lt;cstdlib&gt;
-#include &lt;cstring&gt;
-#include &lt;map&gt;
-#include &lt;mutex&gt;
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;list&gt;
+using namespace std;
 
-/* 语法规则：重载全局 new/delete
-   void* operator new(size_t size) — 分配内存
-   void operator delete(void* ptr) noexcept — 释放内存
-   void operator delete(void* ptr, size_t size) noexcept — C++14 带大小版本
-
-   重载全局 new/delete 时要小心：
-   1. 不能调用 malloc/free 之外的任何可能分配内存的函数（防止无限递归）
-   2. 使用 std::mutex 保护全局状态
-   3. 不要用 std::cout（它自己就用了 new）
-
-   示例：跟踪分配/释放
-     static std::map&lt;void*, size_t&gt; allocs;
-     void* operator new(size_t sz) {
-       void* p = malloc(sz);
-       allocs[p] = sz;
-       return p;
-     }
-     void operator delete(void* p) noexcept {
-       allocs.erase(p);
-       free(p);
-     }
-
-   举一反三：Visual Studio 的 CRT 调试堆（_CrtSetDbgFlag）、
-   Valgrind（Linux）、AddressSanitizer 都是商业化级别的内存检测工具。
-   本案例展示原理，生产环境请用专业工具。
-*/
-
-// 用静态变量存储分配记录（用 printf 避免 cout 递归调用 new）
-struct AllocInfo {
-    size_t size;
-    const char* file;
-    int line;
-};
-
-static std::map&lt;void*, AllocInfo&gt; allocMap;  // 地址 → 分配信息
-static std::mutex allocMutex;                 // 线程安全
-static size_t totalAllocated = 0;
-static size_t totalFreed = 0;
-
-// 重载 operator new
-void* operator new(size_t size) {
-    void* ptr = malloc(size);
-    if (!ptr) throw std::bad_alloc();
-
-    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
-    allocMap[ptr] = {size, nullptr, 0};
-    totalAllocated += size;
-    return ptr;
+void printVec(const vector&lt;int&gt;&amp; v, const string&amp; label) {
+    cout &lt;&lt; label &lt;&lt; ": ";
+    for (int x : v) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 }
-
-// 重载 operator delete
-void operator delete(void* ptr) noexcept {
-    if (!ptr) return;
-
-    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
-    auto it = allocMap.find(ptr);
-    if (it != allocMap.end()) {
-        totalFreed += it-&gt;second.size;
-        allocMap.erase(it);
-    }
-    free(ptr);
-}
-
-// 带大小版本的 delete（C++14）
-void operator delete(void* ptr, size_t size) noexcept {
-    if (!ptr) return;
-    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
-    allocMap.erase(ptr);
-    totalFreed += size;
-    free(ptr);
-}
-
-// 重载 new[] 和 delete[]
-void* operator new[](size_t size) {
-    return operator new(size);
-}
-void operator delete[](void* ptr) noexcept {
-    operator delete(ptr);
-}
-
-// 泄漏报告
-void reportLeaks() {
-    std::lock_guard&lt;std::mutex&gt; lock(allocMutex);
-    if (allocMap.empty()) {
-        printf(&quot;\n[内存检测] 没有内存泄漏！\n&quot;);
-    } else {
-        printf(&quot;\n[内存检测] 发现 %zu 处内存泄漏:\n&quot;, allocMap.size());
-        for (auto&amp; [ptr, info] : allocMap) {
-            printf(&quot;  地址 %p: %zu 字节\n&quot;, ptr, info.size);
-        }
-    }
-    printf(&quot;总分配: %zu 字节 | 总释放: %zu 字节 | 泄漏: %zu 字节\n&quot;,
-           totalAllocated, totalFreed, totalAllocated - totalFreed);
-}
-
-// ============ 测试代码 ============
-class Widget {
-    int data[100];  // 占用一定内存
-public:
-    Widget() { /*printf(&quot;Widget 构造\n&quot;);*/ }
-    ~Widget() { /*printf(&quot;Widget 析构\n&quot;);*/ }
-};
 
 int main() {
-    printf(&quot;案例 79：内存泄漏检测器\n&quot;);
-    printf(&quot;========================\n&quot;);
+    vector&lt;int&gt; data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-    // 正常分配并释放
-    int* a = new int(42);
-    delete a;
+    // 1. 基本 rotate：将 middle 之前的元素旋转到末尾
+    printVec(data, "原始数据");
 
-    // 故意泄漏（注释掉 delete）
-    int* leaked = new int[100];
+    // 将前 3 个元素移到末尾（左旋 3）
+    auto v1 = data;
+    rotate(v1.begin(), v1.begin() + 3, v1.end());
+    printVec(v1, "左旋 3 位");
 
-    // Widget 数组
-    auto* w1 = new Widget();
-    auto* w2 = new Widget();
-    delete w1;
-    // delete w2;  ← 故意不释放，模拟泄漏
+    // 将后 3 个元素移到开头（右旋 3）
+    auto v2 = data;
+    rotate(v2.begin(), v2.end() - 3, v2.end());
+    printVec(v2, "右旋 3 位");
 
-    printf(&quot;\n程序即将退出，运行泄漏检测...\n&quot;);
-    reportLeaks();
+    // 2. 左旋和右旋的通用写法
+    cout &lt;&lt; "\n=== 通用旋转函数 ===" &lt;&lt; endl;
+
+    auto leftRotate = [](vector&lt;int&gt;&amp; v, int k) {
+        k %= v.size(); // 处理 k 大于 size 的情况
+        rotate(v.begin(), v.begin() + k, v.end());
+    };
+
+    auto rightRotate = [](vector&lt;int&gt;&amp; v, int k) {
+        k %= v.size();
+        rotate(v.begin(), v.end() - k, v.end());
+    };
+
+    vector&lt;int&gt; v3 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    leftRotate(v3, 3);
+    printVec(v3, "左旋 3 (通用)");
+
+    rightRotate(v3, 3);
+    printVec(v3, "右旋 3 (还原)");
+
+    // 3. rotate 应用于任何容器
+    cout &lt;&lt; "\n=== 不同容器 ===" &lt;&lt; endl;
+    list&lt;int&gt; lst = {10, 20, 30, 40, 50};
+    auto it = lst.begin();
+    advance(it, 2);
+    rotate(lst.begin(), it, lst.end());
+    cout &lt;&lt; "list 旋转后: ";
+    for (int x : lst) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：operator new/delete 重载</h3><pre class="code-block"><code class="language-cpp">// 全局 operator new 的三个参数版本
-void* operator new(size_t count);              // 基本版
-void* operator new(size_t count, std::align_val_t al);  // C++17 对齐
-// 类内也可以重载 new/delete（仅影响该类的分配）</code></pre><p class="tip">💡 举一反三：重载 new/delete 的正当用途：内存池、泄漏检测、对齐控制、调试日志。注意：重载后必须调用 malloc/free，不能再用 new 分配内存（无限递归）。</p>
-<h3>语法规则：noexcept 说明符</h3><pre class="code-block"><code class="language-cpp">void func() noexcept;         // 承诺不抛异常
-void func() noexcept(true);    // 等价
-void func() noexcept(false);   // 可能抛异常
-// delete 必须是 noexcept 的，这是语言规定</code></pre><p class="tip">💡 举一反三：noexcept 让编译器做优化（如用 move 代替 copy）。析构函数默认 noexcept(true)。移动构造函数应尽可能 noexcept。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::rotate</h3>
+                    <pre class="code-block"><code class="language-cpp">rotate(first, middle, last);
+// 将 [first, middle) 和 [middle, last) 交换顺序
+// 结果: middle, middle+1, ..., last-1, first, ..., middle-1
+// O(N) 时间，使用 swap 而非额外内存</code></pre>
+                    <p class="tip">举一反三：rotate 实现通常用三次反转法或 GCD 法。C++ 标准要求 O(N) 时间。可用于所有 ForwardIterator。常用场景：循环移位、轮转调度、数组轮转。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：左旋和右旋</h3>
+                    <pre class="code-block"><code class="language-cpp">// 左旋 k 位: rotate(v.begin(), v.begin()+k, v.end())
+// 右旋 k 位: rotate(v.begin(), v.end()-k, v.end())
+// 永远先 k %= v.size() 处理越界</code></pre>
+                    <p class="tip">举一反三：旋转是数组经典操作。面试题「轮转数组」标准解法就是 rotate。注意处理 k 大于数组大小的情况（取模）。左右旋互为逆操作：左旋 k = 右旋 (n-k)。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：rotate 原理：三次反转</h3>
+                    <pre class="code-block"><code class="language-cpp">// [1,2,3,4,5] 左旋 2 → [3,4,5,1,2]
+// 1. 反转 [1,2] → [2,1,3,4,5]
+// 2. 反转 [3,4,5] → [2,1,5,4,3]
+// 3. 反转全部 → [3,4,5,1,2]</code></pre>
+                    <p class="tip">举一反三：三次反转法原地 O(N) 且只用 swap。理解原理有助于自己实现类似操作。对于字符串旋转同样适用。注意 std::reverse 配合使用。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_078.html" class="prev-link">&larr; 案例 78</a>
+<a href="case_080.html" class="next-link">案例 80 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,137 +1,169 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 49：文件加密/解密器（XOR 算法） - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 49：工厂模式 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 49：文件加密/解密器（XOR 算法）</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;fstream&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2">#include &lt;cstdint&gt;</td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2">// XOR 加密/解密核心算法</td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">// XOR 特性：A ^ K ^ K = A（加密和解密使用同一段代码）</td></tr>
-<tr><td class="ln">11</td><td class="cd">vector&lt;uint8_t&gt; xorCrypt(const vector&lt;uint8_t&gt;&amp; data, const string&amp; key) {</td><td class="cmt">加密和解密是同一个操作</td></tr>
-<tr><td class="ln">12</td><td class="cd">    vector&lt;uint8_t&gt; result(data.size());</td><td class="cmt">结果等长</td></tr>
-<tr><td class="ln">13</td><td class="cd">    for (size_t i = 0; i &lt; data.size(); i++) {</td><td class="cmt">逐字节异或</td></tr>
-<tr><td class="ln">14</td><td class="cd">        result[i] = data[i] ^ key[i % key.size()];</td><td class="cmt">循环使用密钥的每个字符</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">16</td><td class="cd" colspan="2">    return result;</td></tr>
-<tr><td class="ln">17</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">// 加解密文件</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">bool processFile(const string&amp; inPath, const string&amp; outPath, const string&amp; key) {</td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">    // 读取整个文件到内存</td></tr>
-<tr><td class="ln">22</td><td class="cd">    ifstream inFile(inPath, ios::binary);</td><td class="cmt">二进制模式：不转换换行符</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">    if (!inFile.is_open()) {</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2">        cerr &lt;&lt; "Cannot open: " &lt;&lt; inPath &lt;&lt; endl;</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">        return false;</td></tr>
-<tr><td class="ln">26</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">    // istreambuf_iterator 直接读取整个文件到 vector</td></tr>
-<tr><td class="ln">29</td><td class="cd">    vector&lt;uint8_t&gt; data((istreambuf_iterator&lt;char&gt;(inFile)),</td><td class="cmt">构造时一次性读取全部内容</td></tr>
-<tr><td class="ln">30</td><td class="cd">                         istreambuf_iterator&lt;char&gt;());</td><td class="cmt">默认构造 = 文件结束标记</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">    inFile.close();</td></tr>
-<tr><td class="ln">32</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">33</td><td class="cd" colspan="2">    // 加密/解密</td></tr>
-<tr><td class="ln">34</td><td class="cd" colspan="2">    auto result = xorCrypt(data, key);</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">    // 写入结果</td></tr>
-<tr><td class="ln">37</td><td class="cd">    ofstream outFile(outPath, ios::binary);</td><td class="cmt">二进制写入</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    if (!outFile.is_open()) return false;</td></tr>
-<tr><td class="ln">39</td><td class="cd">    outFile.write(reinterpret_cast&lt;const char*&gt;(result.data()), result.size());</td><td class="cmt">write 写入原始字节</td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2">    outFile.close();</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">    return true;</td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">    string key = "MySecretKey123";</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">    string original = "Hello, C++ Encryption!";</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">    // 演示：字符串加密</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2">    vector&lt;uint8_t&gt; origData(original.begin(), original.end());</td></tr>
-<tr><td class="ln">50</td><td class="cd">    auto encrypted = xorCrypt(origData, key);</td><td class="cmt">加密</td></tr>
-<tr><td class="ln">51</td><td class="cd">    auto decrypted = xorCrypt(encrypted, key);</td><td class="cmt">解密（同一段代码）</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">    // 展示加密后和解密后的内容</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2">    cout &lt;&lt; "原文:     " &lt;&lt; original &lt;&lt; endl;</td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">    cout &lt;&lt; "加密后:   ";</td></tr>
-<tr><td class="ln">56</td><td class="cd">    for (auto b : encrypted) cout &lt;&lt; hex &lt;&lt; (int)b &lt;&lt; ' ';</td><td class="cmt">以十六进制显示（无意义乱码）</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">    cout &lt;&lt; endl;</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">    cout &lt;&lt; "解密后:   ";</td></tr>
-<tr><td class="ln">59</td><td class="cd">    for (auto b : decrypted) cout &lt;&lt; (char)b;</td><td class="cmt">转回字符</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2">    cout &lt;&lt; endl;</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>XOR 加密原理与可逆性</h3>
-<div class="rule"><strong>语法规则：</strong>XOR（异或）加密的特性：明文 XOR 密钥 = 密文，密文 XOR 同一密钥 = 明文。即 <strong>加密和解密是完全相同的操作</strong>。这是因为 <code>(A ^ K) ^ K = A</code>。XOR 加密简单快速，但安全性低，仅适合非关键数据的混淆。</div>
-<pre class="example"><code>uint8_t plain  = 'A';      // 0x41
-uint8_t key    = 'K';      // 0x4B
-uint8_t cipher = plain ^ key; // 0x0A
-uint8_t decoded = cipher ^ key; // 0x41 = 'A'（恢复原文）</code></pre>
-</div>
-<div class="grammar-item">
-<h3>istreambuf_iterator：一行读取整个文件</h3>
-<div class="rule"><strong>语法规则：</strong><strong>istreambuf_iterator</strong> 是从 stream buffer 读取字符的迭代器。用两个参数构造 vector 时，第一个是开始位置，默认构造的第二个参数代表 EOF。<strong>这是 C++ 中读取整个文件的最短写法</strong>，效率接近 mmap。</div>
-<pre class="example"><code>// 一行读完整个文件
-ifstream f("data.bin", ios::binary);
-vector<uint8_t> data((istreambuf_iterator<char>(f)),
-                     istreambuf_iterator<char>());
-// 等效于
-string content((istreambuf_iterator<char>(f)),
-               istreambuf_iterator<char>());</code></pre>
-</div>
-<div class="grammar-item">
-<h3>ofstream::write 写入原始字节</h3>
-<div class="rule"><strong>语法规则：</strong><code>write(const char* s, streamsize n)</code> 将字节缓冲区直接写入文件，不进行任何格式化转换。<strong>第一个参数需从 uint8_t* 转为 char*</strong>（reinterpret_cast），第二个参数是要写入的字节数。适合二进制数据。</div>
-<pre class="example"><code>vector<uint8_t> buf = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
-ofstream f("out.bin", ios::binary);
-f.write(reinterpret_cast<const char*>(buf.data()), buf.size());</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>使用 AES 对称加密（更安全）：</strong><pre><code>#include <openssl/aes.h>
-AES_KEY encKey;
-AES_set_encrypt_key((uint8_t*)key.c_str(), 128, &encKey);
-AES_encrypt(input, output, &encKey);</code></pre><p>XOR 加密极易被破解。生产环境应使用 AES-256-GCM 等标准对称加密算法，并配合随机 IV。</p></li>
-<li><strong>数据完整性校验：HMAC 防篡改：</strong><pre><code>#include <openssl/hmac.h>
-HMAC(EVP_sha256(), key.c_str(), key.size(),
-     data.data(), data.size(), digest, &len);</code></pre><p>加密不能防止篡改。HMAC（哈希消息认证码）可以验证数据是否被修改过，加密和认证应配合使用。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 49：工厂模式</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 49：工厂模式</h1>
+            <section class="intro">
+<p>实现简单工厂和工厂方法模式，动态创建不同类型的对象。</p>
+            <p><strong>核心知识点：</strong>工厂模式、虚函数、智能指针</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 49：工厂模式
+// 用工厂方法创建不同类型的形状
+#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_048.html">← 案例 48</a><a href="case_050.html">案例 50 →</a>
-</nav>
-</main>
+// 抽象产品
+class Shape {
+public:
+    virtual void draw() const = 0;
+    virtual unique_ptr&lt;Shape&gt; clone() const = 0;
+    virtual ~Shape() = default;
+};
+
+// 具体产品：Circle
+class Circle : public Shape {
+    double radius;
+public:
+    explicit Circle(double r = 1.0) : radius(r) {}
+    void draw() const override {
+        cout &lt;&lt; "绘制圆形，半径=" &lt;&lt; radius
+             &lt;&lt; "，面积=" &lt;&lt; (3.14159 * radius * radius) &lt;&lt; endl;
+    }
+    unique_ptr&lt;Shape&gt; clone() const override {
+        return make_unique&lt;Circle&gt;(radius);
+    }
+};
+
+// 具体产品：Rectangle
+class Rectangle : public Shape {
+    double width, height;
+public:
+    Rectangle(double w, double h) : width(w), height(h) {}
+    void draw() const override {
+        cout &lt;&lt; "绘制矩形，宽=" &lt;&lt; width
+             &lt;&lt; " 高=" &lt;&lt; height
+             &lt;&lt; " 面积=" &lt;&lt; (width * height) &lt;&lt; endl;
+    }
+    unique_ptr&lt;Shape&gt; clone() const override {
+        return make_unique&lt;Rectangle&gt;(width, height);
+    }
+};
+
+// 具体产品：Triangle
+class Triangle : public Shape {
+    double base, height;
+public:
+    Triangle(double b, double h) : base(b), height(h) {}
+    void draw() const override {
+        cout &lt;&lt; "绘制三角形，底=" &lt;&lt; base
+             &lt;&lt; " 高=" &lt;&lt; height
+             &lt;&lt; " 面积=" &lt;&lt; (0.5 * base * height) &lt;&lt; endl;
+    }
+    unique_ptr&lt;Shape&gt; clone() const override {
+        return make_unique&lt;Triangle&gt;(base, height);
+    }
+};
+
+// 简单工厂类
+class ShapeFactory {
+public:
+    enum ShapeType { SHAPE_CIRCLE, SHAPE_RECTANGLE, SHAPE_TRIANGLE };
+
+    // 工厂方法：根据类型创建对象
+    static unique_ptr&lt;Shape&gt; createShape(ShapeType type) {
+        switch (type) {
+            case SHAPE_CIRCLE:
+                return make_unique&lt;Circle&gt;(5.0);
+            case SHAPE_RECTANGLE:
+                return make_unique&lt;Rectangle&gt;(4.0, 3.0);
+            case SHAPE_TRIANGLE:
+                return make_unique&lt;Triangle&gt;(6.0, 4.0);
+            default:
+                return nullptr;
+        }
+    }
+
+    // 按名称创建
+    static unique_ptr&lt;Shape&gt; createByName(const string&amp; name) {
+        if (name == "circle")    return make_unique&lt;Circle&gt;(5.0);
+        if (name == "rectangle") return make_unique&lt;Rectangle&gt;(4.0, 3.0);
+        if (name == "triangle")  return make_unique&lt;Triangle&gt;(6.0, 4.0);
+        return nullptr;
+    }
+};
+
+int main() {
+    vector&lt;unique_ptr&lt;Shape&gt;&gt; shapes;
+
+    // 通过工厂创建各种形状
+    shapes.push_back(ShapeFactory::createShape(ShapeFactory::SHAPE_CIRCLE));
+    shapes.push_back(ShapeFactory::createShape(ShapeFactory::SHAPE_RECTANGLE));
+    shapes.push_back(ShapeFactory::createShape(ShapeFactory::SHAPE_TRIANGLE));
+    shapes.push_back(ShapeFactory::createByName("circle"));
+
+    // 多态调用
+    for (const auto&amp; s : shapes) {
+        s-&gt;draw();
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：工厂模式结构</h3>
+                    <pre class="code-block"><code class="language-cpp">class Factory {
+    static unique_ptr&lt;Product&gt; create(Type t) {
+        switch (t) {
+            case A: return make_unique&lt;ConcreteA&gt;();
+        }
+    }
+};</code></pre>
+                    <p class="tip">举一反三：工厂模式将对象创建从使用代码中解耦。简单工厂用 switch/map 调度。工厂方法模式进一步延迟到子类决定创建哪个具体产品。C++ 中常用 enum + switch 或 map<string, function> 实现。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：unique_ptr 多态管理</h3>
+                    <pre class="code-block"><code class="language-cpp">vector&lt;unique_ptr&lt;Shape&gt;&gt; shapes;
+shapes.push_back(make_unique&lt;Circle&gt;(5));
+// 基类指针管理派生类对象，析构时自动调用正确析构函数</code></pre>
+                    <p class="tip">举一反三：unique_ptr 支持多态（只要基类有虚析构函数）。虚析构函数确保 delete 基类指针时调用派生类析构。C++14 的 make_unique 优于 new。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：原型模式：clone()</h3>
+                    <pre class="code-block"><code class="language-cpp">virtual unique_ptr&lt;Shape&gt; clone() const = 0;
+// 每个派生类实现自己的克隆方法
+auto copy = original-&gt;clone(); // 多态拷贝</code></pre>
+                    <p class="tip">举一反三：clone 模式（原型模式）在需要多态拷贝对象时有用。C++ 没有 Java 的 clone()，需手动实现。返回 unique_ptr 语义清晰（转移所有权）。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_048.html" class="prev-link">&larr; 案例 48</a>
+<a href="case_050.html" class="next-link">案例 50 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

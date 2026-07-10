@@ -1,115 +1,265 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 100：终点即起点</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_099.html">← 上一案例</a>
-            
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 100：综合项目：命令行 TODO 工具 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 100：综合项目：命令行 TODO 工具</span>
         </div>
-    </nav><main class="container"><h1>案例 100：终点即起点</h1><section class="intro"><p>百案例收官站：回顾完整的技能树、给出三条继续前进的路线（开源贡献/游戏引擎/量化交易）和持续学习资源。</p><p><strong>核心知识点：</strong>技能树整合、initializer_list、开源贡献路径、持续学习推荐</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 100：C++ 百案例终点站 —— 整合项目
-// 这是整个 100 案例之旅的收官项目。
-// 我们不再引入新技术，而是回顾旅程、给出系统整合的建议路径。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 100：综合项目：命令行 TODO 工具</h1>
+            <section class="intro">
+<p>综合运用 STL 容器、算法、文件 I/O 和字符串处理，打造一个功能完整的命令行 TODO 管理工具。</p>
+            <p><strong>核心知识点：</strong>文件持久化、命令解析、多模块组合、完整项目结构</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 100：命令行 TODO 工具
+// 支持增删改查、标记完成、优先级和持久化
 #include &lt;iostream&gt;
+#include &lt;fstream&gt;
 #include &lt;vector&gt;
 #include &lt;string&gt;
-#include &lt;map&gt;
-#include &lt;sstream&gt;
-#include &lt;iomanip&gt;
-#include &lt;chrono&gt;
 #include &lt;algorithm&gt;
-#include &lt;thread&gt;
+#include &lt;iomanip&gt;
+#include &lt;ctime&gt;
+#include &lt;sstream&gt;
+using namespace std;
 
-// --- 回顾：你在 100 个案例中学到的技术栈 ---
+// 任务数据结构
+struct TodoItem {
+    int id;            // 任务 ID
+    string title;      // 标题
+    bool completed;    // 是否完成
+    int priority;      // 优先级 (0=低, 1=中, 2=高)
+    string createdAt;  // 创建时间
 
-struct SkillCategory {
-    std::string name;
-    std::vector&lt;std::string&gt; items;
+    // 获取优先级字符串
+    string priorityStr() const {
+        const char* labels[] = {"低", "中", "高"};
+        return labels[priority];
+    }
 };
 
-std::vector&lt;SkillCategory&gt; skills = {
-    {&quot;语言核心&quot;, {&quot;变量/类型/指针/引用&quot;, &quot;函数重载/默认参数&quot;,
-        &quot;类/继承/多态/虚函数&quot;, &quot;模板函数与模板类&quot;,
-        &quot;移动语义/智能指针&quot;, &quot;Lambda/auto/constexpr&quot;}},
-    {&quot;STL精通&quot;, {&quot;vector/map/set/unordered_map&quot;,
-        &quot;algorithm(sort/find/transform)&quot;,
-        &quot;string/string_view&quot;,
-        &quot;智能指针(unique/shared/weak)&quot;,
-        &quot;chrono/thread/mutex/future&quot;}},
-    {&quot;并发编程&quot;, {&quot;mutex/lock_guard&quot;, &quot;condition_variable&quot;,
-        &quot;线程池实现&quot;, &quot;无锁编程(atomic)&quot;,
-        &quot;协程(有栈无栈)&quot;, &quot;epoll/IO多路复用&quot;}},
-    {&quot;系统编程&quot;, {&quot;socket网络编程&quot;, &quot;文件IO与映射&quot;,
-        &quot;动态库加载&quot;, &quot;Linux Namespace&quot;,
-        &quot;信号处理&quot;, &quot;进程间通信&quot;}},
-    {&quot;工程质量&quot;, {&quot;CMake构建&quot;, &quot;单元测试(GTest)&quot;,
-        &quot;设计模式(C++实现)&quot;, &quot;RAII资源管理&quot;,
-        &quot;异常安全&quot;, &quot;性能剖析&quot;}},
-    {&quot;进阶专题&quot;, {&quot;数据库(B-Tree/连接池)&quot;,
-        &quot;Raft共识算法&quot;, &quot;HTTP/反向代理&quot;,
-        &quot;LLVM Pass插件&quot;, &quot;Tensor推理库&quot;,
-        &quot;解释器/编译器&quot;}},
-};
+// TODO 管理器
+class TodoManager {
+private:
+    vector&lt;TodoItem&gt; items;
+    int nextId = 1;
+    const string filename = "todos.txt";
 
-// --- 100 案例整合建议 ---
-int main() {
-    std::cout &lt;&lt; &quot;╔════════════════════════════════════╗\n&quot;;
-    std::cout &lt;&lt; &quot;║   C++ 100 案例 —— 终点即起点       ║\n&quot;;
-    std::cout &lt;&lt; &quot;╚════════════════════════════════════╝\n\n&quot;;
-
-    // 打印技能树
-    for (auto&amp; cat : skills) {
-        std::cout &lt;&lt; &quot;\n[&quot; &lt;&lt; cat.name &lt;&lt; &quot;]\n&quot;;
-        for (size_t i = 0; i &lt; cat.items.size(); i++)
-            std::cout &lt;&lt; &quot;  &quot; &lt;&lt; std::setw(2) &lt;&lt; (i+1) &lt;&lt; &quot;. &quot;
-                      &lt;&lt; cat.items[i] &lt;&lt; std::endl;
+    // 获取当前时间字符串
+    string getTime() const {
+        time_t now = time(nullptr);
+        tm t;
+        localtime_s(&amp;t, &amp;now);
+        char buf[20];
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &amp;t);
+        return buf;
     }
 
-    // --- 整合路径建议 ---
-    std::cout &lt;&lt; &quot;\n\n========================================\n&quot;;
-    std::cout &lt;&lt; &quot;  三条继续前进的路线\n&quot;;
-    std::cout &lt;&lt; &quot;========================================\n\n&quot;;
+    // 查找任务位置
+    int findIndex(int id) const {
+        for (size_t i = 0; i &lt; items.size(); i++) {
+            if (items[i].id == id) return (int)i;
+        }
+        return -1;
+    }
 
-    std::cout &lt;&lt; &quot;路线 A — 开源贡献者\n&quot;;
-    std::cout &lt;&lt; &quot;  把案例 88(简易Git) + 95(Raft) 整合\n&quot;;
-    std::cout &lt;&lt; &quot;  写一个真正的分布式键值存储\n&quot;;
-    std::cout &lt;&lt; &quot;  贡献给 TiKV / etcd 社区\n\n&quot;;
+public:
+    // 从文件加载
+    void load() {
+        ifstream file(filename);
+        if (!file) return; // 文件不存在则跳过
 
-    std::cout &lt;&lt; &quot;路线 B — 游戏引擎开发者\n&quot;;
-    std::cout &lt;&lt; &quot;  把案例 62(内存池) + 93(游戏引擎) + 98(Tensor) 整合\n&quot;;
-    std::cout &lt;&lt; &quot;  加入 Unreal Engine 贡献队伍\n\n&quot;;
+        TodoItem item;
+        while (file &gt;&gt; item.id &gt;&gt; item.completed &gt;&gt; item.priority) {
+            file.ignore(); // 跳过空格
+            getline(file, item.title);
+            // 读取创建时间
+            getline(file, item.createdAt);
+            items.push_back(item);
+            if (item.id &gt;= nextId) nextId = item.id + 1;
+        }
+    }
 
-    std::cout &lt;&lt; &quot;路线 C — 量化交易工程师\n&quot;;
-    std::cout &lt;&lt; &quot;  把案例 84(连接池) + 99(高并发) 整合\n&quot;;
-    std::cout &lt;&lt; &quot;  搭建低延迟交易系统原型\n\n&quot;;
+    // 保存到文件
+    void save() const {
+        ofstream file(filename);
+        for (const auto&amp; item : items) {
+            file &lt;&lt; item.id &lt;&lt; " " &lt;&lt; item.completed &lt;&lt; " "
+                 &lt;&lt; item.priority &lt;&lt; " " &lt;&lt; item.title &lt;&lt; "\n"
+                 &lt;&lt; item.createdAt &lt;&lt; "\n";
+        }
+    }
 
-    std::cout &lt;&lt; &quot;---\n&quot;;
-    std::cout &lt;&lt; &quot;记住：100 个案例不是终点，\n&quot;;
-    std::cout &lt;&lt; &quot;而是你写第一个生产级系统的起点。\n&quot;;
+    // 添加任务
+    void add(const string&amp; title, int priority = 0) {
+        items.push_back({nextId++, title, false,
+                         clamp(priority, 0, 2), getTime()});
+        cout &lt;&lt; "添加任务 #" &lt;&lt; items.back().id &lt;&lt; ": "
+             &lt;&lt; title &lt;&lt; endl;
+    }
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：回顾 std::initializer_list 聚合初始化</h3><pre class="code-block"><code class="language-cpp">std::vector&lt;SkillCategory&gt; skills = {
-    {&quot;语言核心&quot;, {&quot;指针&quot;, &quot;模板&quot;, &quot;Lambda&quot;}},
-    {&quot;并发&quot;, {&quot;mutex&quot;, &quot;thread&quot;}}
+    // 删除任务
+    void remove(int id) {
+        int idx = findIndex(id);
+        if (idx == -1) {
+            cout &lt;&lt; "任务 #" &lt;&lt; id &lt;&lt; " 不存在" &lt;&lt; endl;
+            return;
+        }
+        cout &lt;&lt; "删除任务 #" &lt;&lt; id &lt;&lt; ": " &lt;&lt; items[idx].title &lt;&lt; endl;
+        items.erase(items.begin() + idx);
+    }
+
+    // 标记完成
+    void complete(int id) {
+        int idx = findIndex(id);
+        if (idx == -1) {
+            cout &lt;&lt; "任务 #" &lt;&lt; id &lt;&lt; " 不存在" &lt;&lt; endl;
+            return;
+        }
+        items[idx].completed = true;
+        cout &lt;&lt; "完成任务 #" &lt;&lt; id &lt;&lt; ": " &lt;&lt; items[idx].title &lt;&lt; endl;
+    }
+
+    // 列出所有任务
+    void list(bool showAll = true) const {
+        cout &lt;&lt; "\n=== TODO 列表 ===" &lt;&lt; endl;
+        cout &lt;&lt; setw(4) &lt;&lt; "ID"
+             &lt;&lt; setw(6) &lt;&lt; "状态"
+             &lt;&lt; setw(6) &lt;&lt; "优先级"
+             &lt;&lt; setw(22) &lt;&lt; "创建时间"
+             &lt;&lt; "  标题" &lt;&lt; endl;
+        cout &lt;&lt; string(65, '-') &lt;&lt; endl;
+
+        for (const auto&amp; item : items) {
+            if (!showAll &amp;&amp; item.completed) continue;
+            cout &lt;&lt; setw(4) &lt;&lt; item.id
+                 &lt;&lt; setw(6) &lt;&lt; (item.completed ? "完成「 : 」未完成")
+                 &lt;&lt; setw(6) &lt;&lt; item.priorityStr()
+                 &lt;&lt; setw(22) &lt;&lt; item.createdAt
+                 &lt;&lt; "  " &lt;&lt; item.title &lt;&lt; endl;
+        }
+        cout &lt;&lt; "共 " &lt;&lt; items.size() &lt;&lt; " 项" &lt;&lt; endl;
+    }
 };
-// vector 接受 initializer_list&lt;SkillCategory&gt;
-// SkillCategory 接受 initializer_list&lt;string&gt;（聚合初始化）</code></pre><p class="tip">举一反三：C++11 的 initializer_list 让容器初始化变得优雅。本质是编译器在栈上生成临时数组，然后传给构造函数。注意 initializer_list 只持有常量引用，不拥有数据，出了作用域就失效。</p>
-<h3>从案例到生产：几条必经之路</h3><pre class="code-block"><code class="language-cpp">// 入门 → 进阶 → 生产 的关键跳跃：
-// 1. 脚本 → CMake 构建系统（案例 75）
-// 2. 单线程 → 并发安全（案例 36-40, 61, 99）
-// 3. 内存手动 → RAII + 智能指针（案例 19, 62）
-// 4. 打印调试 → 单元测试 + 日志（案例 47, 76）
-// 5. 单机 → 分布式（案例 88, 95）
-// 6. 应用代码 → 系统底层（案例 91, 96, 97）</code></pre><p class="tip">举一反三：这六次跳跃，每一次都会让你对 C++ 的理解上一个台阶。建议不要全部并行，每一层扎实后再跳。</p>
-<h3>C++ 持续学习的资源推荐</h3><pre class="code-block"><code class="language-cpp">// 必读材料（按优先级排序）：
-// 1. 《Effective Modern C++》Scott Meyers — C++11/14 最佳实践
-// 2. 《C++ Concurrency in Action》Anthony Williams — 并发圣经
-// 3. cppreference.com — 日常查 API
-// 4. 《Computer Systems: A Programmer's Perspective》— 系统理解
-// 5. isocpp.github.io/CppCoreGuidelines — 编码规范
 
-// 进阶路线：
-// 写一个开源项目 → 被 review → 改 → 再被 review
-// 这是成长最快的方式，没有之一。</code></pre><p class="tip">举一反三：每天看 cppreference.com 一个页面（函数/类/算法），一年就是 365 个。这和这 100 个案例是一回事：日拱一卒。</p></section></main></body></html>
+// 命令解析
+void showHelp() {
+    cout &lt;&lt; "\n命令列表:\n"
+         &lt;&lt; "  add &lt;标题&gt; -p &lt;0-2&gt;    添加任务 (可指定优先级)\n"
+         &lt;&lt; "  list                  列出全部任务\n"
+         &lt;&lt; "  list active           列出未完成任务\n"
+         &lt;&lt; "  done &lt;id&gt;             标记任务完成\n"
+         &lt;&lt; "  remove &lt;id&gt;           删除任务\n"
+         &lt;&lt; "  help                  显示帮助\n"
+         &lt;&lt; "  quit                  退出\n" &lt;&lt; endl;
+}
+
+int main() {
+    TodoManager manager;
+    manager.load();
+
+    cout &lt;&lt; "命令行 TODO 工具 (输入 help 查看命令)" &lt;&lt; endl;
+
+    string line;
+    while (true) {
+        cout &lt;&lt; "\n&gt; ";
+        getline(cin, line);
+        istringstream iss(line);
+        string cmd;
+        iss &gt;&gt; cmd;
+
+        if (cmd == "quit" || cmd == "exit") break;
+        else if (cmd == "help") showHelp();
+        else if (cmd == "list") {
+            string sub;
+            iss &gt;&gt; sub;
+            manager.list(sub != "active");
+        }
+        else if (cmd == "add") {
+            string rest;
+            getline(iss, rest);
+            // 去除前导空格
+            size_t start = rest.find_first_not_of(" ");
+            string title = (start != string::npos)
+                           ? rest.substr(start) : "";
+
+            int priority = 0;
+            // 查找 -p 标志
+            auto pPos = title.find(" -p ");
+            if (pPos != string::npos) {
+                priority = stoi(title.substr(pPos + 4));
+                title = title.substr(0, pPos);
+            }
+            manager.add(title, priority);
+        }
+        else if (cmd == "done" || cmd == "complete") {
+            int id;
+            iss &gt;&gt; id;
+            manager.complete(id);
+        }
+        else if (cmd == "remove" || cmd == "delete") {
+            int id;
+            iss &gt;&gt; id;
+            manager.remove(id);
+        }
+        else if (!cmd.empty()) {
+            cout &lt;&lt; "未知命令: " &lt;&lt; cmd &lt;&lt; " (输入 help 查看帮助)" &lt;&lt; endl;
+        }
+
+        manager.save(); // 每次操作后保存
+    }
+
+    cout &lt;&lt; "再见!" &lt;&lt; endl;
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：项目结构设计</h3>
+                    <pre class="code-block"><code class="language-cpp">// 数据层: TodoItem 结构体（任务数据模型）
+// 业务层: TodoManager 类（增删改查 + 持久化）
+// 交互层: main 函数（命令解析 + 用户交互）
+// 分层让代码清晰、易维护、可测试</code></pre>
+                    <p class="tip">举一反三：小工具也要保持代码结构清晰。数据/业务/交互三层分离是通用模式。适当封装使各层独立演化和测试。100 个案例的终点：从语法到完整项目。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：文件 I/O 持久化</h3>
+                    <pre class="code-block"><code class="language-cpp">ifstream file(filename);
+if (!file) return; // 文件不存在则跳过
+// 与程序同目录下的文本文件做持久化
+// save() 在每次修改后调用确保数据不丢</code></pre>
+                    <p class="tip">举一反三：简单的文本文件是最轻量的持久化方案。二进制文件更快但不可读。JSON 格式是更好的选择（可读性强 + 跨语言）。生产项目应考虑异常处理和数据完整性。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：命令行参数解析</h3>
+                    <pre class="code-block"><code class="language-cpp">istringstream iss(line);
+iss &gt;&gt; cmd; // 提取第一个词为命令
+// 后续词为参数，根据命令类型解析
+// 移除了传统 C 的 argc/argv 复杂性</code></pre>
+                    <p class="tip">举一反三：istringstream 是轻量命令行解析的好工具。对更复杂的场景考虑 getopt（POSIX）或 CLI11 库。始终为未知命令提供帮助信息。工具可用性很大程度上取决于交互设计。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_099.html" class="prev-link">&larr; 案例 99</a>
+
+        </div>
+    </footer>
+</body>
+</html>

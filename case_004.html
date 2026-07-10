@@ -3,478 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 4：判断素数/回文数/完数 - C++ 100工程案例</title>
+    <title>案例 4：素数/回文/完数 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link active">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_003.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_005.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 4：素数/回文/完数</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 4：素数/回文/完数</h1>
+            <section class="intro">
+<p>实现三个数学判断函数：判断素数、判断回文数、判断完数，综合练习函数封装和算法逻辑。</p>
+            <p><strong>核心知识点：</strong>函数定义与调用、sqrt 优化、字符串反转</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 4：素数 / 回文 / 完数判断
+// 综合练习数学与算法函数
+#include &lt;iostream&gt;
+#include &lt;cmath&gt;     // sqrt()
+#include &lt;string&gt;
+#include &lt;algorithm&gt; // reverse()
+using namespace std;
 
-        <h1>案例 4：判断素数/回文数/完数</h1>
+// 判断素数：只能被 1 和自己整除
+bool isPrime(int n) {
+    if (n &lt; 2) return false;
+    // 只需检查到 sqrt(n)，大幅减少循环次数
+    for (int i = 2; i &lt;= sqrt(n); i++) {
+        if (n % i == 0) return false;
+    }
+    return true;
+}
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include <cmath>    // sqrt()</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>// 判断是否为素数（质数）</code></span>
-                        <span class="line-comment">bool 是布尔类型，只有 true 或 false 两个值</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>bool isPrime(int n) {</code></span>
-                        <span class="line-comment"><= 小于等于运算符，n<=1 时直接返回 false（不是素数）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>    if (n <= 1) return false;          // 1不是素数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    if (n <= 3) return true;           // 2和3是素数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>    if (n % 2 == 0 || n % 3 == 0) return false;  // 排除2和3的倍数</code></span>
-                        <span class="line-comment">% 是取模（取余数）运算符，n%2==0 表示 n 能被 2 整除</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    // 只需检查到 sqrt(n)，因为如果 n 有因子，必有一个 ≤ sqrt(n)</code></span>
-                        <span class="line-comment">i*i <= n 等价于 i <= sqrt(n)，避免了浮点数运算</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    for (int i = 5; i * i <= n; i += 6) {</code></span>
-                        <span class="line-comment">i+=6 利用了 6k±1 的素数分布规律，大幅减少检查次数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>        if (n % i == 0 || n % (i + 2) == 0)</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>            return false;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>    return true;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>// 判断是否为回文数（正读反读一样，如 12321）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>bool isPalindrome(int n) {</code></span>
-                        <span class="line-comment">负数不是回文数，这是一个边界条件处理</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>    if (n < 0) return false;   // 负数不是回文数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>    int original = n, reversed = 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    while (n > 0) {</code></span>
-                        <span class="line-comment">n%10 取出最后一位数字</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>        reversed = reversed * 10 + n % 10;  // 把最低位"翻"到新数上</code></span>
-                        <span class="line-comment">n/=10 去掉最后一位，等价于 n = n / 10</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>        n /= 10;                            // 去掉最低位</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    return original == reversed;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>// 判断是否为完数（所有真因子之和等于自身，如 6 = 1+2+3）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>bool isPerfect(int n) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    if (n <= 1) return false;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    int sum = 1;  // 1是所有大于1的数的因子</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    for (int i = 2; i * i <= n; i++) {</code></span>
-                        <span class="line-comment">1 是所有 >1 整数的因子，先加上</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>        if (n % i == 0) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>            sum += i;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>            if (i != n / i) sum += n / i;  // 同时加上成对的因子</code></span>
-                        <span class="line-comment">当 i != n/i 时说明是两个不同因子，i==n/i 时只加一次</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>        }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    return sum == n;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    cout << "1~1000 中的素数：\n";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    for (int i = 1; i <= 1000; i++)</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>        if (isPrime(i)) cout << i << " ";</code></span>
-                        <span class="line-comment">函数调用：isPrime(i) 返回布尔值，直接用在 if 条件中</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    cout << "\n\n1~1000 中的回文数：\n";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>    for (int i = 1; i <= 1000; i++)</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>        if (isPalindrome(i)) cout << i << " ";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>    cout << "\n\n1~10000 中的完数：\n";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    for (int i = 1; i <= 10000; i++)</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>        if (isPerfect(i)) cout << i << " ";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    cout << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
+// 判断回文数：正读反读都一样，如 121
+bool isPalindrome(int n) {
+    string s = to_string(n);          // 转为字符串
+    string rev = s;
+    reverse(rev.begin(), rev.end());  // 反转字符串
+    return s == rev;
+}
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>布尔类型 bool</h3>
-                    <div class="rule-box">`bool` 只有两个值：`true` 和 `false`。函数返回值类型为 bool 表示这个函数回答「是或否」。</div>
-                    <pre><code>bool isEven(int n) { return n % 2 == 0; }</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>短路求值</h3>
-                    <div class="rule-box">C++ 的逻辑运算符 `&&` 和 `||` 使用短路求值：`A && B` 中若 A 为 false 则不再计算 B；`A || B` 中若 A 为 true 则不再计算 B。</div>
-                    <pre><code>if (ptr != nullptr && ptr->value > 0)  // 安全：ptr 空时不会解引用</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>sqrt() 与 cmath</h3>
-                    <div class="rule-box">`sqrt(x)` 返回 x 的平方根。需要 `#include <cmath>`。素数判断中 `i<=sqrt(n)` 等价于 `i*i<=n`，后者避免了浮点精度问题。</div>
-                    <pre><code>double root = sqrt(16.0);  // root = 4.0</code></pre>
-                </div>
-            </div>
-        </section>
+// 判断完数：所有真因子之和等于自身，如 6 = 1+2+3
+bool isPerfect(int n) {
+    if (n &lt; 2) return false;
+    int sum = 1; // 1 是所有数的因子
+    for (int i = 2; i &lt;= sqrt(n); i++) {
+        if (n % i == 0) {
+            sum += i;
+            if (i != n / i) sum += n / i; // 成对加入
+        }
+    }
+    return sum == n;
+}
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>判阿姆斯特朗数</h4>
-                    <p>各位数字的立方和等于自身（如153）</p>
-                    <p><strong>思路：</strong>把数字拆成各位，求立方和</p>
-                </div>
-                <div class="extend-item">
-                    <h4>生成素数表（筛法）</h4>
-                    <p>用埃拉托色尼筛法一次性求出范围内所有素数</p>
-                    <p><strong>思路：</strong>用 bool 数组标记，效率 O(n log log n)</p>
-                </div>
-                <div class="extend-item">
-                    <h4>综合判断器</h4>
-                    <p>输入一个数，同时判断素数/回文/完数</p>
-                    <p><strong>思路：</strong>main 中一次调用三个函数</p>
-                </div>
-            </div>
-        </section>
+int main() {
+    int num;
+    cout &lt;&lt; "请输入一个正整数：";
+    cin &gt;&gt; num;
 
-        <div class="bottom-nav">
-            <a href="case_003.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_005.html" class="nav-link">下一个 →</a>
+    if (isPrime(num))
+        cout &lt;&lt; num &lt;&lt; " 是素数" &lt;&lt; endl;
+    else
+        cout &lt;&lt; num &lt;&lt; " 不是素数" &lt;&lt; endl;
+
+    if (isPalindrome(num))
+        cout &lt;&lt; num &lt;&lt; " 是回文数" &lt;&lt; endl;
+    else
+        cout &lt;&lt; num &lt;&lt; " 不是回文数" &lt;&lt; endl;
+
+    if (isPerfect(num))
+        cout &lt;&lt; num &lt;&lt; " 是完数" &lt;&lt; endl;
+    else
+        cout &lt;&lt; num &lt;&lt; " 不是完数" &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：函数定义与调用</h3>
+                    <pre class="code-block"><code class="language-cpp">bool isPrime(int n) {
+    // 函数体
+    return true;
+}
+// 调用
+if (isPrime(17)) { /* ... */ }</code></pre>
+                    <p class="tip">举一反三：将功能封装为函数提高复用性。函数声明放在调用之前，或用头文件 + 前向声明。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：sqrt() 优化循环</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;cmath&gt;
+for (int i = 2; i &lt;= sqrt(n); i++) { /* ... */ }</code></pre>
+                    <p class="tip">举一反三：找 n 的所有因子只需遍历到 sqrt(n)，另一半因子自动获得。时间复杂度从 O(n) 降到 O(√n)。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：字符串与数字互转</h3>
+                    <pre class="code-block"><code class="language-cpp">string s = to_string(123);
+int n = stoi("456");</code></pre>
+                    <p class="tip">举一反三：C++11 提供 to_string() 和 stoi/stod 系列函数。还可使用 stringstream 进行复杂格式化转换。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_003.html" class="prev-link">&larr; 案例 3</a>
+<a href="case_005.html" class="next-link">案例 5 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

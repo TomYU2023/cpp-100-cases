@@ -1,181 +1,127 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 85：简易 Redis 客户端（RESP 协议）</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_084.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_086.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 85：std::replace/replace_copy 替换 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 85：std::replace/replace_copy 替换</span>
         </div>
-    </nav><main class="container"><h1>案例 85：简易 Redis 客户端（RESP 协议）</h1><section class="intro"><p>实现 Redis RESP 协议的客户端，包括命令构建和响应解析，理解应用层协议的设计。</p><p><strong>核心知识点：</strong>RESP 协议、std::optional、字符串查找/substr、static 函数、to_string</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;string&gt;
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 85：std::replace/replace_copy 替换</h1>
+            <section class="intro">
+<p>使用 replace 系列函数批量替换容器中的元素值。</p>
+            <p><strong>核心知识点：</strong>replace、replace_if、replace_copy、条件替换</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 85：std::replace / replace_copy 替换
+// 原地或拷贝替换元素值
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
 #include &lt;vector&gt;
-#include &lt;optional&gt;
-
-// 简易 Redis RESP 协议客户端
-// RESP (REdis Serialization Protocol) 是 Redis 的通信协议
-// 格式非常简单：类型符号 + 数据 + \r\n
-
-class SimpleRedisClient {
-    // 注意：这里只演示 RESP 协议的构建和解析
-    // 真实场景需要 socket 连接（参考案例 65/66）
-
-    // ========== RESP 协议命令构建 ==========
-    // 语法规则：static 成员函数 — 不需要对象实例即可调用
-    // static 函数只能访问 static 成员，不能访问 this
-public:
-    static std::string buildCommand(const std::string&amp; cmd) {
-        // 将命令按空格分割
-        std::vector&lt;std::string&gt; parts;
-        size_t start = 0;
-        while (start &lt; cmd.size()) {
-            size_t end = cmd.find(' ', start);
-            if (end == std::string::npos) end = cmd.size();
-            parts.push_back(cmd.substr(start, end - start));
-            start = end + 1;
-        }
-        return buildArray(parts);
-    }
-
-    // 构建 SET key value 命令
-    // 语法规则：std::to_string — 数字转字符串（C++11）
-    // int x = 42; std::string s = std::to_string(x); // &quot;42&quot;
-    // 也支持 double, long, long long 等类型
-    static std::string buildSET(const std::string&amp; key, const std::string&amp; value) {
-        return buildArray({&quot;SET&quot;, key, value});
-    }
-
-    static std::string buildGET(const std::string&amp; key) {
-        return buildArray({&quot;GET&quot;, key});
-    }
-
-    static std::string buildDEL(const std::string&amp; key) {
-        return buildArray({&quot;DEL&quot;, key});
-    }
-
-private:
-    // 构建 RESP 数组：*数量\r\n$长度\r\n数据\r\n...
-    static std::string buildArray(const std::vector&lt;std::string&gt;&amp; args) {
-        std::string result;
-        result += &quot;*&quot; + std::to_string(args.size()) + &quot;\r\n&quot;; // *3
-        for (const auto&amp; arg : args) {
-            result += &quot;$&quot; + std::to_string(arg.size()) + &quot;\r\n&quot;; // $3
-            result += arg + &quot;\r\n&quot;;                               // SET
-        }
-        return result;
-    }
-
-    // ========== RESP 协议响应解析 ==========
-public:
-    // 解析 RESP 响应，返回可选值
-    // 语法规则：std::optional&lt;T&gt; (C++17) — 可能不存在的值
-    // std::optional&lt;int&gt; opt;           // 空 optional
-    // opt = 42;                         // 有值
-    // if (opt) { int v = *opt; }        // 检查并取值
-    // int v = opt.value_or(0);          // 有值取值，无值返回默认值
-    static std::optional&lt;std::string&gt; parseResponse(const std::string&amp; resp) {
-        if (resp.empty()) return std::nullopt;
-
-        char type = resp[0];
-        switch (type) {
-            case '+': // 简单字符串 &quot;+OK\r\n&quot;
-                return resp.substr(1, resp.size() - 3); // 去掉 \r\n
-
-            case '-': // 错误 &quot;-ERR unknown command\r\n&quot;
-                std::cerr &lt;&lt; &quot;Redis 错误: &quot; &lt;&lt; resp.substr(1, resp.size() - 3) &lt;&lt; &quot;\n&quot;;
-                return std::nullopt;
-
-            case ':': // 整数 &quot;:42\r\n&quot;
-                return resp.substr(1, resp.size() - 3);
-
-            case '$': { // 批量字符串 &quot;$5\r\nhello\r\n&quot;
-                // 语法规则：std::string::find(substr) — 查找子串位置
-                // 返回 size_t，找不到返回 std::string::npos
-                size_t pos = resp.find(&quot;\r\n&quot;);
-                if (pos == std::string::npos) return std::nullopt;
-
-                int len = std::stoi(resp.substr(1, pos - 1));
-                if (len == -1) return std::nullopt; // NULL 回复 $-1\r\n
-
-                size_t dataStart = pos + 2;
-                return resp.substr(dataStart, len);
-            }
-
-            case '*': // 数组 &quot;*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n&quot;
-                return &quot;数组: &quot; + resp; // 简化处理
-
-            default:
-                return std::nullopt;
-        }
-    }
-
-    // 使用示例：模拟交互
-    static void demo() {
-        std::cout &lt;&lt; &quot;=== RESP 协议演示 ===\n\n&quot;;
-
-        // 构建命令
-        auto setCmd = buildSET(&quot;username&quot;, &quot;Alice&quot;);
-        std::cout &lt;&lt; &quot;发送 SET username Alice:\n&quot; &lt;&lt; escapeResp(setCmd) &lt;&lt; &quot;\n&quot;;
-
-        auto getCmd = buildGET(&quot;username&quot;);
-        std::cout &lt;&lt; &quot;\n发送 GET username:\n&quot; &lt;&lt; escapeResp(getCmd) &lt;&lt; &quot;\n&quot;;
-
-        // 模拟响应
-        std::string setResp = &quot;+OK\r\n&quot;;
-        auto result1 = parseResponse(setResp);
-        std::cout &lt;&lt; &quot;\nSET 响应: &quot; &lt;&lt; (result1 ? *result1 : &quot;(null)&quot;) &lt;&lt; &quot;\n&quot;;
-
-        std::string getResp = &quot;$5\r\nAlice\r\n&quot;;
-        auto result2 = parseResponse(getResp);
-        std::cout &lt;&lt; &quot;GET 响应: &quot; &lt;&lt; (result2 ? *result2 : &quot;(null)&quot;) &lt;&lt; &quot;\n&quot;;
-    }
-
-private:
-    // 将 \r\n 可视化
-    static std::string escapeResp(const std::string&amp; s) {
-        std::string r;
-        for (char c : s) {
-            if (c == '\r') r += &quot;\\r&quot;;
-            else if (c == '\n') r += &quot;\\n\n&quot;;
-            else r += c;
-        }
-        return r;
-    }
-};
+#include &lt;string&gt;
+#include &lt;cctype&gt;
+using namespace std;
 
 int main() {
-    SimpleRedisClient::demo();
+    // 1. replace: 原地替换指定值
+    vector&lt;int&gt; v1 = {1, 2, 3, 2, 4, 2, 5};
+    cout &lt;&lt; "原始: ";
+    for (int x : v1) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;\n实际 Redis 客户端还需要：\n&quot;
-              &lt;&lt; &quot;1. TCP Socket 连接（参考案例 65）\n&quot;
-              &lt;&lt; &quot;2. 连接池管理（参考案例 84）\n&quot;
-              &lt;&lt; &quot;3. 管道（Pipeline）批量命令\n&quot;
-              &lt;&lt; &quot;4. 发布/订阅模式\n&quot;;
+    replace(v1.begin(), v1.end(), 2, 99); // 所有 2 → 99
+    cout &lt;&lt; "replace(2 → 99): ";
+    for (int x : v1) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 2. replace_if: 按条件替换
+    vector&lt;int&gt; v2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    replace_if(v2.begin(), v2.end(),
+        [](int x) { return x % 2 == 0; }, // 偶数
+        -1); // 替换为 -1
+    cout &lt;&lt; "\nreplace_if(偶数 → -1): ";
+    for (int x : v2) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 3. replace_copy: 不修改原容器
+    vector&lt;int&gt; v3 = {1, 2, 3, 2, 1};
+    vector&lt;int&gt; result;
+    replace_copy(v3.begin(), v3.end(), back_inserter(result), 1, 100);
+    cout &lt;&lt; "\n原始 v3: ";
+    for (int x : v3) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+    cout &lt;&lt; "replace_copy(1 → 100): ";
+    for (int x : result) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 4. replace_copy_if: 条件替换 + 拷贝
+    vector&lt;int&gt; result2;
+    replace_copy_if(v3.begin(), v3.end(), back_inserter(result2),
+        [](int x) { return x &gt; 1; }, 0);
+    cout &lt;&lt; "replace_copy_if(&gt;1 → 0): ";
+    for (int x : result2) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 5. 实际应用：数据清洗
+    vector&lt;string&gt; names = {"Alice", "", "Bob", "", "Charlie", ""};
+    cout &lt;&lt; "\n数据清洗前:";
+    for (auto&amp; n : names) cout &lt;&lt; " [" &lt;&lt; n &lt;&lt; "]";
+    cout &lt;&lt; endl;
+
+    replace(names.begin(), names.end(), string(""), "N/A");
+    cout &lt;&lt; "replace(空 → N/A):";
+    for (auto&amp; n : names) cout &lt;&lt; " [" &lt;&lt; n &lt;&lt; "]";
+    cout &lt;&lt; endl;
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：std::optional<T> (C++17)</h3><pre class="code-block"><code class="language-cpp">#include &lt;optional&gt;
-std::optional&lt;int&gt; findUser(const std::string&amp; name) {
-    if (name == &quot;Alice&quot;) return 25;
-    return std::nullopt;  // 表示&quot;无值&quot;
-}
-
-auto age = findUser(&quot;Bob&quot;);
-std::cout &lt;&lt; age.value_or(-1);  // -1（默认值）
-if (age) std::cout &lt;&lt; *age;     // 安全访问</code></pre><p class="tip">💡 举一反三：optional 解决了函数返回值"可能不存在"的语义问题。比返回 -1/NULL 更安全，比抛异常更轻量。value_or() 提供默认值，has_value() 检查是否有值。</p>
-<h3>语法规则：std::string::find / rfind / find_first_of</h3><pre class="code-block"><code class="language-cpp">std::string s = &quot;hello world hello&quot;;
-size_t p1 = s.find(&quot;world&quot;);      // 6（首次出现）
-size_t p2 = s.rfind(&quot;hello&quot;);     // 12（最后一次出现）
-size_t p3 = s.find_first_of(&quot;aeiou&quot;); // 1（第一个元音）
-size_t p4 = s.find(&quot;xyz&quot;);        // std::string::npos（未找到）</code></pre><p class="tip">💡 举一反三：find 族函数返回 size_t 位置。未找到返回 std::string::npos（-1 的无符号形式）。务必检查 npos，否则访问 npos 位置会越界。C++23 新增 contains() 方法。</p>
-<h3>语法规则：std::string::substr(pos, count)</h3><pre class="code-block"><code class="language-cpp">std::string s = &quot;Hello World&quot;;
-std::string sub = s.substr(0, 5);    // &quot;Hello&quot;
-std::string rest = s.substr(6);      // &quot;World&quot;（省略 count 到末尾）
-// 抛异常：s.substr(100)  // std::out_of_range</code></pre><p class="tip">💡 举一反三：substr 返回新字符串，是拷贝操作不是视图。pos 超出范围抛异常。大量字符串操作时考虑用 string_view 替代（零拷贝）。</p>
-<h3>语法规则：static 成员函数</h3><pre class="code-block"><code class="language-cpp">class Math {
-public:
-    static int add(int a, int b) { return a + b; }
-    static const double PI;
-};
-const double Math::PI = 3.14159; // static 成员变量类外定义
-
-int sum = Math::add(3, 4); // 直接通过类名调用</code></pre><p class="tip">💡 举一反三：static 成员函数属于类而非对象，没有 this 指针。适合工具函数、工厂方法、单例获取。不能访问非 static 成员。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：replace 系列函数</h3>
+                    <pre class="code-block"><code class="language-cpp">replace(v.begin(), v.end(), oldVal, newVal);
+replace_if(v.begin(), v.end(), pred, newVal);
+replace_copy(v.begin(), v.end(), output, oldVal, newVal);
+replace_copy_if(v.begin(), v.end(), output, pred, newVal);</code></pre>
+                    <p class="tip">举一反三：四个变体覆盖了原地/拷贝 × 精确值/条件 的所有组合。都是 O(N) 线性遍历。替换的值可以是任意类型，只要支持赋值。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：replace_if 条件替换</h3>
+                    <pre class="code-block"><code class="language-cpp">replace_if(v.begin(), v.end(),
+    [](int x) { return x % 2 == 0; }, -1);
+// 满足条件的元素都替换为新值
+// 如果条件永远不满足，不会改变任何元素</code></pre>
+                    <p class="tip">举一反三：replace_if 适合：清除无效数据（替换为哨兵值）、数据脱敏（替换姓名/手机号）、数据标准化（异常值替换为默认值）。配合 Lambda 灵活表达替换条件。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：replace_copy 不修改原始数据</h3>
+                    <pre class="code-block"><code class="language-cpp">vector&lt;int&gt; result;
+replace_copy(src.begin(), src.end(),
+    back_inserter(result), old, new);
+// 原始数据不变，生成新数据
+// 适合不可变数据或需要保留历史的场景</code></pre>
+                    <p class="tip">举一反三：replace_copy 是函数式编程风格的操作（无副作用）。适合管道处理：map → filter → replace → sort。与其他 copy 系列函数组合使用。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_084.html" class="prev-link">&larr; 案例 84</a>
+<a href="case_086.html" class="next-link">案例 86 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

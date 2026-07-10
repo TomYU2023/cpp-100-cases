@@ -1,226 +1,121 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 84：连接池</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_083.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_085.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 84：std::unique/unique_copy 去重 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 84：std::unique/unique_copy 去重</span>
         </div>
-    </nav><main class="container"><h1>案例 84：连接池</h1><section class="intro"><p>实现一个线程安全的数据库连接池，支持连接复用、上限控制、超时等待和 RAII 自动归还。</p><p><strong>核心知识点：</strong>shared_ptr、移动语义、condition_variable、RAII、operator bool、= delete</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;queue&gt;
-#include &lt;memory&gt;
-#include &lt;mutex&gt;
-#include &lt;condition_variable&gt;
-#include &lt;chrono&gt;
-#include &lt;thread&gt;
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 84：std::unique/unique_copy 去重</h1>
+            <section class="intro">
+<p>使用 unique 去除连续重复元素，配合 sort 实现完全去重。</p>
+            <p><strong>核心知识点：</strong>unique、unique_copy、erase-remove 惯用法、完全去重</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 84：std::unique / unique_copy 去重
+// 去除相邻重复元素
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;iterator&gt;
+using namespace std;
 
-// ========== 模拟数据库连接 ==========
-// 真实场景替换为 MySQL/PostgreSQL/Redis 连接对象
-class DBConnection {
-    int id_;
-    bool inUse_{false};
-public:
-    explicit DBConnection(int id) : id_(id) {
-        std::cout &lt;&lt; &quot;[连接&quot; &lt;&lt; id_ &lt;&lt; &quot;] 创建\n&quot;;
-    }
-    ~DBConnection() {
-        std::cout &lt;&lt; &quot;[连接&quot; &lt;&lt; id_ &lt;&lt; &quot;] 销毁\n&quot;;
-    }
-
-    int id() const { return id_; }
-
-    bool execute(const std::string&amp; sql) {
-        if (inUse_) {
-            std::cerr &lt;&lt; &quot;[连接&quot; &lt;&lt; id_ &lt;&lt; &quot;] 已被占用！\n&quot;;
-            return false;
-        }
-        std::cout &lt;&lt; &quot;[连接&quot; &lt;&lt; id_ &lt;&lt; &quot;] 执行: &quot; &lt;&lt; sql &lt;&lt; &quot;\n&quot;;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 模拟耗时
-        return true;
-    }
-};
-
-// ========== 连接池 ==========
-// 语法规则：RAII 连接包装器 — 借用和归还自动化
-// 获取连接时从池中取出，析构时自动归还
-class ConnectionGuard {
-    std::shared_ptr&lt;DBConnection&gt; conn_; // 共享指针，池也持有一份
-    class ConnectionPool* pool_;          // 指向所属池的指针
-    bool returned_{false};
-
-public:
-    ConnectionGuard(std::shared_ptr&lt;DBConnection&gt; conn, class ConnectionPool* pool)
-        : conn_(conn), pool_(pool) {}
-
-    // 禁止拷贝，只允许移动
-    ConnectionGuard(const ConnectionGuard&amp;) = delete;
-    ConnectionGuard&amp; operator=(const ConnectionGuard&amp;) = delete;
-    // 语法规则：移动构造函数 — 转移资源所有权
-    // ConnectionGuard(ConnectionGuard&amp;&amp; other) noexcept
-    // 移动后原对象状态有效但未定义，通常设为可析构状态
-    ConnectionGuard(ConnectionGuard&amp;&amp; other) noexcept
-        : conn_(std::move(other.conn_)), pool_(other.pool_) {
-        other.pool_ = nullptr;
-    }
-
-    ~ConnectionGuard() { release(); }
-
-    DBConnection* operator-&gt;() { return conn_.get(); }
-    DBConnection&amp; operator*() { return *conn_; }
-    // operator-&gt; 和 operator* 使 ConnectionGuard 可以像指针一样使用
-    // guard-&gt;execute(sql) 等价于 (*guard).execute(sql)
-
-    void release();
-    explicit operator bool() const { return conn_ != nullptr; }
-    // explicit operator bool：安全布尔转换，防止隐式转 int 等意外
-};
-
-class ConnectionPool {
-    std::queue&lt;std::shared_ptr&lt;DBConnection&gt;&gt; pool_; // 连接队列
-    std::mutex mtx_;
-    std::condition_variable cv_;
-    size_t maxSize_;
-    size_t activeCount_{0};
-    bool stopped_{false};
-
-public:
-    explicit ConnectionPool(size_t maxSize = 5) : maxSize_(maxSize) {}
-
-    ~ConnectionPool() {
-        stop();
-    }
-
-    void stop() {
-        std::lock_guard&lt;std::mutex&gt; lock(mtx_);
-        stopped_ = true;
-        cv_.notify_all();
-    }
-
-    // 获取连接（阻塞等待直到有可用连接）
-    // 语法规则：std::shared_ptr — 共享所有权的智能指针
-    // 多个 shared_ptr 指向同一对象，引用计数为 0 时释放。
-    // make_shared 一次分配对象+控制块，更高效。
-    // use_count() 返回引用计数（调试用，不要用于逻辑判断）。
-    ConnectionGuard acquire(std::chrono::milliseconds timeout = std::chrono::milliseconds(5000)) {
-        std::unique_lock&lt;std::mutex&gt; lock(mtx_);
-
-        // 等待直到有空闲连接或超时
-        auto deadline = std::chrono::steady_clock::now() + timeout;
-        while (pool_.empty() &amp;&amp; !stopped_) {
-            // 如果当前活跃连接数未达上限，创建新连接
-            if (activeCount_ &lt; maxSize_) {
-                auto conn = std::make_shared&lt;DBConnection&gt;(static_cast&lt;int&gt;(activeCount_));
-                pool_.push(conn);
-                activeCount_++;
-                break;
-            }
-            // 等待连接归还或超时
-            if (cv_.wait_until(lock, deadline) == std::cv_status::timeout) {
-                throw std::runtime_error(&quot;获取连接超时&quot;);
-            }
-        }
-
-        if (stopped_) throw std::runtime_error(&quot;连接池已停止&quot;);
-
-        auto conn = pool_.front();
-        pool_.pop();
-        return ConnectionGuard(conn, this);
-    }
-
-    // 归还连接到池中
-    void release(std::shared_ptr&lt;DBConnection&gt; conn) {
-        std::lock_guard&lt;std::mutex&gt; lock(mtx_);
-        pool_.push(conn);
-        cv_.notify_one(); // 通知等待的线程
-    }
-
-    size_t available() const {
-        // 注意：这里简化了，实际需要 mutex
-        return pool_.size();
-    }
-};
-
-void ConnectionGuard::release() {
-    if (!returned_ &amp;&amp; conn_ &amp;&amp; pool_) {
-        pool_-&gt;release(conn_);
-        returned_ = true;
-    }
-}
-
-// ========== 使用演示 ==========
 int main() {
-    ConnectionPool pool(3); // 最多 3 个连接
+    // 1. unique：去除连续重复
+    vector&lt;int&gt; v1 = {1, 1, 2, 2, 2, 3, 1, 1, 4, 4, 5};
+    cout &lt;&lt; "原始: ";
+    for (int x : v1) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    std::cout &lt;&lt; &quot;=== 连接池演示 ===\n\n&quot;;
+    auto last = unique(v1.begin(), v1.end());
+    v1.erase(last, v1.end()); // 删除尾部残留元素
+    cout &lt;&lt; "unique 后: ";
+    for (int x : v1) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; "\n(注意: 1 没有完全去除，因为不连续)" &lt;&lt; endl;
 
-    // 模拟多个线程并发获取连接
-    // 语法规则：std::vector + emplace_back 存储线程
-    // emplace_back 将参数直接转发给 thread 构造函数，避免拷贝
-    std::vector&lt;std::thread&gt; workers;
+    // 2. sort + unique = 完全去重
+    vector&lt;int&gt; v2 = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
+    cout &lt;&lt; "\n原始: ";
+    for (int x : v2) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    auto workerFunc = [&amp;pool](int id) {
-        try {
-            std::cout &lt;&lt; &quot;[线程&quot; &lt;&lt; id &lt;&lt; &quot;] 请求连接...\n&quot;;
-            auto guard = pool.acquire();
+    sort(v2.begin(), v2.end());
+    auto last2 = unique(v2.begin(), v2.end());
+    v2.erase(last2, v2.end());
+    cout &lt;&lt; "sort + unique 完全去重: ";
+    for (int x : v2) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-            // 使用连接
-            guard-&gt;execute(&quot;SELECT * FROM users WHERE id = &quot; + std::to_string(id));
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    // 3. unique_copy：去重并输出到新容器
+    vector&lt;int&gt; v3 = {1, 1, 2, 2, 3, 3, 4, 4};
+    vector&lt;int&gt; result;
+    unique_copy(v3.begin(), v3.end(), back_inserter(result));
+    cout &lt;&lt; "\nunique_copy: ";
+    for (int x : result) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-            std::cout &lt;&lt; &quot;[线程&quot; &lt;&lt; id &lt;&lt; &quot;] 释放连接\n&quot;;
-        } catch (const std::exception&amp; e) {
-            std::cerr &lt;&lt; &quot;[线程&quot; &lt;&lt; id &lt;&lt; &quot;] 错误: &quot; &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
-        }
-    };
+    // 4. 自定义相等判断
+    // 按绝对值去重
+    vector&lt;int&gt; v4 = {-3, -1, 1, 2, -2, 3, 5};
+    sort(v4.begin(), v4.end(),
+         [](int a, int b) { return abs(a) &lt; abs(b); });
+    auto last4 = unique(v4.begin(), v4.end(),
+        [](int a, int b) { return abs(a) == abs(b); });
+    v4.erase(last4, v4.end());
+    cout &lt;&lt; "\n按绝对值去重: ";
+    for (int x : v4) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    // 启动 5 个线程（超过池大小 3，部分会等待）
-    for (int i = 0; i &lt; 5; i++) {
-        workers.emplace_back(workerFunc, i);
-    }
-
-    for (auto&amp; t : workers) t.join();
-
-    std::cout &lt;&lt; &quot;\n设计要点：\n&quot;
-              &lt;&lt; &quot;1. 连接复用减少创建/销毁开销\n&quot;
-              &lt;&lt; &quot;2. 连接数上限防止资源耗尽\n&quot;
-              &lt;&lt; &quot;3. RAII Guard 自动归还连接\n&quot;
-              &lt;&lt; &quot;4. 阻塞等待 + 超时机制\n&quot;;
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：移动构造函数和移动语义</h3><pre class="code-block"><code class="language-cpp">class Buffer {
-    char* data_;
-    size_t size_;
-public:
-    Buffer(size_t n) : data_(new char[n]), size_(n) {}
-    // 移动构造：&quot;偷&quot;走资源
-    Buffer(Buffer&amp;&amp; other) noexcept
-        : data_(other.data_), size_(other.size_) {
-        other.data_ = nullptr; // 源对象置空
-        other.size_ = 0;
-    }
-    // 禁止拷贝
-    Buffer(const Buffer&amp;) = delete;
-    ~Buffer() { delete[] data_; }
-};</code></pre><p class="tip">💡 举一反三：移动语义避免了深拷贝的开销。移动后源对象应处于"有效但未定义"状态（通常设为 nullptr/0）。noexcept 标记很重要，STL 容器在 resize 时如果移动构造不是 noexcept 会退化到拷贝。</p>
-<h3>语法规则：operator bool 安全布尔转换</h3><pre class="code-block"><code class="language-cpp">class OptionalInt {
-    int val_;
-    bool has_val_;
-public:
-    explicit operator bool() const { return has_val_; }
-    // 有 explicit 就不能隐式转换：
-    // OptionalInt oi;
-    // int x = oi;      // 编译错误！
-    // if (oi) { ... }   // OK：条件上下文允许 explicit bool
-};</code></pre><p class="tip">💡 举一反三：C++11 起用 explicit operator bool 代替 C++03 的 safe bool idiom。加上 explicit 防止隐式转换为 int/double 等，但 if/while/&&/||/!/?: 等上下文仍能正常使用。</p>
-<h3>语法规则：std::this_thread::sleep_for / sleep_until</h3><pre class="code-block"><code class="language-cpp">// 绝对休眠（指定时长）
-std::this_thread::sleep_for(std::chrono::seconds(1));
-// 相对休眠（指定时间点）
-auto wakeup = std::chrono::steady_clock::now() + std::chrono::seconds(1);
-std::this_thread::sleep_until(wakeup);</code></pre><p class="tip">💡 举一反三：sleep_for 适合"暂停 N 秒"场景，sleep_until 适合"等到某个时刻"场景（如定时任务）。注意 sleep_for 可能因系统调度而比指定时长略长。</p>
-<h3>语法规则：= delete 禁止函数</h3><pre class="code-block"><code class="language-cpp">class NonCopyable {
-public:
-    NonCopyable() = default;                  // 使用默认构造
-    NonCopyable(const NonCopyable&amp;) = delete;  // 禁止拷贝
-    NonCopyable&amp; operator=(const NonCopyable&amp;) = delete;
-};</code></pre><p class="tip">💡 举一反三：= delete 禁用一个函数，比 C++03 的 private 声明更明确。可以禁掉任何函数（不仅是编译器自动生成的），如 void f(int) = delete 阻止隐式转换。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::unique</h3>
+                    <pre class="code-block"><code class="language-cpp">auto last = unique(v.begin(), v.end());
+v.erase(last, v.end());
+// 将连续重复元素移到最后，返回新 end 迭代器
+// 不真正删除元素（只是前移），需要 erase 配合</code></pre>
+                    <p class="tip">举一反三：这是 erase-remove 惯用法的一部分。unique 返回的是逻辑上的新结尾，实际元素还在后面。必须配合 erase 真正删除。只去连续重复。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：sort + unique 完全去重</h3>
+                    <pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end());
+auto last = unique(v.begin(), v.end());
+v.erase(last, v.end());
+// 排序把相同元素聚到一起，unique 去除连续重复</code></pre>
+                    <p class="tip">举一反三：两步完成完全去重。复杂度 O(N log N)（排序为主）。如果元素已有序，只需要 unique。unordered_set 可 O(N) 去重（但额外内存和不保证顺序）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：unique_copy</h3>
+                    <pre class="code-block"><code class="language-cpp">unique_copy(src.begin(), src.end(), back_inserter(dst));
+// 去重的同时复制到新容器
+// 不修改原容器
+// 结果也是相邻去重（通常配合 sorted 源）</code></pre>
+                    <p class="tip">举一反三：unique_copy 保持源容器不变。适合不可变数据或需要保留原始的情况。对有序源可完全去重。支持自定义比较器。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_083.html" class="prev-link">&larr; 案例 83</a>
+<a href="case_085.html" class="next-link">案例 85 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -3,410 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 13：形状继承体系 - C++ 100工程案例</title>
+    <title>案例 13：形状继承体系(多态) - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
-    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
-    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
-    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
-    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
-    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
-    <a href="case_013.html" class="case-link active">13. 形状继承体系</a>
-    <a href="case_014.html" class="case-link ">14. 模板函数</a>
-    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
-    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
-    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
-    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
-    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr 实战</a>
-    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link ">21. vector 深入</a>
-    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
-    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
-    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
-    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
-    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
-    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
-    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
-    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
-    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
-    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
-    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
-    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
-    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
-    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
-    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
-    <a href="case_037.html" class="case-link ">37. thread 入门</a>
-    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
-    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
-    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
-    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
-    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
-    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
-    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
-    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
-    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
-    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
-    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
-    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
-    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
-    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
-    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
-    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
-    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
-    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
-    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
-    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
-    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
-    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
-    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
-    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
-    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
-    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
-    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
-    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
-    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
-    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
-    <a href="case_070.html" class="case-link ">70. 策略模式</a>
-    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
-    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
-    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
-    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
-    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
-    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
-    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
-    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
-    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
-    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
-    <a href="case_081.html" class="case-link ">81. 插件系统</a>
-    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
-    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
-    <a href="case_084.html" class="case-link ">84. 连接池</a>
-    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
-    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
-    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
-    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
-    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
-    <a href="case_091.html" class="case-link ">91. 协程库</a>
-    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
-    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
-    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
-    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
-    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
-    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
-    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
-    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
-    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_012.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_014.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 13：形状继承体系(多态)</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 13：形状继承体系(多态)</h1>
+            <section class="intro">
+<p>构建 Shape 基类，派生 Circle、Rectangle、Triangle，通过虚函数实现多态，计算不同形状的面积。</p>
+            <p><strong>核心知识点：</strong>继承、虚函数、多态、纯虚函数、override</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 13：形状继承体系（多态）
+// 使用虚函数实现运行时多态
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+using namespace std;
 
-        <h1>案例 13：形状继承体系</h1>
+// 抽象基类：包含纯虚函数的类不能实例化
+class Shape {
+public:
+    // 纯虚函数 = 0：派生类必须实现
+    virtual double area() const = 0;
+    virtual string name() const = 0;
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;cmath&gt;</code></span>
-                        <span class="line-comment">数学函数库，包含 M_PI 用于计算圆面积</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>class Shape {</code></span>
-                        <span class="line-comment">抽象基类</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>    virtual double area() const = 0;</code></span>
-                        <span class="line-comment">纯虚函数：子类必须实现</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    virtual void display() const {</code></span>
-                        <span class="line-comment">虚函数，子类可以覆盖</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "面积 = " &lt;&lt; area() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">调用纯虚函数，多态</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    virtual ~Shape() = default;</code></span>
-                        <span class="line-comment">虚析构函数：确保派生类析构正确调用</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>class Circle : public Shape {</code></span>
-                        <span class="line-comment">公开继承，Circle 是一个 Shape</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>private:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>    double radius_;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    Circle(double r) : radius_(r) {}</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    double area() const override {</code></span>
-                        <span class="line-comment">override 关键字：明确覆盖基类虚函数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>        return M_PI * radius_ * radius_;</code></span>
-                        <span class="line-comment">M_PI 在 cmath 中定义</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>    void display() const override {</code></span>
-                        <span class="line-comment">覆盖虚函数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "圆形（半径=" &lt;&lt; radius_ &lt;&lt; "），";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>        Shape::display();</code></span>
-                        <span class="line-comment">显式调用基类版本</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>class Rectangle : public Shape {</code></span>
-                        <span class="line-comment">矩形</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>private:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>    double w_, h_;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    Rectangle(double w, double h) : w_(w), h_(h) {}</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    double area() const override { return w_ * h_; }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    void display() const override {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "矩形（宽=" &lt;&lt; w_ &lt;&lt; "，高=" &lt;&lt; h_ &lt;&lt; "），";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>        Shape::display();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>    Circle c(5.0);</code></span>
-                        <span class="line-comment">创建圆对象</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    Rectangle r(4.0, 6.0);</code></span>
-                        <span class="line-comment">创建矩形对象</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    Shape* shapes[] = {&amp;c, &amp;r};</code></span>
-                        <span class="line-comment">基类指针数组，多态的关键</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    for (int i = 0; i &lt; 2; i++) {</code></span>
-                        <span class="line-comment">编译时不知道具体类型</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>        shapes[i]-&gt;display();</code></span>
-                        <span class="line-comment">运行时根据实际类型调用对应 display()</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                <div class="grammar-item">
-                    <h3>纯虚函数 (= 0) 与抽象类</h3>
-                    <div class="rule-box">格式：<code>virtual 返回类型 函数名(参数) const = 0;</code>。定义了纯虚函数的类叫<strong>抽象类</strong>，不能直接实例化。子类必须实现所有纯虚函数才能实例化。</div>
-                    <pre><code>class Animal {
-    virtual void speak() = 0; // 纯虚
+    // 虚析构函数：确保通过基类指针删除派生对象时正确析构
+    virtual ~Shape() {}
 };
-// Animal a; // 编译错误
-class Dog : public Animal {
-    void speak() override { cout&lt;&lt;"Woof"; }
+
+// Circle 派生类
+class Circle : public Shape {
+private:
+    double radius;
+public:
+    Circle(double r) : radius(r) {}
+    double area() const override { return M_PI * radius * radius; }
+    string name() const override { return "圆形"; }
 };
-Dog d; // OK</code></pre>
+
+// Rectangle 派生类
+class Rectangle : public Shape {
+private:
+    double width, height;
+public:
+    Rectangle(double w, double h) : width(w), height(h) {}
+    double area() const override { return width * height; }
+    string name() const override { return "矩形"; }
+};
+
+// Triangle 派生类
+class Triangle : public Shape {
+private:
+    double base, height;
+public:
+    Triangle(double b, double h) : base(b), height(h) {}
+    double area() const override { return 0.5 * base * height; }
+    string name() const override { return "三角形"; }
+};
+
+int main() {
+    // 基类指针容器，存储不同派生类对象
+    vector&lt;Shape*&gt; shapes;
+    shapes.push_back(new Circle(3.0));
+    shapes.push_back(new Rectangle(4.0, 5.0));
+    shapes.push_back(new Triangle(6.0, 4.0));
+
+    // 多态：通过基类指针调用，运行时决定调用哪个派生类的实现
+    double total = 0;
+    for (const Shape* s : shapes) {
+        cout &lt;&lt; s-&gt;name() &lt;&lt; " 面积 = " &lt;&lt; s-&gt;area() &lt;&lt; endl;
+        total += s-&gt;area();
+    }
+    cout &lt;&lt; "总面积 = " &lt;&lt; total &lt;&lt; endl;
+
+    // 释放内存
+    for (Shape* s : shapes) delete s;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：虚函数与多态</h3>
+                    <pre class="code-block"><code class="language-cpp">class Base {
+public:
+    virtual void draw(); // 虚函数
+};
+Base* p = new Derived();
+p-&gt;draw(); // 调用 Derived::draw()</code></pre>
+                    <p class="tip">举一反三：virtual 关键字让函数调用在运行时动态绑定。非虚函数是静态绑定（编译时决定）。多态需通过指针或引用调用。</p>
                 </div>
-                <div class="grammar-item">
-                    <h3>override 关键字</h3>
-                    <div class="rule-box">C++11 引入，写在虚函数声明末尾。编译器会检查该函数<strong>确实覆盖了基类虚函数</strong>。如果签名不匹配，编译报错，防止拼写错误。</div>
-                    <pre><code>class Base { virtual void foo(int); };
-class Derived : public Base {
-    void foo(int) override;  // 正确
-    // void foo(float) override; // 编译错误
+                <div class="grammar-point">
+                    <h3>语法规则：纯虚函数与抽象类</h3>
+                    <pre class="code-block"><code class="language-cpp">class Shape {
+public:
+    virtual double area() const = 0; // 纯虚函数
 };</code></pre>
+                    <p class="tip">举一反三：含纯虚函数的类为抽象类，不能实例化。派生类必须实现所有纯虚函数否则自身也是抽象类。相当于 Java 的 interface。</p>
                 </div>
-                <div class="grammar-item">
-                    <h3>虚析构函数</h3>
-                    <div class="rule-box">当通过基类指针删除派生类对象时，必须将基类析构函数声明为 <code>virtual</code>，否则派生类析构不会被调用，导致资源泄漏。</div>
-                    <pre><code>Base* p = new Derived();
-delete p; // 如果 ~Base() 不是 virtual，~Derived() 不会调用</code></pre>
+                <div class="grammar-point">
+                    <h3>语法规则：override 关键字</h3>
+                    <pre class="code-block"><code class="language-cpp">double area() const override { /* ... */ }</code></pre>
+                    <p class="tip">举一反三：C++11 引入，明确表示此函数覆盖基类虚函数。编译器会检查签名是否匹配，防止因拼写错误而意外创建新函数。</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                <div class="extend-item">
-                    <h4>添加三角形类</h4>
-                    <p><strong>代码：</strong><code>class Triangle : public Shape { ... }</code></p>
-                    <p><strong>思路：</strong>用海伦公式计算面积</p>
-                </div>
-                <div class="extend-item">
-                    <h4>用 vector 管理所有形状</h4>
-                    <p><strong>代码：</strong><code>vector<unique_ptr<Shape>> shapes; shapes.push_back(make_unique<Circle>(3.0));</code></p>
-                    <p><strong>思路：</strong>智能指针自动管理内存</p>
-                </div>
-                <div class="extend-item">
-                    <h4>实现周长接口</h4>
-                    <p><strong>代码：</strong><code>virtual double perimeter() const = 0;</code></p>
-                    <p><strong>思路：</strong>在 Shape 中增加第二个纯虚函数</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="bottom-nav">
-            <a href="case_012.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_014.html" class="nav-link">下一个 →</a>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_012.html" class="prev-link">&larr; 案例 12</a>
+<a href="case_014.html" class="next-link">案例 14 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

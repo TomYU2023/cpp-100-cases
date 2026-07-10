@@ -1,148 +1,112 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 73：命令模式 — 撤销/重做系统</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_072.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_074.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 73：std::clamp 值裁剪 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 73：std::clamp 值裁剪</span>
         </div>
-    </nav><main class="container"><h1>案例 73：命令模式 — 撤销/重做系统</h1><section class="intro"><p>实现类似文本编辑器的 Undo/Redo 系统，展示命令模式如何将操作对象化并支持回滚。</p><p><strong>核心知识点：</strong>命令模式、Undo/Redo 栈、std::stack 容器适配器、操作原子化</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 73：命令模式（Command Pattern）— 撤销/重做系统
-// 命令模式将请求封装为对象，支持参数化、排队、日志记录、撤销/重做。
-// 典型场景：编辑器 Undo/Redo、宏录制、任务队列、事务回滚。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 73：std::clamp 值裁剪</h1>
+            <section class="intro">
+<p>使用 clamp 将值限制在指定范围内，结合其他数值算法处理数据。</p>
+            <p><strong>核心知识点：</strong>clamp、min/max、数值范围限制</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 73：std::clamp 值裁剪
+// 将值限制在最小和最大边界内
 #include &lt;iostream&gt;
-#include &lt;string&gt;
+#include &lt;algorithm&gt;
 #include &lt;vector&gt;
-#include &lt;memory&gt;
-#include &lt;stack&gt;
-
-/* 语法规则：命令模式结构
-   Command 接口：execute() + undo()
-   ConcreteCommand：绑定 Receiver，实现具体操作
-   Invoker：调用命令（如按钮、菜单）
-   Receiver：真正执行操作的对象
-   示例：文字编辑器的命令模式
-     Command 接口  ← execute() / undo()
-     ├── InsertCommand   ← 持有 Document&amp; 和位置/文本
-     ├── DeleteCommand   ← 持有 Document&amp; 和位置/文本
-     └── ReplaceCommand
-     Invoker: 编辑器菜单/快捷键
-     Receiver: Document 对象
-   举一反三：数据库事务就是命令模式的集合——所有 SQL 包装成 Command，
-   提交前可以 undo，提交后写入日志。游戏的回放系统用命令模式记录每一帧的操作。
-*/
-
-// Receiver：文本文档（真正的数据）
-class Document {
-    std::string content;
-public:
-    void insert(size_t pos, const std::string&amp; text) {
-        content.insert(pos, text);
-    }
-    void erase(size_t pos, size_t length) {
-        content.erase(pos, length);
-    }
-    const std::string&amp; get() const { return content; }
-    size_t size() const { return content.size(); }
-};
-
-// Command 接口
-class Command {
-public:
-    virtual ~Command() = default;
-    virtual void execute() = 0;
-    virtual void undo() = 0;
-    virtual std::string description() const = 0;
-};
-
-// 插入命令：记住位置和文本，支持撤销
-class InsertCommand : public Command {
-    Document&amp; doc;
-    size_t pos;
-    std::string text;
-public:
-    InsertCommand(Document&amp; d, size_t p, std::string t)
-        : doc(d), pos(p), text(std::move(t)) {}
-    void execute() override { doc.insert(pos, text); }
-    void undo() override { doc.erase(pos, text.size()); }
-    std::string description() const override { return &quot;插入: &quot; + text; }
-};
-
-// 删除命令：执行前先保存被删除内容
-class DeleteCommand : public Command {
-    Document&amp; doc;
-    size_t pos;
-    size_t length;
-    std::string deleted;           // 备份，用于 undo
-public:
-    DeleteCommand(Document&amp; d, size_t p, size_t len)
-        : doc(d), pos(p), length(len) {
-        deleted = doc.get().substr(p, len);  // 保存被删除的文本
-    }
-    void execute() override { doc.erase(pos, length); }
-    void undo() override { doc.insert(pos, deleted); }
-    std::string description() const override { return &quot;删除: &quot; + deleted; }
-};
-
-// Invoker：命令执行器，管理 undo/redo 栈
-class CommandManager {
-    std::stack&lt;std::unique_ptr&lt;Command&gt;&gt; undoStack;  // 撤销栈
-    std::stack&lt;std::unique_ptr&lt;Command&gt;&gt; redoStack;  // 重做栈
-
-public:
-    void execute(std::unique_ptr&lt;Command&gt; cmd) {
-        cmd-&gt;execute();
-        undoStack.push(std::move(cmd));
-        // 新命令清空 redo 栈（常见编辑器行为）
-        while (!redoStack.empty()) redoStack.pop();
-    }
-
-    bool canUndo() const { return !undoStack.empty(); }
-    bool canRedo() const { return !redoStack.empty(); }
-
-    void undo() {
-        if (!canUndo()) return;
-        auto cmd = std::move(undoStack.top()); undoStack.pop();
-        cmd-&gt;undo();
-        redoStack.push(std::move(cmd));
-    }
-
-    void redo() {
-        if (!canRedo()) return;
-        auto cmd = std::move(redoStack.top()); redoStack.pop();
-        cmd-&gt;execute();
-        undoStack.push(std::move(cmd));
-    }
-};
+#include &lt;string&gt;
+using namespace std;
 
 int main() {
-    Document doc;
-    CommandManager mgr;
+    // 1. 基本用法：将值裁剪到 [min, max]
+    cout &lt;&lt; "=== std::clamp ===" &lt;&lt; endl;
+    cout &lt;&lt; "clamp(5, 0, 10) = " &lt;&lt; clamp(5, 0, 10) &lt;&lt; endl;   // 5
+    cout &lt;&lt; "clamp(-3, 0, 10) = " &lt;&lt; clamp(-3, 0, 10) &lt;&lt; endl; // 0
+    cout &lt;&lt; "clamp(15, 0, 10) = " &lt;&lt; clamp(15, 0, 10) &lt;&lt; endl; // 10
 
-    mgr.execute(std::make_unique&lt;InsertCommand&gt;(doc, 0, &quot;Hello&quot;));
-    std::cout &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello
+    // 2. 裁剪容器中所有值
+    vector&lt;int&gt; values = {-5, 0, 25, 50, 75, 100, 125};
+    cout &lt;&lt; "\n原始数据: ";
+    for (int v : values) cout &lt;&lt; v &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-    mgr.execute(std::make_unique&lt;InsertCommand&gt;(doc, 5, &quot; World&quot;));
-    std::cout &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
+    // 裁剪到 [0, 100]
+    cout &lt;&lt; "裁剪到 [0, 100]: ";
+    for (int v : values) {
+        cout &lt;&lt; clamp(v, 0, 100) &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
 
-    mgr.undo();
-    std::cout &lt;&lt; &quot;撤销后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello
+    // 3. 用 clamp 实现进度条百分比
+    cout &lt;&lt; "\n=== 进度百分比 ===" &lt;&lt; endl;
+    vector&lt;double&gt; rawPercents = {-10.0, 0.0, 45.5, 89.3, 100.0, 120.0, 55.0};
 
-    mgr.redo();
-    std::cout &lt;&lt; &quot;重做后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
+    for (double raw : rawPercents) {
+        double percent = clamp(raw, 0.0, 100.0);
+        int barWidth = static_cast&lt;int&gt;(percent / 5); // 每 5% 一个字符
+        cout &lt;&lt; raw &lt;&lt; "%"
+             &lt;&lt; " -&gt; " &lt;&lt; string(barWidth, '#')
+             &lt;&lt; " " &lt;&lt; percent &lt;&lt; "%" &lt;&lt; endl;
+    }
 
-    mgr.execute(std::make_unique&lt;DeleteCommand&gt;(doc, 0, 6));
-    std::cout &lt;&lt; &quot;删除后: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // World
+    // 4. 对比 min/max 写法
+    cout &lt;&lt; "\n=== clamp vs min+max ===" &lt;&lt; endl;
+    int val = 150;
+    cout &lt;&lt; "clamp(150, 0, 100) = " &lt;&lt; clamp(val, 0, 100) &lt;&lt; endl;
+    cout &lt;&lt; "min(max(150,0),100) = " &lt;&lt; min(max(val, 0), 100) &lt;&lt; endl;
 
-    mgr.undo();
-    std::cout &lt;&lt; &quot;撤销删除: &quot; &lt;&lt; doc.get() &lt;&lt; std::endl;  // Hello World
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：std::stack — 后进先出(LIFO)</h3><pre class="code-block"><code class="language-cpp">std::stack&lt;int&gt; s;
-s.push(1); s.push(2); s.push(3);
-int top = s.top();  // 3
-s.pop();            // 移除栈顶
-// stack 底层默认用 deque，也可指定 vector/list</code></pre><p class="tip">💡 举一反三：stack 适合递归模拟/括号匹配/undo 栈/函数调用栈。queue 是 FIFO，priority_queue 是堆排序。三者都是容器适配器。</p>
-<h3>语法规则：while(!s.empty()) s.pop() 清空栈</h3><pre class="code-block"><code class="language-cpp">// C++ 的 stack 没有 clear() 方法，用循环清空
-while (!undoStack.empty()) undoStack.pop();</code></pre><p class="tip">💡 举一反三：这是 C++ 容器适配器的一个"坑"——stack/queue/priority_queue 都没有 clear()。C++23 可能修复此问题。也可以 swap 空栈：std::stack<T>().swap(s);</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::clamp 基本用法</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+int result = clamp(value, min, max);
+// 等价于 max(min, min(max, value))
+// 但只调用一次比较（更高效）</code></pre>
+                    <p class="tip">举一反三：clamp (C++17) 比嵌套 min/max 更清晰且可能更高效。对自定义类型，要求 operator< 已定义。clamp 的参数顺序：值、下界、上界。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：clamp 与容器操作</h3>
+                    <pre class="code-block"><code class="language-cpp">vector&lt;int&gt; v;
+transform(v.begin(), v.end(), v.begin(),
+    [](int x) { return clamp(x, 0, 100); });
+// 批量裁剪数据到合法范围</code></pre>
+                    <p class="tip">举一反三：clamp 配合 transform 是批量数据清洗的常见组合。也可用 ranges (C++20)：v | views::transform([](int x){ return clamp(x, 0, 100); })。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：clamp 的注意事项</h3>
+                    <pre class="code-block"><code class="language-cpp">// clamp 对下界大于上界的行为是未定义的
+clamp(5, 10, 0); // UB!
+// 如果使用自定义比较器，需保证 lo &lt;= hi
+// 断言：assert(lo &lt;= hi);</code></pre>
+                    <p class="tip">举一反三：clamp 假定 lo <= hi，否则行为未定义。对于浮点数 NaN 的比较，clamp 的结果也是未定义的。可以写一个 safe_clamp 先检查参数有效性。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_072.html" class="prev-link">&larr; 案例 72</a>
+<a href="case_074.html" class="next-link">案例 74 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

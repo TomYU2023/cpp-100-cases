@@ -1,387 +1,183 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 61：线程池实现 - C++ 100 案例</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; display:flex; min-height:100vh; background:#0d1117; color:#c9d1d9; }
-.sidebar { width:260px; background:#161b22; border-right:1px solid #30363d; position:fixed; top:0; left:0; bottom:0; overflow-y:auto; z-index:100; }
-.sidebar-header { padding:20px; border-bottom:1px solid #30363d; }
-.sidebar-header h2 { color:#58a6ff; font-size:18px; }
-.nav-list { list-style:none; }
-.nav-stage { border-bottom:1px solid #21262d; }
-.stage-title { display:block; padding:12px 20px; font-size:13px; font-weight:700; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
-.nav-cases { list-style:none; }
-.nav-cases li {  }
-.nav-cases li a { display:block; padding:6px 20px 6px 32px; font-size:13px; color:#8b949e; text-decoration:none; transition:all 0.15s; }
-.nav-cases li a:hover { color:#58a6ff; background:#1c2128; }
-.nav-cases li.active a { color:#58a6ff; background:#1f2937; border-left:3px solid #58a6ff; padding-left:29px; }
-.main { margin-left:260px; flex:1; padding:40px; max-width:1100px; }
-.case-header { margin-bottom:30px; }
-.case-header h1 { font-size:28px; color:#58a6ff; margin-bottom:8px; }
-.case-header .meta { font-size:14px; color:#8b949e; }
-.case-header .meta span { background:#21262d; padding:3px 10px; border-radius:12px; margin-right:8px; }
-h2 { color:#f0f6fc; font-size:20px; margin:30px 0 15px; padding-bottom:8px; border-bottom:1px solid #30363d; }
-h3 { color:#f0f6fc; font-size:16px; margin:20px 0 10px; }
-.section-desc { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:16px 20px; margin-bottom:20px; line-height:1.7; font-size:14px; }
-.section-desc code { background:#30363d; padding:2px 6px; border-radius:4px; font-size:13px; color:#f0883e; }
-.code-block { background:#161b22; border:1px solid #30363d; border-radius:8px; overflow:hidden; margin-bottom:20px; }
-.code-block .code-header { background:#21262d; padding:8px 16px; font-size:12px; color:#8b949e; border-bottom:1px solid #30363d; }
-.code-block pre { padding:16px; overflow-x:auto; margin:0; }
-.code-block code { font-family:'Cascadia Code','Fira Code',Consolas,monospace; font-size:13px; line-height:1.7; }
-.line { display:flex; min-height:22px; }
-.line .ln { color:#484f58; text-align:right; padding-right:16px; min-width:44px; user-select:none; flex-shrink:0; }
-.line .cc { flex:1; white-space:pre-wrap; word-break:break-all; }
-.line .comment { color:#6e7681; }
-.comment-block { background:#0d1117; border-left:3px solid #58a6ff; padding:12px 16px; margin:8px 0; border-radius:0 6px 6px 0; font-size:13px; line-height:1.6; }
-.comment-block strong { color:#58a6ff; }
-.grammar-box { background:#1a2332; border:1px solid #1f6feb; border-radius:8px; padding:20px; margin-bottom:20px; }
-.grammar-box .grammar-title { color:#58a6ff; font-size:15px; font-weight:700; margin-bottom:10px; }
-.grammar-box .grammar-rule { background:#0d1117; border-radius:6px; padding:12px 16px; font-family:'Cascadia Code',monospace; font-size:13px; margin-bottom:10px; }
-.grammar-box .grammar-example { margin-bottom:8px; }
-.grammar-box .grammar-example pre { background:#0d1117; border-radius:6px; padding:12px 16px; font-size:13px; margin:5px 0; }
-.grammar-box .grammar-tips { color:#8b949e; font-size:13px; margin-top:8px; }
-.grammar-box .grammar-tips ul { padding-left:20px; }
-.grammar-box .grammar-tips li { margin:4px 0; }
-.keyword { color:#ff7b72; }
-.string { color:#a5d6ff; }
-.func { color:#d2a8ff; }
-.type { color:#ffa657; }
-.number { color:#79c0ff; }
-.op { color:#ff7b72; }
-.macro { color:#8b949e; }
-a { color:#58a6ff; text-decoration:none; }
-a:hover { text-decoration:underline; }
-.bottom-nav { display:flex; justify-content:space-between; margin-top:40px; padding-top:20px; border-top:1px solid #30363d; }
-.bottom-nav a { background:#21262d; padding:10px 20px; border-radius:6px; font-size:14px; transition:background 0.15s; }
-.bottom-nav a:hover { background:#30363d; text-decoration:none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 61：线程池(手写) - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-header"><h2>C++ 100 案例</h2></div>
-  <ul class="nav-list">
-    <li class="nav-stage"><span class="stage-title">语法练兵场</span>
-      <ul class="nav-cases">
-        <li><a href="case_001.html">案例 1</a></li>
-        <li><a href="case_002.html">案例 2</a></li>
-        <li><a href="case_003.html">案例 3</a></li>
-        <li><a href="case_004.html">案例 4</a></li>
-        <li><a href="case_005.html">案例 5</a></li>
-        <li><a href="case_006.html">案例 6</a></li>
-        <li><a href="case_007.html">案例 7</a></li>
-        <li><a href="case_008.html">案例 8</a></li>
-        <li><a href="case_009.html">案例 9</a></li>
-        <li><a href="case_010.html">案例 10</a></li>
-        <li><a href="case_011.html">案例 11</a></li>
-        <li><a href="case_012.html">案例 12</a></li>
-        <li><a href="case_013.html">案例 13</a></li>
-        <li><a href="case_014.html">案例 14</a></li>
-        <li><a href="case_015.html">案例 15</a></li>
-        <li><a href="case_016.html">案例 16</a></li>
-        <li><a href="case_017.html">案例 17</a></li>
-        <li><a href="case_018.html">案例 18</a></li>
-        <li><a href="case_019.html">案例 19</a></li>
-        <li><a href="case_020.html">案例 20</a></li>
-      </ul>
-    </li>
-    <li class="nav-stage"><span class="stage-title">STL 熟练工</span>
-      <ul class="nav-cases">
-        <li><a href="case_021.html">案例 21</a></li>
-        <li><a href="case_022.html">案例 22</a></li>
-        <li><a href="case_023.html">案例 23</a></li>
-        <li><a href="case_024.html">案例 24</a></li>
-        <li><a href="case_025.html">案例 25</a></li>
-        <li><a href="case_026.html">案例 26</a></li>
-        <li><a href="case_027.html">案例 27</a></li>
-        <li><a href="case_028.html">案例 28</a></li>
-        <li><a href="case_029.html">案例 29</a></li>
-        <li><a href="case_030.html">案例 30</a></li>
-        <li><a href="case_031.html">案例 31</a></li>
-        <li><a href="case_032.html">案例 32</a></li>
-        <li><a href="case_033.html">案例 33</a></li>
-        <li><a href="case_034.html">案例 34</a></li>
-        <li><a href="case_035.html">案例 35</a></li>
-        <li><a href="case_036.html">案例 36</a></li>
-        <li><a href="case_037.html">案例 37</a></li>
-        <li><a href="case_038.html">案例 38</a></li>
-        <li><a href="case_039.html">案例 39</a></li>
-        <li><a href="case_040.html">案例 40</a></li>
-      </ul>
-    </li>
-    <li class="nav-stage"><span class="stage-title">实用小工具</span>
-      <ul class="nav-cases">
-        <li><a href="case_041.html">案例 41</a></li>
-        <li><a href="case_042.html">案例 42</a></li>
-        <li><a href="case_043.html">案例 43</a></li>
-        <li><a href="case_044.html">案例 44</a></li>
-        <li><a href="case_045.html">案例 45</a></li>
-        <li><a href="case_046.html">案例 46</a></li>
-        <li><a href="case_047.html">案例 47</a></li>
-        <li><a href="case_048.html">案例 48</a></li>
-        <li><a href="case_049.html">案例 49</a></li>
-        <li><a href="case_050.html">案例 50</a></li>
-        <li><a href="case_051.html">案例 51</a></li>
-        <li><a href="case_052.html">案例 52</a></li>
-        <li><a href="case_053.html">案例 53</a></li>
-        <li><a href="case_054.html">案例 54</a></li>
-        <li><a href="case_055.html">案例 55</a></li>
-        <li><a href="case_056.html">案例 56</a></li>
-        <li><a href="case_057.html">案例 57</a></li>
-        <li><a href="case_058.html">案例 58</a></li>
-        <li><a href="case_059.html">案例 59</a></li>
-        <li><a href="case_060.html">案例 60</a></li>
-      </ul>
-    </li>
-    <li class="nav-stage"><span class="stage-title">工程能力锻造</span>
-      <ul class="nav-cases">
-        <li class="active"><a href="case_061.html">案例 61</a></li>
-        <li><a href="case_062.html">案例 62</a></li>
-        <li><a href="case_063.html">案例 63</a></li>
-        <li><a href="case_064.html">案例 64</a></li>
-        <li><a href="case_065.html">案例 65</a></li>
-        <li><a href="case_066.html">案例 66</a></li>
-        <li><a href="case_067.html">案例 67</a></li>
-        <li><a href="case_068.html">案例 68</a></li>
-        <li><a href="case_069.html">案例 69</a></li>
-        <li><a href="case_070.html">案例 70</a></li>
-        <li><a href="case_071.html">案例 71</a></li>
-        <li><a href="case_072.html">案例 72</a></li>
-        <li><a href="case_073.html">案例 73</a></li>
-        <li><a href="case_074.html">案例 74</a></li>
-        <li><a href="case_075.html">案例 75</a></li>
-        <li><a href="case_076.html">案例 76</a></li>
-        <li><a href="case_077.html">案例 77</a></li>
-        <li><a href="case_078.html">案例 78</a></li>
-        <li><a href="case_079.html">案例 79</a></li>
-        <li><a href="case_080.html">案例 80</a></li>
-        <li><a href="case_081.html">案例 81</a></li>
-        <li><a href="case_082.html">案例 82</a></li>
-        <li><a href="case_083.html">案例 83</a></li>
-        <li><a href="case_084.html">案例 84</a></li>
-        <li><a href="case_085.html">案例 85</a></li>
-      </ul>
-    </li>
-    <li class="nav-stage"><span class="stage-title">综合项目</span>
-      <ul class="nav-cases">
-        <li><a href="case_086.html">案例 86</a></li>
-        <li><a href="case_087.html">案例 87</a></li>
-        <li><a href="case_088.html">案例 88</a></li>
-        <li><a href="case_089.html">案例 89</a></li>
-        <li><a href="case_090.html">案例 90</a></li>
-        <li><a href="case_091.html">案例 91</a></li>
-        <li><a href="case_092.html">案例 92</a></li>
-        <li><a href="case_093.html">案例 93</a></li>
-        <li><a href="case_094.html">案例 94</a></li>
-        <li><a href="case_095.html">案例 95</a></li>
-        <li><a href="case_096.html">案例 96</a></li>
-        <li><a href="case_097.html">案例 97</a></li>
-        <li><a href="case_098.html">案例 98</a></li>
-        <li><a href="case_099.html">案例 99</a></li>
-        <li><a href="case_100.html">案例 100</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-<main class="main">
-<div class="case-header">
-<h1>案例 61：线程池实现</h1>
-<div class="meta">
-<span>阶段：工程能力锻造</span><span>难度：⭐⭐⭐⭐</span><span>练什么：并发核心能力、任务队列</span>
-</div>
-</div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 61：线程池(手写)</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 61：线程池(手写)</h1>
+            <section class="intro">
+<p>从零实现一个固定大小的线程池，支持任务提交和结果获取。</p>
+            <p><strong>核心知识点：</strong>线程池架构、任务队列、condition_variable、future</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 61：线程池（手写）
+// 固定大小的线程池，支持任务提交和获取返回值
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;condition_variable&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+#include &lt;functional&gt;
+#include &lt;future&gt;
+#include &lt;type_traits&gt;
+using namespace std;
 
-<div class="section-desc">手写一个线程池：固定数量的工作线程 + 任务队列 + 优雅关闭。这是 C++ 并发编程的必修课，面试高频考点。</div>
+class ThreadPool {
+private:
+    vector&lt;thread&gt; workers;               // 工作线程
+    queue&lt;function&lt;void()&gt;&gt; tasks;        // 任务队列
+    mutex queueMutex;                     // 队列锁
+    condition_variable condition;         // 条件变量
+    bool stop;                            // 停止标志
 
-<h2>完整代码与逐行注释</h2>
-<div class="code-block">
-<div class="code-header">case_061.cpp</div>
-<pre><code><div class="line"><span class="ln">1</span><span class="cc">#include &lt;iostream&gt;</span></div>
-<div class="line"><span class="ln">2</span><span class="cc">#include &lt;vector&gt;</span></div>
-<div class="line"><span class="ln">3</span><span class="cc">#include &lt;queue&gt;</span></div>
-<div class="line"><span class="ln">4</span><span class="cc">#include &lt;thread&gt;</span></div>
-<div class="line"><span class="ln">5</span><span class="cc">#include &lt;mutex&gt;</span></div>
-<div class="line"><span class="ln">6</span><span class="cc">#include &lt;condition_variable&gt;</span></div>
-<div class="comment-block">💬 <strong>第6行：</strong>线程同步三件套</div>
-<div class="line"><span class="ln">7</span><span class="cc">#include &lt;functional&gt;</span></div>
-<div class="comment-block">💬 <strong>第7行：</strong>std::function 存储任意可调用对象</div>
-<div class="line"><span class="ln">8</span><span class="cc">#include &lt;future&gt;</span></div>
-<div class="comment-block">💬 <strong>第8行：</strong>packaged_task + future 返回结果</div>
-<div class="line"><span class="ln">9</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">10</span><span class="cc">class ThreadPool {</span></div>
-<div class="line"><span class="ln">11</span><span class="cc">public:</span></div>
-<div class="line"><span class="ln">12</span><span class="cc">    ThreadPool(size_t numThreads) : stop(false) {</span></div>
-<div class="comment-block">💬 <strong>第12行：</strong>构造函数：初始化停止标志为 false</div>
-<div class="line"><span class="ln">13</span><span class="cc">        for (size_t i = 0; i &lt; numThreads; ++i) {</span></div>
-<div class="line"><span class="ln">14</span><span class="cc">            workers.emplace_back([this] {</span></div>
-<div class="comment-block">💬 <strong>第14行：</strong>emplace_back 原地构造 thread；lambda 捕获 this</div>
-<div class="line"><span class="ln">15</span><span class="cc">                while (true) {</span></div>
-<div class="comment-block">💬 <strong>第15行：</strong>工作线程主循环</div>
-<div class="line"><span class="ln">16</span><span class="cc">                    std::function&lt;void()&gt; task;</span></div>
-<div class="comment-block">💬 <strong>第16行：</strong>任务容器</div>
-<div class="line"><span class="ln">17</span><span class="cc">                    {</span></div>
-<div class="line"><span class="ln">18</span><span class="cc">                        std::unique_lock&lt;std::mutex&gt; lock(queueMutex);</span></div>
-<div class="comment-block">💬 <strong>第18行：</strong>加锁获取任务</div>
-<div class="line"><span class="ln">19</span><span class="cc">                        // 等待直到有任务或线程池停止</span></div>
-<div class="line"><span class="ln">20</span><span class="cc">                        condition.wait(lock, [this] {</span></div>
-<div class="comment-block">💬 <strong>第20行：</strong>条件变量等待</div>
-<div class="line"><span class="ln">21</span><span class="cc">                            return stop || !tasks.empty();</span></div>
-<div class="comment-block">💬 <strong>第21行：</strong>停止或队列非空时唤醒</div>
-<div class="line"><span class="ln">22</span><span class="cc">                        });</span></div>
-<div class="line"><span class="ln">23</span><span class="cc">                        if (stop &amp;&amp; tasks.empty()) return;</span></div>
-<div class="comment-block">💬 <strong>第23行：</strong>停止且队列空 → 线程退出</div>
-<div class="line"><span class="ln">24</span><span class="cc">                        task = std::move(tasks.front());</span></div>
-<div class="comment-block">💬 <strong>第24行：</strong>move 避免拷贝 function 对象</div>
-<div class="line"><span class="ln">25</span><span class="cc">                        tasks.pop();</span></div>
-<div class="comment-block">💬 <strong>第25行：</strong>从队列取出</div>
-<div class="line"><span class="ln">26</span><span class="cc">                    }</span></div>
-<div class="comment-block">💬 <strong>第26行：</strong>锁在此作用域结束时自动释放</div>
-<div class="line"><span class="ln">27</span><span class="cc">                    task();</span></div>
-<div class="comment-block">💬 <strong>第27行：</strong>执行任务（不持锁，提高并发度）</div>
-<div class="line"><span class="ln">28</span><span class="cc">                }</span></div>
-<div class="line"><span class="ln">29</span><span class="cc">            });</span></div>
-<div class="line"><span class="ln">30</span><span class="cc">        }</span></div>
-<div class="line"><span class="ln">31</span><span class="cc">    }</span></div>
-<div class="line"><span class="ln">32</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">33</span><span class="cc">    template&lt;class F, class... Args&gt;</span></div>
-<div class="comment-block">💬 <strong>第33行：</strong>可变参模板：接受任意函数+参数</div>
-<div class="line"><span class="ln">34</span><span class="cc">    auto enqueue(F&amp;&amp; f, Args&amp;&amp;... args)</span></div>
-<div class="comment-block">💬 <strong>第34行：</strong>完美转发：保持参数的值类别</div>
-<div class="line"><span class="ln">35</span><span class="cc">        -&gt; std::future&lt;decltype(f(args...))&gt; {</span></div>
-<div class="comment-block">💬 <strong>第35行：</strong>尾置返回类型：推导返回值类型</div>
-<div class="line"><span class="ln">36</span><span class="cc">        using returnType = decltype(f(args...));</span></div>
-<div class="comment-block">💬 <strong>第36行：</strong>用 decltype 得到函数返回类型</div>
-<div class="line"><span class="ln">37</span><span class="cc">        auto task = std::make_shared&lt;std::packaged_task&lt;returnType()&gt;&gt;(</span></div>
-<div class="comment-block">💬 <strong>第37行：</strong>packaged_task 包装任务 + 返回 future</div>
-<div class="line"><span class="ln">38</span><span class="cc">            std::bind(std::forward&lt;F&gt;(f), std::forward&lt;Args&gt;(args)...)</span></div>
-<div class="comment-block">💬 <strong>第38行：</strong>bind + forward 完美转发参数</div>
-<div class="line"><span class="ln">39</span><span class="cc">        );</span></div>
-<div class="line"><span class="ln">40</span><span class="cc">        std::future&lt;returnType&gt; res = task-&gt;get_future();</span></div>
-<div class="comment-block">💬 <strong>第40行：</strong>获取 future 用于等待结果</div>
-<div class="line"><span class="ln">41</span><span class="cc">        {</span></div>
-<div class="line"><span class="ln">42</span><span class="cc">            std::lock_guard&lt;std::mutex&gt; lock(queueMutex);</span></div>
-<div class="comment-block">💬 <strong>第42行：</strong>lock_guard 轻量 RAII 锁</div>
-<div class="line"><span class="ln">43</span><span class="cc">            if (stop) throw std::runtime_error(&quot;enqueue on stopped pool&quot;);</span></div>
-<div class="line"><span class="ln">44</span><span class="cc">            tasks.emplace([task]() { (*task)(); });</span></div>
-<div class="comment-block">💬 <strong>第44行：</strong>将 packaged_task 包装成 void() 入队</div>
-<div class="line"><span class="ln">45</span><span class="cc">        }</span></div>
-<div class="line"><span class="ln">46</span><span class="cc">        condition.notify_one();</span></div>
-<div class="comment-block">💬 <strong>第46行：</strong>唤醒一个工作线程</div>
-<div class="line"><span class="ln">47</span><span class="cc">        return res;</span></div>
-<div class="line"><span class="ln">48</span><span class="cc">    }</span></div>
-<div class="line"><span class="ln">49</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">50</span><span class="cc">    ~ThreadPool() {</span></div>
-<div class="comment-block">💬 <strong>第50行：</strong>析构函数：优雅关闭</div>
-<div class="line"><span class="ln">51</span><span class="cc">        {</span></div>
-<div class="line"><span class="ln">52</span><span class="cc">            std::lock_guard&lt;std::mutex&gt; lock(queueMutex);</span></div>
-<div class="line"><span class="ln">53</span><span class="cc">            stop = true;</span></div>
-<div class="comment-block">💬 <strong>第53行：</strong>设置停止标志</div>
-<div class="line"><span class="ln">54</span><span class="cc">        }</span></div>
-<div class="line"><span class="ln">55</span><span class="cc">        condition.notify_all();</span></div>
-<div class="comment-block">💬 <strong>第55行：</strong>唤醒所有线程</div>
-<div class="line"><span class="ln">56</span><span class="cc">        for (std::thread&amp; worker : workers) {</span></div>
-<div class="line"><span class="ln">57</span><span class="cc">            if (worker.joinable()) worker.join();</span></div>
-<div class="comment-block">💬 <strong>第57行：</strong>等待所有线程结束</div>
-<div class="line"><span class="ln">58</span><span class="cc">        }</span></div>
-<div class="line"><span class="ln">59</span><span class="cc">    }</span></div>
-<div class="line"><span class="ln">60</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">61</span><span class="cc">private:</span></div>
-<div class="line"><span class="ln">62</span><span class="cc">    std::vector&lt;std::thread&gt; workers;</span></div>
-<div class="comment-block">💬 <strong>第62行：</strong>工作线程池</div>
-<div class="line"><span class="ln">63</span><span class="cc">    std::queue&lt;std::function&lt;void()&gt;&gt; tasks;</span></div>
-<div class="comment-block">💬 <strong>第63行：</strong>任务队列（存 void() 可调用对象）</div>
-<div class="line"><span class="ln">64</span><span class="cc">    std::mutex queueMutex;</span></div>
-<div class="comment-block">💬 <strong>第64行：</strong>保护队列的互斥锁</div>
-<div class="line"><span class="ln">65</span><span class="cc">    std::condition_variable condition;</span></div>
-<div class="comment-block">💬 <strong>第65行：</strong>条件变量，用于通知线程有新任务</div>
-<div class="line"><span class="ln">66</span><span class="cc">    bool stop;</span></div>
-<div class="comment-block">💬 <strong>第66行：</strong>停止标志：true 时线程退出</div>
-<div class="line"><span class="ln">67</span><span class="cc">};</span></div>
-<div class="line"><span class="ln">68</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">69</span><span class="cc">int main() {</span></div>
-<div class="line"><span class="ln">70</span><span class="cc">    ThreadPool pool(4);  // 4 个工作线程</span></div>
-<div class="line"><span class="ln">71</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">72</span><span class="cc">    // 提交 8 个任务</span></div>
-<div class="line"><span class="ln">73</span><span class="cc">    std::vector&lt;std::future&lt;int&gt;&gt; results;</span></div>
-<div class="comment-block">💬 <strong>第73行：</strong>future 接收各任务返回值</div>
-<div class="line"><span class="ln">74</span><span class="cc">    for (int i = 0; i &lt; 8; ++i) {</span></div>
-<div class="line"><span class="ln">75</span><span class="cc">        results.emplace_back(</span></div>
-<div class="line"><span class="ln">76</span><span class="cc">            pool.enqueue([i] {</span></div>
-<div class="comment-block">💬 <strong>第76行：</strong>lambda 按值捕获 i</div>
-<div class="line"><span class="ln">77</span><span class="cc">                std::cout &lt;&lt; &quot;Task &quot; &lt;&lt; i &lt;&lt; &quot; by thread &quot;</span></div>
-<div class="line"><span class="ln">78</span><span class="cc">                          &lt;&lt; std::this_thread::get_id() &lt;&lt; std::endl;</span></div>
-<div class="comment-block">💬 <strong>第78行：</strong>获取当前线程 ID</div>
-<div class="line"><span class="ln">79</span><span class="cc">                std::this_thread::sleep_for(std::chrono::seconds(1));</span></div>
-<div class="comment-block">💬 <strong>第79行：</strong>模拟耗时任务</div>
-<div class="line"><span class="ln">80</span><span class="cc">                return i * i;  // 返回平方</span></div>
-<div class="line"><span class="ln">81</span><span class="cc">            })</span></div>
-<div class="line"><span class="ln">82</span><span class="cc">        );</span></div>
-<div class="line"><span class="ln">83</span><span class="cc">    }</span></div>
-<div class="line"><span class="ln">84</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">85</span><span class="cc">    // 收集结果</span></div>
-<div class="line"><span class="ln">86</span><span class="cc">    for (size_t i = 0; i &lt; results.size(); ++i) {</span></div>
-<div class="line"><span class="ln">87</span><span class="cc">        std::cout &lt;&lt; &quot;Result &quot; &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; results[i].get() &lt;&lt; std::endl;</span></div>
-<div class="comment-block">💬 <strong>第87行：</strong>future.get() 阻塞等待结果</div>
-<div class="line"><span class="ln">88</span><span class="cc">    }</span></div>
-<div class="line"><span class="ln">89</span><span class="cc"> </span></div>
-<div class="line"><span class="ln">90</span><span class="cc">    return 0;</span></div>
-<div class="comment-block">💬 <strong>第90行：</strong>pool 析构时自动等待所有线程</div>
-<div class="line"><span class="ln">91</span><span class="cc">}</span></div></code></pre>
-</div>
+public:
+    // 构造函数：启动指定数量的工作线程
+    explicit ThreadPool(size_t numThreads) : stop(false) {
+        for (size_t i = 0; i &lt; numThreads; i++) {
+            workers.emplace_back([this]() {
+                // 工作线程的主循环
+                while (true) {
+                    function&lt;void()&gt; task;
 
-<div class="grammar-box">
-<div class="grammar-title">📖 语法规则：std::thread 基础</div>
-<div class="grammar-rule"><code>std::thread t(func, args...);  创建线程并立即执行 func</code></div>
-<div class="grammar-example">
-<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
-<pre><code>std::thread t([] { cout << "Hello"; });
-t.join();</code></pre>
-</div>
-<div class="grammar-tips">
-<p>💡 举一反三：</p>
-<ul><li>std::thread 对象必须 join() 或 detach()，否则析构时 terminate</li><li>传参给线程函数：std::thread t(func, arg1, arg2);  参数按值拷贝</li><li>用 lambda 是最常见的线程写法，注意捕获引用时的生命周期</li></ul>
-</div>
-</div>
+                    {
+                        unique_lock&lt;mutex&gt; lock(queueMutex);
 
-<div class="grammar-box">
-<div class="grammar-title">📖 语法规则：std::condition_variable</div>
-<div class="grammar-rule"><code>cv.wait(lock, predicate); // 阻塞直到 predicate 为 true</code></div>
-<div class="grammar-example">
-<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
-<pre><code>std::unique_lock lk(mtx);
-cv.wait(lk, []{ return ready; });
-cv.notify_one();  // 唤醒一个等待线程
-cv.notify_all();  // 唤醒所有</code></pre>
-</div>
-<div class="grammar-tips">
-<p>💡 举一反三：</p>
-<ul><li>wait 前必须持有 unique_lock，不能用 lock_guard</li><li>推荐用带谓词的 wait：cv.wait(lock, []{ return condition; }); 等价于 while(!condition) cv.wait(lock);</li><li>notify 不需要持有锁，但不持有锁更快</li></ul>
-</div>
-</div>
+                        // 等待任务或停止信号
+                        condition.wait(lock, [this]() {
+                            return stop || !tasks.empty();
+                        });
 
-<div class="grammar-box">
-<div class="grammar-title">📖 语法规则：RAII 关闭模式</div>
-<div class="grammar-rule"><code>析构函数中设置停止标志 → 唤醒所有线程 → join 等待</code></div>
-<div class="grammar-example">
-<p style="color:#8b949e;font-size:13px;margin-bottom:5px;">示例：</p>
-<pre><code>~ThreadPool() {
-  { lock_guard lk(mtx); stop = true; }
-  cv.notify_all();
-  for(auto& t : workers) t.join();
+                        // 停止且队列为空时退出
+                        if (stop &amp;&amp; tasks.empty()) return;
+
+                        // 取出一个任务
+                        task = move(tasks.front());
+                        tasks.pop();
+                    }
+
+                    // 在锁外执行任务
+                    task();
+                }
+            });
+        }
+    }
+
+    // 提交任务并获取 future
+    template &lt;typename F, typename... Args&gt;
+    auto submit(F&amp;&amp; f, Args&amp;&amp;... args)
+        -&gt; future&lt;typename result_of&lt;F(Args...)&gt;::type&gt;
+    {
+        using ReturnType = typename result_of&lt;F(Args...)&gt;::type;
+
+        // 用 packaged_task 包装任务
+        auto taskPtr = make_shared&lt;packaged_task&lt;ReturnType()&gt;&gt;(
+            bind(forward&lt;F&gt;(f), forward&lt;Args&gt;(args)...)
+        );
+
+        future&lt;ReturnType&gt; result = taskPtr-&gt;get_future();
+
+        {
+            unique_lock&lt;mutex&gt; lock(queueMutex);
+            if (stop) throw runtime_error("ThreadPool 已停止");
+
+            // 将 packaged_task 包装为 void() 函数入队
+            tasks.emplace([taskPtr]() { (*taskPtr)(); });
+        }
+        condition.notify_one();
+
+        return result;
+    }
+
+    // 析构函数：等待所有任务完成
+    ~ThreadPool() {
+        {
+            unique_lock&lt;mutex&gt; lock(queueMutex);
+            stop = true;
+        }
+        condition.notify_all();
+        for (thread&amp; worker : workers) {
+            worker.join();
+        }
+    }
+};
+
+int main() {
+    ThreadPool pool(4); // 4 个工作线程
+    vector&lt;future&lt;int&gt;&gt; results;
+
+    // 提交 10 个任务
+    for (int i = 0; i &lt; 10; i++) {
+        results.push_back(pool.submit([i]() {
+            // 模拟耗时计算
+            this_thread::sleep_for(chrono::milliseconds(100));
+            return i * i;
+        }));
+    }
+
+    // 获取结果
+    for (int i = 0; i &lt; (int)results.size(); i++) {
+        cout &lt;&lt; "任务 " &lt;&lt; i &lt;&lt; " 结果: " &lt;&lt; results[i].get() &lt;&lt; endl;
+    }
+
+    return 0;
 }</code></pre>
-</div>
-<div class="grammar-tips">
-<p>💡 举一反三：</p>
-<ul><li>停止标志要在锁内设置，避免竞态</li><li>先设置标志再唤醒，保证线程看到标志后退出</li><li>join 放在析构函数外也行，但要保证 RAII</li></ul>
-</div>
-</div>
-
-<div class="bottom-nav">
-<a href='case_060.html'>← 案例 60</a>
-<a href='case_062.html'>案例 62 →</a>
-</div>
-</main>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：线程池架构</h3>
+                    <pre class="code-block"><code class="language-cpp">class ThreadPool {
+    vector&lt;thread&gt; workers;        // 线程池
+    queue&lt;function&lt;void()&gt;&gt; tasks; // 任务队列
+    mutex mtx;                     // 保护队列
+    condition_variable cv;         // 通知机制
+};</code></pre>
+                    <p class="tip">举一反三：线程池避免频繁创建/销毁线程的开销。核心组件：工作线程集合 + 线程安全任务队列 + 同步机制。典型应用：Web服务器、数据库连接池、异步任务执行。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：packaged_task + future 返回结果</h3>
+                    <pre class="code-block"><code class="language-cpp">using ReturnType = result_of&lt;F(Args...)&gt;::type;
+auto task = make_shared&lt;packaged_task&lt;ReturnType()&gt;&gt;(f);
+future&lt;ReturnType&gt; result = task-&gt;get_future();
+// packaged_task 包装可调用对象，future 获取结果</code></pre>
+                    <p class="tip">举一反三：packaged_task 是可移动的可调用对象包装器，其 get_future() 返回关联 future。任务执行完 future 就绪。C++17 可用 invoke_result 替代 result_of。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：工作线程主循环模式</h3>
+                    <pre class="code-block"><code class="language-cpp">while (true) {
+    unique_lock&lt;mutex&gt; lock(mtx);
+    cv.wait(lock, []{ return stop || !tasks.empty(); });
+    if (stop &amp;&amp; tasks.empty()) return;
+    auto task = move(tasks.front());
+    tasks.pop();
+    lock.unlock(); // 尽早释放锁
+    task();        // 在锁外执行
+}</code></pre>
+                    <p class="tip">举一反三：工作线程在循环中等待任务。先获取锁检查队列，有任务则取出后在锁外执行（避免长时间持锁）。stop 标志 + 空队列作为退出条件。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_060.html" class="prev-link">&larr; 案例 60</a>
+<a href="case_062.html" class="next-link">案例 62 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -3,555 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 6：动态数组实现（手写 Vector） - C++ 100工程案例</title>
+    <title>案例 6：动态数组(造vector轮子) - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link active">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_005.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_007.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 6：动态数组(造vector轮子)</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 6：动态数组(造vector轮子)</h1>
+            <section class="intro">
+<p>手写一个简化版动态数组类，实现自动扩容、下标访问等功能，深入理解 vector 底层原理。</p>
+            <p><strong>核心知识点：</strong>动态内存分配、RAII、拷贝构造、运算符重载</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 6：手写动态数组（造 vector 轮子）
+// 理解动态扩容、RAII 和拷贝语义
+#include &lt;iostream&gt;
+using namespace std;
 
-        <h1>案例 6：动态数组实现（手写 Vector）</h1>
+class MyVector {
+private:
+    int* data;       // 指向动态数组的指针
+    size_t sz;       // 当前元素数量
+    size_t cap;      // 当前容量
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>// 手动实现一个简易的动态数组（类似 std::vector）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>class MyVector {</code></span>
-                        <span class="line-comment">class 是 C++ 中定义自定义类型的关键字</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>private:</code></span>
-                        <span class="line-comment">private: 后面的成员只能从类内部访问，外部代码看不到</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>    int* data_;       // 指向堆上分配的数组</code></span>
-                        <span class="line-comment">int* data_ — 指向 int 的指针，将存放动态分配的数组</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    int size_;        // 当前元素个数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>    int capacity_;    // 当前分配的空间能容纳的最大元素数</code></span>
-                        <span class="line-comment">capacity_ 表示已分配的空间，size_ 表示实际使用了多少</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    // 扩容：容量翻倍</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    void resize() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>        capacity_ = (capacity_ == 0) ? 1 : capacity_ * 2;</code></span>
-                        <span class="line-comment">new int[capacity_] 在堆上分配 capacity_ 个 int 的空间</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>        int* newData = new int[capacity_];       // 在堆上分配新空间</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>        for (int i = 0; i < size_; i++) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>            newData[i] = data_[i];               // 复制旧数据</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>        }</code></span>
-                        <span class="line-comment">delete[] 释放用 new[] 分配的数组内存</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>        delete[] data_;                          // 释放旧空间</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>        data_ = newData;                         // 指针指向新空间</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>public:</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    // 构造函数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>    MyVector() : data_(nullptr), size_(0), capacity_(0) {}</code></span>
-                        <span class="line-comment">构造函数：类名()，用初始化列表 : 成员(初始值) 进行初始化</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">nullptr 是 C++11 的空指针字面量，替代以前的 NULL</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    // 析构函数：释放资源</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    ~MyVector() { delete[] data_; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">析构函数：~类名()，对象销毁时自动调用，用于释放资源</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    // 在末尾添加元素</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>    void push_back(int value) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        if (size_ == capacity_) resize();        // 空间不足时扩容</code></span>
-                        <span class="line-comment">如果 size_ == capacity_ 说明空间满了，需要扩容</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>        data_[size_++] = value;                  // 放入元素并自增 size</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>    // 获取指定位置的元素（const 版本，用于只读对象）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    int at(int index) const {</code></span>
-                        <span class="line-comment">const 成员函数承诺不修改对象的成员变量</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>        // 越界检查（真正的 vector 用 at() 会抛异常）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>        if (index < 0 || index >= size_) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>            throw "Index out of range!";</code></span>
-                        <span class="line-comment">throw 抛出异常，中断正常流程</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>        }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>        return data_[index];</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    // 运算符重载：用 [] 访问元素（类似数组）</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    int operator[](int index) const { return data_[index]; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">operator[] 重载了下标运算符，让自定义类也能用 [] 语法</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>    // 获取当前元素个数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    int size() const { return size_; }</code></span>
-                        <span class="line-comment">const 在函数末尾：this 指针变为 const，函数内不能修改成员</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    // 获取当前容量</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>    int capacity() const { return capacity_; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>};</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code>    MyVector v;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code></code></span>
-                        <span class="line-comment">v.push_back(...) 调用我们定义的成员函数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>    // 测试 push_back</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    for (int i = 1; i <= 10; i++) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>        v.push_back(i * 10);</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>        cout << "push " << i*10</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">61</span>
-                        <span class="line-code"><code>             << " | size=" << v.size()</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">62</span>
-                        <span class="line-code"><code>             << " capacity=" << v.capacity() << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">63</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">64</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">65</span>
-                        <span class="line-code"><code>    cout << "\n遍历元素：";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">66</span>
-                        <span class="line-code"><code>    for (int i = 0; i < v.size(); i++) {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">67</span>
-                        <span class="line-code"><code>        cout << v[i] << " ";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">68</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">69</span>
-                        <span class="line-code"><code>    cout << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">70</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">71</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">72</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
+    // 扩容：容量翻倍
+    void expand() {
+        cap = (cap == 0) ? 1 : cap * 2;
+        int* newData = new int[cap];            // 分配新内存
+        for (size_t i = 0; i &lt; sz; i++) {
+            newData[i] = data[i];               // 拷贝旧数据
+        }
+        delete[] data;                          // 释放旧内存
+        data = newData;
+    }
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>new 与 delete</h3>
-                    <div class="rule-box">`new 类型[N]` 在堆上分配 N 个连续对象，返回首地址指针。必须用 `delete[]` 释放，否则内存泄漏。`new 类型` 分配单个对象，用 `delete` 释放。</div>
-                    <pre><code>int* p = new int(42);    // 单个 int
-delete p;
-int* arr = new int[100]; // 数组
-delete[] arr;</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>构造函数与初始化列表</h3>
-                    <div class="rule-box">`类名(参数) : 成员1(值1), 成员2(值2) { 函数体 }`。初始化列表在函数体之前执行，对 const 成员和引用成员必须用初始化列表。</div>
-                    <pre><code>class Point {
-    int x, y;
 public:
-    Point(int a, int b) : x(a), y(b) {}
-};</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>const 成员函数</h3>
-                    <div class="rule-box">在函数声明末尾加 `const`，表示该函数不会修改对象状态。const 对象只能调用 const 成员函数。</div>
-                    <pre><code>int getValue() const { return value; }</code></pre>
-                </div>
-            </div>
-        </section>
+    // 构造函数
+    MyVector() : data(nullptr), sz(0), cap(0) {}
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>改为模板类</h4>
-                    <p>让 MyVector 能存放任意类型</p>
-                    <p><strong>思路：</strong>template<typename T> class MyVector { ... }</p>
-                </div>
-                <div class="extend-item">
-                    <h4>添加 pop_back</h4>
-                    <p>删除末尾元素，size_--</p>
-                    <p><strong>思路：</strong>不需要释放内存，只是减少计数</p>
-                </div>
-                <div class="extend-item">
-                    <h4>添加拷贝构造和赋值运算符</h4>
-                    <p>防止浅拷贝导致 double free</p>
-                    <p><strong>思路：</strong>深拷贝：分配新内存并复制数据</p>
-                </div>
-            </div>
-        </section>
+    // 析构函数：释放内存
+    ~MyVector() { delete[] data; }
 
-        <div class="bottom-nav">
-            <a href="case_005.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_007.html" class="nav-link">下一个 →</a>
+    // 拷贝构造函数（深拷贝）
+    MyVector(const MyVector&amp; other) : sz(other.sz), cap(other.cap) {
+        data = new int[cap];
+        for (size_t i = 0; i &lt; sz; i++) data[i] = other.data[i];
+    }
+
+    // 尾部添加元素
+    void push_back(int val) {
+        if (sz == cap) expand(); // 容量不足则扩容
+        data[sz++] = val;
+    }
+
+    // 下标访问运算符重载
+    int&amp; operator[](size_t index) { return data[index]; }
+
+    size_t size() const { return sz; }
+    size_t capacity() const { return cap; }
+};
+
+int main() {
+    MyVector v;
+    for (int i = 1; i &lt;= 10; i++) {
+        v.push_back(i * 10);
+    }
+
+    for (size_t i = 0; i &lt; v.size(); i++) {
+        cout &lt;&lt; v[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+    cout &lt;&lt; "size=" &lt;&lt; v.size() &lt;&lt; " capacity=" &lt;&lt; v.capacity() &lt;&lt; endl;
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：动态内存分配与 RAII</h3>
+                    <pre class="code-block"><code class="language-cpp">int* data = new int[cap]; // 分配
+// ... 使用 ...
+delete[] data;           // 释放</code></pre>
+                    <p class="tip">举一反三：new[] 必须搭配 delete[]，new 搭配 delete。RAII 将资源绑定到对象生命周期，构造时获取，析构时释放。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：拷贝构造函数</h3>
+                    <pre class="code-block"><code class="language-cpp">MyVector(const MyVector&amp; other) : sz(other.sz), cap(other.cap) {
+    data = new int[cap];
+    // 深拷贝数据
+}</code></pre>
+                    <p class="tip">举一反三：三大法则：若自定义了析构/拷贝构造/拷贝赋值中的一个，通常需要全部定义。C++11 增加移动构造和移动赋值。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：运算符重载</h3>
+                    <pre class="code-block"><code class="language-cpp">int&amp; operator[](size_t index) {
+    return data[index];
+}</code></pre>
+                    <p class="tip">举一反三：返回引用允许读写元素（v[i] = 5）。const 版本返回 const int& 只读。不能重载不存在的运算符（如 **）。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_005.html" class="prev-link">&larr; 案例 5</a>
+<a href="case_007.html" class="next-link">案例 7 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

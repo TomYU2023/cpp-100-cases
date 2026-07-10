@@ -1,194 +1,132 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 88：简易 Git 实现</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_087.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_089.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 88：std::lexicographical_compare 字典序 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 88：std::lexicographical_compare 字典序</span>
         </div>
-    </nav><main class="container"><h1>案例 88：简易 Git 实现</h1><section class="intro"><p>从零实现 init/add/commit/log 四个命令，理解 Git 的 blob/tree/commit 对象模型和哈希寻址机制。</p><p><strong>核心知识点：</strong>Git 对象模型、std::hash、filesystem 遍历、istreambuf_iterator 文件读取、内容寻址存储</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 88：简易 Git 实现 —— init / add / commit / log
-// 从零实现 Git 的核心机制：blob 对象、树对象、提交链、哈希寻址。
-// 帮助理解 Git 底层数据模型的本质，而非仅会使用命令行。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 88：std::lexicographical_compare 字典序</h1>
+            <section class="intro">
+<p>使用字典序比较两个序列，实现类似字符串的比较逻辑。</p>
+            <p><strong>核心知识点：</strong>lexicographical_compare、字典序比较、自定义排序</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 88：std::lexicographical_compare 字典序
+// 按字典序比较两个序列
 #include &lt;iostream&gt;
-#include &lt;fstream&gt;
-#include &lt;sstream&gt;
-#include &lt;string&gt;
-#include &lt;map&gt;
+#include &lt;algorithm&gt;
 #include &lt;vector&gt;
-#include &lt;filesystem&gt;
-#include &lt;iomanip&gt;
-#include &lt;ctime&gt;
-#include &lt;functional&gt;
+#include &lt;string&gt;
+using namespace std;
 
-namespace fs = std::filesystem;
+int main() {
+    // 1. 数字序列的字典序比较
+    vector&lt;int&gt; A = {1, 2, 3, 4};
+    vector&lt;int&gt; B = {1, 2, 4, 0};
+    vector&lt;int&gt; C = {1, 2, 3};
 
-// ─── 简易 SHA-1（教学用，非密码学安全）──────────
-// 真实的 Git 使用 SHA-1 哈希命名对象。这里用简单哈希模拟。
-std::string simpleHash(const std::string&amp; data) {
-    std::hash&lt;std::string&gt; hasher;
-    size_t h = hasher(data);
-    std::stringstream ss;
-    ss &lt;&lt; std::hex &lt;&lt; std::setfill('0') &lt;&lt; std::setw(16) &lt;&lt; h;
-    return ss.str();
-}
+    cout &lt;&lt; "A: ";
+    for (int x : A) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; "\nB: ";
+    for (int x : B) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; "\nC: ";
+    for (int x : C) cout &lt;&lt; x &lt;&lt; " ";
+    cout &lt;&lt; endl;
 
-const std::string OBJECTS = &quot;.mygit/objects/&quot;;
+    cout &lt;&lt; "\nA &lt; B: " &lt;&lt; lexicographical_compare(
+        A.begin(), A.end(), B.begin(), B.end()) &lt;&lt; endl;
+    cout &lt;&lt; "C &lt; A: " &lt;&lt; lexicographical_compare(
+        C.begin(), C.end(), A.begin(), A.end())
+         &lt;&lt; " (C 是 A 的前缀)" &lt;&lt; endl;
 
-// ─── 写入一个对象到 .mygit/objects/ ──────────────
-void writeObject(const std::string&amp; type, const std::string&amp; data) {
-    std::string header = type + &quot; &quot; + std::to_string(data.size()) + &quot;\0&quot;;
-    std::string full = header + data;
-    std::string hash = simpleHash(full);
-    fs::create_directories(OBJECTS + hash.substr(0, 2));
-    std::ofstream out(OBJECTS + hash.substr(0,2) + &quot;/&quot; + hash.substr(2),
-        std::ios::binary);
-    out &lt;&lt; full;
-    std::cout &lt;&lt; &quot;  写入对象 &quot; &lt;&lt; type &lt;&lt; &quot; &quot; &lt;&lt; hash &lt;&lt; std::endl;
-}
+    // 2. 自定义比较规则
+    // 按绝对值字典序比较
+    vector&lt;int&gt; X = {1, -5, 3};
+    vector&lt;int&gt; Y = {1, 4, 2};
 
-// ─── Git init ────────────────────────────────────
-void gitInit() {
-    fs::create_directories(&quot;.mygit/objects&quot;);
-    fs::create_directories(&quot;.mygit/refs/heads&quot;);
-    std::ofstream head(&quot;.mygit/HEAD&quot;);
-    head &lt;&lt; &quot;ref: refs/heads/master\n&quot;;  // 当前分支指针
-    std::cout &lt;&lt; &quot;已初始化空仓库于 .mygit/&quot; &lt;&lt; std::endl;
-}
+    bool lessByAbs = lexicographical_compare(
+        X.begin(), X.end(), Y.begin(), Y.end(),
+        [](int a, int b) { return abs(a) &lt; abs(b); });
+    cout &lt;&lt; "\n按绝对值: X &lt; Y = " &lt;&lt; lessByAbs &lt;&lt; endl;
 
-// ─── Git add：将文件内容存储为 blob ─────────────
-void gitAdd(const std::string&amp; filename) {
-    if (!fs::exists(filename)) {
-        std::cerr &lt;&lt; &quot;文件不存在: &quot; &lt;&lt; filename &lt;&lt; std::endl;
-        return;
-    }
-    std::ifstream in(filename, std::ios::binary);
-    std::string content((std::istreambuf_iterator&lt;char&gt;(in)),
-                         std::istreambuf_iterator&lt;char&gt;());
-    writeObject(&quot;blob&quot;, content);
-    std::cout &lt;&lt; &quot;已暂存: &quot; &lt;&lt; filename &lt;&lt; std::endl;
-}
+    // 3. 版本号比较
+    // 1.2.3 vs 1.2.10: 按分段数字比较
+    vector&lt;int&gt; v1 = {1, 2, 3};
+    vector&lt;int&gt; v2_10 = {1, 2, 10};
+    vector&lt;int&gt; v2 = {1, 2, 3, 0};
 
-// ─── Git commit：创建树和提交对象 ────────────────
-void gitCommit(const std::string&amp; message) {
-    // 简化：直接将文件列表写入树对象
-    std::string treeData;
-    for (const auto&amp; entry : fs::directory_iterator(&quot;.&quot;)) {
-        if (!entry.is_regular_file()) continue;
-        std::string name = entry.path().filename().string();
-        if (name == &quot;.mygit&quot;) continue;  // 忽略仓库目录
-        // 读取文件，生成 blob 哈希
-        std::ifstream in(entry.path(), std::ios::binary);
-        std::string content((std::istreambuf_iterator&lt;char&gt;(in)),
-                             std::istreambuf_iterator&lt;char&gt;());
-        std::string blobHash = simpleHash(&quot;blob &quot; +
-            std::to_string(content.size()) + &quot;\0&quot; + content);
-        treeData += &quot;100644 blob &quot; + blobHash + &quot; &quot; + name + &quot;\n&quot;;
-    }
+    cout &lt;&lt; "\n版本号比较:" &lt;&lt; endl;
+    cout &lt;&lt; "1.2.3 &lt; 1.2.10: " &lt;&lt; lexicographical_compare(
+        v1.begin(), v1.end(), v2_10.begin(), v2_10.end()) &lt;&lt; endl;
+    cout &lt;&lt; "1.2.3 &lt; 1.2.3.0: " &lt;&lt; lexicographical_compare(
+        v1.begin(), v1.end(), v2.begin(), v2.end())
+         &lt;&lt; " (前缀更短算更小)" &lt;&lt; endl;
 
-    // 写入树对象
-    writeObject(&quot;tree&quot;, treeData);
+    // 4. 实际应用：多列排序的基础
+    // 比较两个坐标：先比 x，再比 y
+    using Point = pair&lt;int, int&gt;;
+    auto cmp = [](const Point&amp; p1, const Point&amp; p2) {
+        return lexicographical_compare(
+            &amp;p1.first, &amp;p1.first + 2,
+            &amp;p2.first, &amp;p2.first + 2);
+    };
 
-    // 构造提交对象
-    std::string treeHash = simpleHash(&quot;tree &quot; +
-        std::to_string(treeData.size()) + &quot;\0&quot; + treeData);
-
-    // 读取父提交
-    std::string parentHash;
-    std::ifstream refFile(&quot;.mygit/refs/heads/master&quot;);
-    if (refFile) std::getline(refFile, parentHash);
-
-    time_t now = time(0);
-    std::string commitData = &quot;tree &quot; + treeHash + &quot;\n&quot;;
-    if (!parentHash.empty()) commitData += &quot;parent &quot; + parentHash + &quot;\n&quot;;
-    commitData += &quot;\n&quot; + message + &quot;\n&quot;;
-
-    // 写入提交对象
-    std::string header = &quot;commit &quot; + std::to_string(commitData.size()) + &quot;\0&quot;;
-    std::string full = header + commitData;
-    std::string commitHash = simpleHash(full);
-
-    fs::create_directories(OBJECTS + commitHash.substr(0, 2));
-    std::ofstream out(OBJECTS + commitHash.substr(0,2) + &quot;/&quot; +
-        commitHash.substr(2), std::ios::binary);
-    out &lt;&lt; full;
-
-    // 更新分支引用
-    std::ofstream masterRef(&quot;.mygit/refs/heads/master&quot;);
-    masterRef &lt;&lt; commitHash;
-
-    std::cout &lt;&lt; &quot;[&quot; &lt;&lt; commitHash.substr(0, 7) &lt;&lt; &quot;] &quot; &lt;&lt; message &lt;&lt; std::endl;
-}
-
-// ─── Git log：遍历提交链 ─────────────────────────
-void gitLog() {
-    std::ifstream refFile(&quot;.mygit/refs/heads/master&quot;);
-    if (!refFile) { std::cout &lt;&lt; &quot;尚无提交。&quot; &lt;&lt; std::endl; return; }
-    std::string hash;
-    std::getline(refFile, hash);
-    int n = 0;
-    while (!hash.empty()) {
-        // 读取提交对象
-        std::string objPath = OBJECTS + hash.substr(0,2) + &quot;/&quot; + hash.substr(2);
-        std::ifstream in(objPath, std::ios::binary);
-        if (!in) break;
-        std::string content((std::istreambuf_iterator&lt;char&gt;(in)),
-                             std::istreambuf_iterator&lt;char&gt;());
-        // 跳过 header（type size\0）
-        auto nullPos = content.find('\0');
-        if (nullPos == std::string::npos) break;
-        std::string body = content.substr(nullPos + 1);
-
-        std::cout &lt;&lt; &quot;commit &quot; &lt;&lt; hash.substr(0, 7) &lt;&lt; std::endl;
-        // 提取摘要（第一行非空的行）
-        size_t msgStart = body.find(&quot;\n\n&quot;);
-        if (msgStart != std::string::npos) {
-            std::string msg = body.substr(msgStart + 2);
-            size_t nl = msg.find('\n');
-            if (nl != std::string::npos) msg = msg.substr(0, nl);
-            std::cout &lt;&lt; &quot;    &quot; &lt;&lt; msg &lt;&lt; std::endl;
-        }
-
-        // 查找父提交
-        size_t parentPos = body.find(&quot;parent &quot;);
-        if (parentPos == std::string::npos) break;
-        size_t nl = body.find('\n', parentPos);
-        hash = body.substr(parentPos + 7, nl - parentPos - 7);
-        std::cout &lt;&lt; std::endl;
-        n++;
-    }
-}
-
-// ─── CLI ─────────────────────────────────────────
-int main(int argc, char* argv[]) {
-    if (argc &lt; 2) {
-        std::cout &lt;&lt; &quot;用法: git init | add &lt;file&gt; | commit &lt;msg&gt; | log&quot; &lt;&lt; std::endl;
-        return 1;
-    }
-    std::string cmd = argv[1];
-
-    if (cmd == &quot;init&quot;) gitInit();
-    else if (cmd == &quot;add&quot; &amp;&amp; argc &gt; 2) gitAdd(argv[2]);
-    else if (cmd == &quot;commit&quot; &amp;&amp; argc &gt; 2) gitCommit(argv[2]);
-    else if (cmd == &quot;log&quot;) gitLog();
-    else std::cout &lt;&lt; &quot;未知命令。&quot; &lt;&lt; std::endl;
+    Point p1{1, 5};
+    Point p2{1, 3};
+    cout &lt;&lt; "\nPoint(1,5) &lt; Point(1,3): " &lt;&lt; cmp(p1, p2) &lt;&lt; endl;
 
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：std::hash<T> 标准哈希函数</h3><pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
-std::hash&lt;std::string&gt; hasher;
-size_t h = hasher(&quot;hello&quot;);  // 将字符串映射为 size_t
-// std::hash&lt;T&gt; 对 std::string、int、指针等有特化实现</code></pre><p class="tip">💡 举一反三：std::hash 是 C++ 标准库为每种类型提供的哈希函数。unordered_map 内部就用它。注意：同一程序多次运行，同一输入的 hash 值可能不同（实现定义），不要用于持久化。Git 用的是 SHA-1，这里用 hash 仅为教学演示。</p>
-<h3>语法规则：std::istreambuf_iterator 一次性读取文件</h3><pre class="code-block"><code class="language-cpp">#include &lt;fstream&gt;
-#include &lt;string&gt;
-std::ifstream in(&quot;file.txt&quot;, std::ios::binary);
-std::string content(
-    std::istreambuf_iterator&lt;char&gt;(in),
-    std::istreambuf_iterator&lt;char&gt;());  // 默认构造 = 流结束哨兵</code></pre><p class="tip">💡 举一反三：这是将整个文件读入 string 的最简洁方式。istreambuf_iterator 逐字符读取（包括空白符），效率高于逐行 getline 拼接。binary 模式防止 \r\n 转为 \n。</p>
-<h3>语法规则：std::filesystem 目录遍历</h3><pre class="code-block"><code class="language-cpp">#include &lt;filesystem&gt;
-namespace fs = std::filesystem;
-for (const auto&amp; entry : fs::directory_iterator(&quot;.&quot;)) {
-    if (entry.is_regular_file())
-        std::cout &lt;&lt; entry.path().filename() &lt;&lt; std::endl;
-}</code></pre><p class="tip">💡 举一反三：C++17 引入的 filesystem 库提供了跨平台的目录操作。directory_iterator 遍历目录，recursive_directory_iterator 递归遍历子目录。相比平台 API，filesystem 写法一致、可移植。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：std::lexicographical_compare</h3>
+                    <pre class="code-block"><code class="language-cpp">bool result = lexicographical_compare(
+    A.begin(), A.end(), B.begin(), B.end());
+// 逐元素比较，遇到第一对不等的元素时按该对比较
+// 一个序列是另一个的前缀时，短的更小
+// 类似字符串的 strcmp</code></pre>
+                    <p class="tip">举一反三：字典序是序列比较的标准方式。与字符串比较逻辑一致。空序列小于任何非空序列。默认用 operator< 比较元素。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：自定义比较器</h3>
+                    <pre class="code-block"><code class="language-cpp">lexicographical_compare(A.begin(), A.end(),
+    B.begin(), B.end(), customLess);
+// 按自定义规则逐元素比较
+// 可比较复杂类型（如按结构体某个字段）</code></pre>
+                    <p class="tip">举一反三：自定义比较器可用于按不同字段排序比较。如按日期排序（先比年，再比月，再比日）。比较器必须满足严格弱序（strict weak ordering）。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：版本号比较</h3>
+                    <pre class="code-block"><code class="language-cpp">// 版本号 「1.2.10」 vs 「1.2.3」
+// 不能用字符串比较（「10」 &lt; 「3」）
+// 拆分为数字序列后字典序比较
+auto v1 = split("1.2.10"); // {1,2,10}
+auto v2 = split("1.2.3");  // {1,2,3}</code></pre>
+                    <p class="tip">举一反三：版本号分段字典序是 lexicographical_compare 的经典应用。注意补零处理（1.2 = 1.2.0）。也可用 tuple 比较（std::tie）实现多列排序。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_087.html" class="prev-link">&larr; 案例 87</a>
+<a href="case_089.html" class="next-link">案例 89 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

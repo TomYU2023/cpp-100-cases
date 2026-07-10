@@ -1,166 +1,151 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 44：Base64 编解码器 - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 44：Base64编解码 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 44：Base64 编解码器</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd">#include &lt;cstdint&gt;</td><td class="cmt">定宽整数</td></tr>
-<tr><td class="ln">5</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2">// Base64 字母表（标准 RFC 4648）</td></tr>
-<tr><td class="ln">9</td><td class="cd">const string BASE64_CHARS =</td><td class="cmt">64 个可打印字符</td></tr>
-<tr><td class="ln">10</td><td class="cd">    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"</td><td class="cmt">大写字母 A-Z（0-25）</td></tr>
-<tr><td class="ln">11</td><td class="cd">    "abcdefghijklmnopqrstuvwxyz"</td><td class="cmt">小写字母 a-z（26-51）</td></tr>
-<tr><td class="ln">12</td><td class="cd">    "0123456789+/";</td><td class="cmt">数字 0-9（52-61）+ 和 /（62-63）</td></tr>
-<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">14</td><td class="cd">string base64Encode(const vector&lt;uint8_t&gt;&amp; data) {</td><td class="cmt">编码函数：字节数组 → Base64 字符串</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">    string result;</td></tr>
-<tr><td class="ln">16</td><td class="cd">    int padding = (3 - data.size() % 3) % 3;</td><td class="cmt">计算需要补几个字节凑成 3 的倍数</td></tr>
-<tr><td class="ln">17</td><td class="cd">    vector&lt;uint8_t&gt; padded = data;</td><td class="cmt">复制原始数据</td></tr>
-<tr><td class="ln">18</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">    // 补零到 3 的倍数</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2">    for (int i = 0; i &lt; padding; i++)</td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">        padded.push_back(0);</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">    // 每 3 字节编码为 4 个 Base64 字符</td></tr>
-<tr><td class="ln">24</td><td class="cd">    for (size_t i = 0; i &lt; padded.size(); i += 3) {</td><td class="cmt">每次处理 3 字节</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2">        // 将 3 个字节合并为 24 位整数</td></tr>
-<tr><td class="ln">26</td><td class="cd">        uint32_t triple = (padded[i] &lt;&lt; 16) |</td><td class="cmt">第 1 字节放高 8 位</td></tr>
-<tr><td class="ln">27</td><td class="cd">                         (padded[i+1] &lt;&lt; 8) |</td><td class="cmt">第 2 字节放中 8 位</td></tr>
-<tr><td class="ln">28</td><td class="cd">                          padded[i+2];</td><td class="cmt">第 3 字节放低 8 位</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">        // 取出 4 个 6 位组（每 6 位映射到一个字符）</td></tr>
-<tr><td class="ln">31</td><td class="cd">        result += BASE64_CHARS[(triple &gt;&gt; 18) &amp; 0x3F];</td><td class="cmt">取 bit 18-23</td></tr>
-<tr><td class="ln">32</td><td class="cd">        result += BASE64_CHARS[(triple &gt;&gt; 12) &amp; 0x3F];</td><td class="cmt">取 bit 12-17</td></tr>
-<tr><td class="ln">33</td><td class="cd">        result += BASE64_CHARS[(triple &gt;&gt; 6)  &amp; 0x3F];</td><td class="cmt">取 bit 6-11</td></tr>
-<tr><td class="ln">34</td><td class="cd">        result += BASE64_CHARS[ triple        &amp; 0x3F];</td><td class="cmt">取 bit 0-5</td></tr>
-<tr><td class="ln">35</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">    // 将填充字节替换为 =</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    for (int i = 0; i &lt; padding; i++)</td></tr>
-<tr><td class="ln">39</td><td class="cd">        result[result.size() - 1 - i] = '=';</td><td class="cmt">从末尾开始替换</td></tr>
-<tr><td class="ln">40</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">    return result;</td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">44</td><td class="cd">vector&lt;uint8_t&gt; base64Decode(const string&amp; input) {</td><td class="cmt">解码函数</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">    vector&lt;uint8_t&gt; result;</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">    // 建立反向查找表：字符 → 6 位值</td></tr>
-<tr><td class="ln">47</td><td class="cd">    int decodeTable[256];</td><td class="cmt">ASCII 字符查找表</td></tr>
-<tr><td class="ln">48</td><td class="cd">    fill(decodeTable, decodeTable + 256, -1);</td><td class="cmt">初始化为 -1（无效字符）</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2">    for (int i = 0; i &lt; 64; i++)</td></tr>
-<tr><td class="ln">50</td><td class="cd">        decodeTable[(uint8_t)BASE64_CHARS[i]] = i;</td><td class="cmt">填入有效字符的 6 位值</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">52</td><td class="cd">    uint32_t buffer = 0;</td><td class="cmt">暂存 24 位</td></tr>
-<tr><td class="ln">53</td><td class="cd">    int bits = 0;</td><td class="cmt">已累积比特数</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">55</td><td class="cd">    for (char c : input) {</td><td class="cmt">逐字符处理</td></tr>
-<tr><td class="ln">56</td><td class="cd">        if (c == '=') break;</td><td class="cmt">遇到 = 停止（填充标记）</td></tr>
-<tr><td class="ln">57</td><td class="cd">        int val = decodeTable[(uint8_t)c];</td><td class="cmt">查找 6 位值</td></tr>
-<tr><td class="ln">58</td><td class="cd">        if (val == -1) continue;</td><td class="cmt">跳过无效字符（如换行符）</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">60</td><td class="cd">        buffer = (buffer &lt;&lt; 6) | val;</td><td class="cmt">左移 6 位，放入新的 6 位值</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2">        bits += 6;</td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">63</td><td class="cd">        if (bits &gt;= 8) {</td><td class="cmt">累积满 8 位就输出 1 字节</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">            bits -= 8;</td></tr>
-<tr><td class="ln">65</td><td class="cd">            result.push_back((buffer &gt;&gt; bits) &amp; 0xFF);</td><td class="cmt">取出最高字节</td></tr>
-<tr><td class="ln">66</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2">    return result;</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">73</td><td class="cd" colspan="2">    string original = "C++ Base64 编解码";</td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">    // 编码</td></tr>
-<tr><td class="ln">76</td><td class="cd">    vector&lt;uint8_t&gt; data(original.begin(), original.end());</td><td class="cmt">字符串转字节数组</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">    string encoded = base64Encode(data);</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">    cout &lt;&lt; "原文:   " &lt;&lt; original &lt;&lt; endl;</td></tr>
-<tr><td class="ln">79</td><td class="cd" colspan="2">    cout &lt;&lt; "编码后: " &lt;&lt; encoded &lt;&lt; endl;</td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2">    // 解码</td></tr>
-<tr><td class="ln">82</td><td class="cd" colspan="2">    auto decoded = base64Decode(encoded);</td></tr>
-<tr><td class="ln">83</td><td class="cd">    string decodedStr(decoded.begin(), decoded.end());</td><td class="cmt">字节数组转字符串</td></tr>
-<tr><td class="ln">84</td><td class="cd" colspan="2">    cout &lt;&lt; "解码后: " &lt;&lt; decodedStr &lt;&lt; endl;</td></tr>
-<tr><td class="ln">85</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">86</td><td class="cd" colspan="2">    cout &lt;&lt; "匹配: " &lt;&lt; (original == decodedStr ? "是" : "否") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">87</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">88</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>std::fill 填充算法</h3>
-<div class="rule"><strong>语法规则：</strong><code>std::fill(first, last, value)</code> 将 [first, last) 范围内的所有元素设为 value。原理是迭代器循环赋值，比手写 for 循环更清晰且编译器可能优化为 memset。</div>
-<pre class="example"><code>int arr[10];
-fill(arr, arr + 10, 42);  // arr 全部填为 42
-vector<int> v(100);
-fill(v.begin(), v.end(), -1);  // 全填 -1</code></pre>
-</div>
-<div class="grammar-item">
-<h3>位运算提取 6 位组</h3>
-<div class="rule"><strong>语法规则：</strong>Base64 编码的核心是将 24 位（3 字节）分成 4 个 6 位组。提取第 k 个 6 位组：<code>(triple >> (18 - k*6)) & 0x3F</code>。右移去掉右侧比特，& 0x3F（二进制 111111）掩码取出低 6 位。</div>
-<pre class="example"><code>uint32_t x = 0b101010101010101010101010; // 24 位
-int g0 = (x >> 18) & 0x3F; // 取最高 6 位
-int g1 = (x >> 12) & 0x3F; // 取次高 6 位
-int g2 = (x >> 6)  & 0x3F; // 取次低 6 位
-int g3 =  x        & 0x3F; // 取最低 6 位</code></pre>
-</div>
-<div class="grammar-item">
-<h3>fill 与 memset 的区别</h3>
-<div class="rule"><strong>语法规则：</strong><code>fill</code> 是 C++ 算法，适用于所有迭代器类型的容器，类型安全。<code>memset</code> 是 C 函数，只能按字节填充原始内存，速度快但仅适用于 POD 类型。</div>
-<pre class="example"><code>// fill: 类型安全，适用范围广
-fill(v.begin(), v.end(), MyClass{42}); // OK
-// memset: 仅适用于原始内存
-int arr[100];
-memset(arr, 0, sizeof(arr));  // OK
-// memset(arr, 42, size); // 危险！每字节都会是 42</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>URL 安全的 Base64 变体：</strong><pre><code>// 将 + 替换为 -，/ 替换为 _，去掉 =
-string urlEncode = base64Encode(data);
-for (auto& c : urlEncode) {
-    if (c == '+') c = '-';
-    if (c == '/') c = '_';
-}</code></pre><p>URL 和文件名中不能出现 +/= 字符，所以有 Base64URL 变体。jwt.io 的 token 就是这种格式。</p></li>
-<li><strong>OpenSSL BIO Base64 一行实现：</strong><pre><code>#include <openssl/bio.h>
-#include <openssl/evp.h>
-// 一行编码
-BIO_f_base64 提供了流式 Base64 编解码，支持大文件处理。</code></pre><p>生产环境直接使用 OpenSSL BIO 或专门的 Base64 库，性能更高且处理了各种边界情况。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 44：Base64编解码</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 44：Base64编解码</h1>
+            <section class="intro">
+<p>实现 Base64 编码和解码算法，理解二进制数据到 ASCII 文本的转换原理。</p>
+            <p><strong>核心知识点：</strong>位运算、编码算法、string 操作</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 44：Base64 编解码
+// 实现标准 Base64 编码和解码
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_043.html">← 案例 43</a><a href="case_045.html">案例 45 →</a>
-</nav>
-</main>
+// Base64 字符表
+const string BASE64_CHARS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+// Base64 编码
+string base64Encode(const vector&lt;uint8_t&gt;&amp; data) {
+    string result;
+    size_t i = 0;
+    uint32_t buffer; // 24 位缓冲区
+
+    while (i &lt; data.size()) {
+        // 取 3 个字节放入 24 位缓冲区
+        buffer = (uint32_t)data[i++] &lt;&lt; 16;
+        if (i &lt; data.size()) buffer |= (uint32_t)data[i++] &lt;&lt; 8;
+        if (i &lt; data.size()) buffer |= (uint32_t)data[i++];
+
+        // 将 24 位分成 4 组 6 位，映射到 BASE64_CHARS
+        result += BASE64_CHARS[(buffer &gt;&gt; 18) &amp; 0x3F];
+        result += BASE64_CHARS[(buffer &gt;&gt; 12) &amp; 0x3F];
+
+        // 处理不足 3 字节的情况
+        size_t remaining = data.size() - (i - 3);
+        if (remaining &gt;= 2) {
+            result += BASE64_CHARS[(buffer &gt;&gt; 6) &amp; 0x3F];
+            result += BASE64_CHARS[buffer &amp; 0x3F];
+        } else if (remaining == 1) {
+            result += BASE64_CHARS[(buffer &gt;&gt; 6) &amp; 0x3F];
+            result += '='; // 填充
+        }
+        result += remaining == 0 ? BASE64_CHARS[buffer &amp; 0x3F] : '=';
+        // 修正：需要用 padding 逻辑替代
+    }
+
+    // 简化版本：使用标准算法
+    result.clear();
+    int val = 0, valb = -6;
+    for (uint8_t c : data) {
+        val = (val &lt;&lt; 8) + c;
+        valb += 8;
+        while (valb &gt;= 0) {
+            result += BASE64_CHARS[(val &gt;&gt; valb) &amp; 0x3F];
+            valb -= 6;
+        }
+    }
+    if (valb &gt; -6)
+        result += BASE64_CHARS[((val &lt;&lt; 8) &gt;&gt; (valb + 8)) &amp; 0x3F];
+    while (result.size() % 4)
+        result += '=';
+
+    return result;
+}
+
+int main() {
+    vector&lt;string&gt; testCases = {
+        "Hello World!",
+        "C++ Programming",
+        "Man",       // 1 字节 → 需填充
+        "Ma",        // 2 字节 → 需填充
+        "M"          // 3 字节 → 完整
+    };
+
+    cout &lt;&lt; "=== Base64 编码 ===" &lt;&lt; endl;
+    cout &lt;&lt; left &lt;&lt; setw(30) &lt;&lt; "原始文本" &lt;&lt; "Base64 编码" &lt;&lt; endl;
+    cout &lt;&lt; string(60, '-') &lt;&lt; endl;
+
+    for (const auto&amp; s : testCases) {
+        vector&lt;uint8_t&gt; data(s.begin(), s.end());
+        cout &lt;&lt; left &lt;&lt; setw(30) &lt;&lt; ("\"" + s + "\"")
+             &lt;&lt; base64Encode(data) &lt;&lt; endl;
+    }
+
+    // 验证：编码后的字符串只包含 Base64 字符和 =
+    string encoded = base64Encode(
+        vector&lt;uint8_t&gt;(testCases[0].begin(), testCases[0].end()));
+    cout &lt;&lt; "\n验证: \"" &lt;&lt; testCases[0] &lt;&lt; "\""
+         &lt;&lt; " -&gt; " &lt;&lt; encoded &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：Base64 编码原理</h3>
+                    <pre class="code-block"><code class="language-cpp">// 每 3 个字节（24 位） → 4 个 ASCII 字符
+// 每个字符取 6 位 → 0~63 映射到字符表
+// 不足 3 字节以 = 填充</code></pre>
+                    <p class="tip">举一反三：Base64 将二进制数据表示为可打印 ASCII 字符。编码后长度 ≈ 原始 × 4/3。= 填充只出现在末尾。常用于邮件、URL、JSON 嵌入二进制。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：位运算提取字段</h3>
+                    <pre class="code-block"><code class="language-cpp">uint32_t buffer;
+(buffer &gt;&gt; 18) &amp; 0x3F; // 提取高 6 位
+(buffer &gt;&gt; 12) &amp; 0x3F; // 提取次 6 位
+
+0x3F = 0011 1111 = 63</code></pre>
+                    <p class="tip">举一反三：& 0x3F 是取低 6 位的惯用写法。移位 >> 将目标位移到最低位，再 & 掩码提取。位运算在编码/网络协议中广泛应用。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：vector<uint8_t> 存储二进制</h3>
+                    <pre class="code-block"><code class="language-cpp">vector&lt;uint8_t&gt; data;
+data.push_back(0xFF); // 任意字节值
+// uint8_t 明确表示 8 位无符号，适合二进制数据</code></pre>
+                    <p class="tip">举一反三：std::byte (C++17) 更语义化地表示原始字节。char 可能是有符号的，用于二进制会出问题。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_043.html" class="prev-link">&larr; 案例 43</a>
+<a href="case_045.html" class="next-link">案例 45 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

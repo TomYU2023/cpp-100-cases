@@ -3,395 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 3：简易计算器 - C++ 100工程案例</title>
+    <title>案例 3：简易计算器 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link active">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link">6. 动态数组实现（手写 Vector）</a>
-    <a href="case_007.html" class="case-link">7. 字符串工具（反转/查找/替换）</a>
-    <a href="case_008.html" class="case-link">8. 统计文本文件中字符/单词频率</a>
-    <a href="case_009.html" class="case-link">9. 学生成绩管理系统（结构体版）</a>
-    <a href="case_010.html" class="case-link">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link">11. </a>
-    <a href="case_012.html" class="case-link">12. </a>
-    <a href="case_013.html" class="case-link">13. </a>
-    <a href="case_014.html" class="case-link">14. </a>
-    <a href="case_015.html" class="case-link">15. </a>
-    <a href="case_016.html" class="case-link">16. </a>
-    <a href="case_017.html" class="case-link">17. </a>
-    <a href="case_018.html" class="case-link">18. </a>
-    <a href="case_019.html" class="case-link">19. </a>
-    <a href="case_020.html" class="case-link">20. </a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link">21. </a>
-    <a href="case_022.html" class="case-link">22. </a>
-    <a href="case_023.html" class="case-link">23. </a>
-    <a href="case_024.html" class="case-link">24. </a>
-    <a href="case_025.html" class="case-link">25. </a>
-    <a href="case_026.html" class="case-link">26. </a>
-    <a href="case_027.html" class="case-link">27. </a>
-    <a href="case_028.html" class="case-link">28. </a>
-    <a href="case_029.html" class="case-link">29. </a>
-    <a href="case_030.html" class="case-link">30. </a>
-    <a href="case_031.html" class="case-link">31. </a>
-    <a href="case_032.html" class="case-link">32. </a>
-    <a href="case_033.html" class="case-link">33. </a>
-    <a href="case_034.html" class="case-link">34. </a>
-    <a href="case_035.html" class="case-link">35. </a>
-    <a href="case_036.html" class="case-link">36. </a>
-    <a href="case_037.html" class="case-link">37. </a>
-    <a href="case_038.html" class="case-link">38. </a>
-    <a href="case_039.html" class="case-link">39. </a>
-    <a href="case_040.html" class="case-link">40. </a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link">41. </a>
-    <a href="case_042.html" class="case-link">42. </a>
-    <a href="case_043.html" class="case-link">43. </a>
-    <a href="case_044.html" class="case-link">44. </a>
-    <a href="case_045.html" class="case-link">45. </a>
-    <a href="case_046.html" class="case-link">46. </a>
-    <a href="case_047.html" class="case-link">47. </a>
-    <a href="case_048.html" class="case-link">48. </a>
-    <a href="case_049.html" class="case-link">49. </a>
-    <a href="case_050.html" class="case-link">50. </a>
-    <a href="case_051.html" class="case-link">51. </a>
-    <a href="case_052.html" class="case-link">52. </a>
-    <a href="case_053.html" class="case-link">53. </a>
-    <a href="case_054.html" class="case-link">54. </a>
-    <a href="case_055.html" class="case-link">55. </a>
-    <a href="case_056.html" class="case-link">56. </a>
-    <a href="case_057.html" class="case-link">57. </a>
-    <a href="case_058.html" class="case-link">58. </a>
-    <a href="case_059.html" class="case-link">59. </a>
-    <a href="case_060.html" class="case-link">60. </a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link">61. </a>
-    <a href="case_062.html" class="case-link">62. </a>
-    <a href="case_063.html" class="case-link">63. </a>
-    <a href="case_064.html" class="case-link">64. </a>
-    <a href="case_065.html" class="case-link">65. </a>
-    <a href="case_066.html" class="case-link">66. </a>
-    <a href="case_067.html" class="case-link">67. </a>
-    <a href="case_068.html" class="case-link">68. </a>
-    <a href="case_069.html" class="case-link">69. </a>
-    <a href="case_070.html" class="case-link">70. </a>
-    <a href="case_071.html" class="case-link">71. </a>
-    <a href="case_072.html" class="case-link">72. </a>
-    <a href="case_073.html" class="case-link">73. </a>
-    <a href="case_074.html" class="case-link">74. </a>
-    <a href="case_075.html" class="case-link">75. </a>
-    <a href="case_076.html" class="case-link">76. </a>
-    <a href="case_077.html" class="case-link">77. </a>
-    <a href="case_078.html" class="case-link">78. </a>
-    <a href="case_079.html" class="case-link">79. </a>
-    <a href="case_080.html" class="case-link">80. </a>
-    <a href="case_081.html" class="case-link">81. </a>
-    <a href="case_082.html" class="case-link">82. </a>
-    <a href="case_083.html" class="case-link">83. </a>
-    <a href="case_084.html" class="case-link">84. </a>
-    <a href="case_085.html" class="case-link">85. </a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link">86. </a>
-    <a href="case_087.html" class="case-link">87. </a>
-    <a href="case_088.html" class="case-link">88. </a>
-    <a href="case_089.html" class="case-link">89. </a>
-    <a href="case_090.html" class="case-link">90. </a>
-    <a href="case_091.html" class="case-link">91. </a>
-    <a href="case_092.html" class="case-link">92. </a>
-    <a href="case_093.html" class="case-link">93. </a>
-    <a href="case_094.html" class="case-link">94. </a>
-    <a href="case_095.html" class="case-link">95. </a>
-    <a href="case_096.html" class="case-link">96. </a>
-    <a href="case_097.html" class="case-link">97. </a>
-    <a href="case_098.html" class="case-link">98. </a>
-    <a href="case_099.html" class="case-link">99. </a>
-    <a href="case_100.html" class="case-link">100. </a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_002.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_004.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 3：简易计算器</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 3：简易计算器</h1>
+            <section class="intro">
+<p>实现一个支持加减乘除的简易计算器，使用 switch 语句处理运算符选择。</p>
+            <p><strong>核心知识点：</strong>switch-case、cin 输入、浮点数运算</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 3：简易计算器
+// 支持加减乘除四种运算
+#include &lt;iostream&gt;
+using namespace std;
 
-        <h1>案例 3：简易计算器</h1>
+int main() {
+    double num1, num2, result;
+    char op;
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include <iostream></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>// 四个基础运算函数</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>double add(double a, double b)      { return a + b; }</code></span>
-                        <span class="line-comment">函数声明：返回类型 函数名(参数列表)。double 表示返回小数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>double subtract(double a, double b) { return a - b; }</code></span>
-                        <span class="line-comment">return 将计算结果返回给调用者</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>double multiply(double a, double b) { return a * b; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>double divide(double a, double b)   { return a / b; }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    double num1, num2;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    char op;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    cout << "简易计算器" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    cout << "请输入算式（如 3 + 5）：";</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>    cin >> num1 >> op >> num2;</code></span>
-                        <span class="line-comment">cin 可以连续读取 >> num1 >> op >> num2，用空格分隔</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code></code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    // switch 根据运算符选择不同的计算</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    switch (op) {</code></span>
-                        <span class="line-comment">switch(表达式) 根据表达式的值跳转到对应的 case 分支</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>        case '+':</code></span>
-                        <span class="line-comment">case '+' 当 op 等于 '+' 时执行这个分支</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>            cout << num1 << " + " << num2 << " = " << add(num1, num2) << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>            break;</code></span>
-                        <span class="line-comment">break 跳出 switch，没有 break 会继续执行下一个 case（穿透）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>        case '-':</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>            cout << num1 << " - " << num2 << " = " << subtract(num1, num2) << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>            break;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>        case '*':</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>            cout << num1 << " * " << num2 << " = " << multiply(num1, num2) << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>            break;</code></span>
-                        <span class="line-comment">除法前检查除数是否为零，避免运行时错误</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>        case '/':</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>            // 除数为0的处理</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>            if (num2 != 0)</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>                cout << num1 << " / " << num2 << " = " << divide(num1, num2) << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>            else</code></span>
-                        <span class="line-comment">default 分支处理所有未匹配的情况</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>                cout << "错误：除数不能为0！" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>            break;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>        default:</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>            cout << "不支持的运算符！" << endl;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    }</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                        
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>}</code></span>
-                        
-                    </div>
-            </div>
-        </section>
+    cout &lt;&lt; "简易计算器" &lt;&lt; endl;
+    cout &lt;&lt; "请输入表达式（如 3 + 5）：";
+    cin &gt;&gt; num1 &gt;&gt; op &gt;&gt; num2;
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                
-                <div class="grammar-item">
-                    <h3>函数定义与调用</h3>
-                    <div class="rule-box">`返回类型 函数名(参数类型 参数名, ...) { 函数体; return 返回值; }`。函数是代码复用的基本单元。</div>
-                    <pre><code>int max(int a, int b) {
-    return a > b ? a : b;
-}
-int m = max(10, 20);  // m = 20</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>switch 语句</h3>
-                    <div class="rule-box">`switch(表达式) { case 值: ... break; default: ... }` — 多分支选择结构，比多个 if-else 更清晰。</div>
-                    <pre><code>switch (grade) {
-    case 'A': cout << "优秀"; break;
-    case 'B': cout << "良好"; break;
-    default: cout << "其他";
+    // switch 语句根据运算符执行对应操作
+    switch (op) {
+        case '+':
+            result = num1 + num2;
+            break;
+        case '-':
+            result = num1 - num2;
+            break;
+        case '*':
+            result = num1 * num2;
+            break;
+        case '/':
+            // 除法需要检查除数是否为零
+            if (num2 != 0) {
+                result = num1 / num2;
+            } else {
+                cout &lt;&lt; "错误：除数不能为零！" &lt;&lt; endl;
+                return 1; // 异常退出
+            }
+            break;
+        default:
+            cout &lt;&lt; "错误：不支持的运算符！" &lt;&lt; endl;
+            return 1;
+    }
+
+    cout &lt;&lt; num1 &lt;&lt; " " &lt;&lt; op &lt;&lt; " " &lt;&lt; num2 &lt;&lt; " = " &lt;&lt; result &lt;&lt; endl;
+    return 0;
 }</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：switch-case 语句</h3>
+                    <pre class="code-block"><code class="language-cpp">switch (op) {
+    case '+': /* ... */ break;
+    case '-': /* ... */ break;
+    default: /* ... */
+}</code></pre>
+                    <p class="tip">举一反三：switch 只能判断整数或枚举类型。每个 case 必须以 break 结尾，否则会「穿透」执行下一个 case。</p>
                 </div>
-                <div class="grammar-item">
-                    <h3>函数内联 inline</h3>
-                    <div class="rule-box">短小的函数建议加 `inline` 关键字，编译器会尝试把函数体直接嵌入调用处，减少调用开销。</div>
-                    <pre><code>inline int square(int x) { return x * x; }</code></pre>
+                <div class="grammar-point">
+                    <h3>语法规则：除零检查</h3>
+                    <pre class="code-block"><code class="language-cpp">if (num2 != 0) { result = num1 / num2; } else { cout &lt;&lt; "错误" &lt;&lt; endl; }</code></pre>
+                    <p class="tip">举一反三：整数除法还会截断小数。浮点数除法用近乎零判断：fabs(num2) < 1e-9。</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                
-                <div class="extend-item">
-                    <h4>扩展运算符</h4>
-                    <p>添加 %（取模）、^（幂）等运算符</p>
-                    <p><strong>思路：</strong>在 switch 中添加新的 case 分支</p>
+                <div class="grammar-point">
+                    <h3>语法规则：cin 连续输入</h3>
+                    <pre class="code-block"><code class="language-cpp">cin &gt;&gt; num1 &gt;&gt; op &gt;&gt; num2;</code></pre>
+                    <p class="tip">举一反三：>> 运算符默认以空白字符（空格/换行/Tab）分隔。输入类型不匹配时 cin 会进入 fail 状态，可用 cin.clear() 恢复。</p>
                 </div>
-                <div class="extend-item">
-                    <h4>循环计算</h4>
-                    <p>添加 while 循环，让用户可以连续计算多道题</p>
-                    <p><strong>思路：</strong>while (true) { ... } + 输入 q 退出</p>
-                </div>
-                <div class="extend-item">
-                    <h4>用 map 替代 switch</h4>
-                    <p>用 map<char, function<double(double,double)>> 存储运算函数</p>
-                    <p><strong>思路：</strong>更灵活，方便扩展</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="bottom-nav">
-            <a href="case_002.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_004.html" class="nav-link">下一个 →</a>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_002.html" class="prev-link">&larr; 案例 2</a>
+<a href="case_004.html" class="next-link">案例 4 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

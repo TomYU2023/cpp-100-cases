@@ -1,234 +1,128 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 92：脚本语言解释器</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_091.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_093.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 92：SFINAE 与 enable_if - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 92：SFINAE 与 enable_if</span>
         </div>
-    </nav><main class="container"><h1>案例 92：脚本语言解释器</h1><section class="intro"><p>实现一个微型脚本语言的词法分析器和递归下降解析器，支持四则运算、变量赋值和 print 输出。</p><p><strong>核心知识点：</strong>递归下降解析、词法分析（tokenize）、符号表（std::map）、操作符优先级、REPL 循环</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 92：脚本语言解释器（Lox 风格）
-// 实现一个微型脚本语言的词法分析器和表达式求值器。
-// 这是编译原理的绝佳入门项目，理解 tokenize → parse → evaluate 的完整流程。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 92：SFINAE 与 enable_if</h1>
+            <section class="intro">
+<p>使用 enable_if 在编译期根据类型条件选择不同实现，理解替换失败不是错误。</p>
+            <p><strong>核心知识点：</strong>SFINAE、enable_if、类型萃取、条件编译期选择</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 92：SFINAE 与 enable_if
+// 编译期根据类型条件选择函数重载
 #include &lt;iostream&gt;
+#include &lt;type_traits&gt;
 #include &lt;string&gt;
-#include &lt;vector&gt;
-#include &lt;map&gt;
-#include &lt;functional&gt;
-#include &lt;sstream&gt;
-#include &lt;stdexcept&gt;
-#include &lt;cmath&gt;
+using namespace std;
 
-// ─── Token 类型 ──────────────────────────────────
-enum class TokenType {
-    NUMBER, PLUS, MINUS, STAR, SLASH,       // 算术
-    LPAREN, RPAREN,                          // 括号
-    IDENTIFIER, ASSIGN,                      // 变量
-    PRINT, EOF_TOKEN                         // 关键字和结束
-};
+// 方式 1: enable_if 作为返回值类型
+template &lt;typename T&gt;
+typename enable_if&lt;is_integral&lt;T&gt;::value, void&gt;::type
+process(T value) {
+    cout &lt;&lt; "处理整数: " &lt;&lt; value &lt;&lt; " (加 10 = "
+         &lt;&lt; value + 10 &lt;&lt; ")" &lt;&lt; endl;
+}
 
-struct Token {
-    TokenType type;
-    std::string text;
-    double value;  // 仅 NUMBER 用
-};
+template &lt;typename T&gt;
+typename enable_if&lt;is_floating_point&lt;T&gt;::value, void&gt;::type
+process(T value) {
+    cout &lt;&lt; "处理浮点数: " &lt;&lt; value &lt;&lt; " (平方 = "
+         &lt;&lt; value * value &lt;&lt; ")" &lt;&lt; endl;
+}
 
-// ─── 词法分析器（Lexer）─────────────────────────
-class Lexer {
-    std::string source;
-    size_t pos = 0;
+// 方式 2: enable_if 作为默认模板参数
+template &lt;typename T,
+          typename = enable_if_t&lt;is_arithmetic&lt;T&gt;::value&gt;&gt;
+void printDouble(T value) {
+    cout &lt;&lt; "2 * " &lt;&lt; value &lt;&lt; " = " &lt;&lt; value * 2 &lt;&lt; endl;
+}
+
+// 方式 3: 用 enable_if 控制类模板
+template &lt;typename T, typename Enable = void&gt;
+class Container {
 public:
-    Lexer(const std::string&amp; src) : source(src) {}
-
-    Token next() {
-        skipWhitespace();
-        if (pos &gt;= source.size()) return {TokenType::EOF_TOKEN, &quot;&quot;};
-
-        char c = source[pos];
-
-        // 数字
-        if (isdigit(c)) return number();
-        // 标识符 / 关键字
-        if (isalpha(c) || c == '_') return identifier();
-        // 单字符 Token
-        pos++;
-        switch (c) {
-            case '+': return {TokenType::PLUS, &quot;+&quot;};
-            case '-': return {TokenType::MINUS, &quot;-&quot;};
-            case '*': return {TokenType::STAR, &quot;*&quot;};
-            case '/': return {TokenType::SLASH, &quot;/&quot;};
-            case '(': return {TokenType::LPAREN, &quot;(&quot;};
-            case ')': return {TokenType::RPAREN, &quot;)&quot;};
-            case '=': return {TokenType::ASSIGN, &quot;=&quot;};
-            default: throw std::runtime_error(&quot;未知字符: &quot; + std::string(1,c));
-        }
-    }
-
-private:
-    void skipWhitespace() {
-        while (pos &lt; source.size() &amp;&amp; isspace(source[pos])) pos++;
-    }
-
-    Token number() {
-        size_t start = pos;
-        while (pos &lt; source.size() &amp;&amp; (isdigit(source[pos]) || source[pos]=='.'))
-            pos++;
-        double val = std::stod(source.substr(start, pos - start));
-        return {TokenType::NUMBER, source.substr(start, pos-start), val};
-    }
-
-    Token identifier() {
-        size_t start = pos;
-        while (pos &lt; source.size() &amp;&amp; (isalnum(source[pos]) || source[pos]=='_'))
-            pos++;
-        std::string name = source.substr(start, pos - start);
-        if (name == &quot;print&quot;) return {TokenType::PRINT, name};
-        return {TokenType::IDENTIFIER, name};
-    }
+    static void info() { cout &lt;&lt; "通用容器" &lt;&lt; endl; }
 };
 
-// ─── 解释器 ──────────────────────────────────────
-class Interpreter {
-    std::vector&lt;Token&gt; tokens;
-    size_t pos = 0;
-    std::map&lt;std::string, double&gt; variables;  // 变量表
-
+// 对整数类型的特化
+template &lt;typename T&gt;
+class Container&lt;T, enable_if_t&lt;is_integral&lt;T&gt;::value&gt;&gt; {
 public:
-    void execute(const std::string&amp; line) {
-        Lexer lexer(line);
-        tokens.clear();
-        pos = 0;
-
-        // Tokenize
-        while (true) {
-            auto t = lexer.next();
-            tokens.push_back(t);
-            if (t.type == TokenType::EOF_TOKEN) break;
-        }
-
-        // 解析并执行
-        try {
-            statement();
-        } catch (const std::exception&amp; e) {
-            std::cerr &lt;&lt; &quot;错误: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
-        }
-    }
-
-private:
-    Token peek() { return tokens[pos]; }
-    Token consume() { return tokens[pos++]; }
-
-    void statement() {
-        if (peek().type == TokenType::PRINT) {
-            consume();  // 吃掉 print
-            double result = expression();
-            std::cout &lt;&lt; result &lt;&lt; std::endl;
-        } else if (peek().type == TokenType::IDENTIFIER) {
-            // 赋值: a = 3 + 4
-            std::string name = consume().text;
-            if (peek().type != TokenType::ASSIGN)
-                throw std::runtime_error(&quot;期望 '='&quot;);
-            consume();
-            double val = expression();
-            variables[name] = val;
-            std::cout &lt;&lt; name &lt;&lt; &quot; = &quot; &lt;&lt; val &lt;&lt; std::endl;
-        } else {
-            // 纯表达式
-            std::cout &lt;&lt; expression() &lt;&lt; std::endl;
-        }
-    }
-
-    // 递归下降解析器（operator precedence）
-    double expression() { return additive(); }
-
-    double additive() {
-        double left = multiplicative();
-        while (peek().type == TokenType::PLUS || peek().type == TokenType::MINUS) {
-            char op = consume().text[0];
-            double right = multiplicative();
-            left = (op == '+') ? left + right : left - right;
-        }
-        return left;
-    }
-
-    double multiplicative() {
-        double left = unary();
-        while (peek().type == TokenType::STAR || peek().type == TokenType::SLASH) {
-            char op = consume().text[0];
-            double right = unary();
-            left = (op == '*') ? left * right : left / right;
-        }
-        return left;
-    }
-
-    double unary() {
-        if (peek().type == TokenType::MINUS) {
-            consume();
-            return -primary();
-        }
-        return primary();
-    }
-
-    double primary() {
-        Token t = consume();
-        if (t.type == TokenType::NUMBER) return t.value;
-        if (t.type == TokenType::LPAREN) {
-            double val = expression();
-            if (peek().type != TokenType::RPAREN)
-                throw std::runtime_error(&quot;期望 ')'&quot;);
-            consume();
-            return val;
-        }
-        if (t.type == TokenType::IDENTIFIER) {
-            auto it = variables.find(t.text);
-            if (it == variables.end())
-                throw std::runtime_error(&quot;未定义变量: &quot; + t.text);
-            return it-&gt;second;
-        }
-        throw std::runtime_error(&quot;语法错误&quot;);
-    }
+    static void info() { cout &lt;&lt; "整数容器（有优化）" &lt;&lt; endl; }
 };
 
-// ─── REPL 主循环 ────────────────────────────────
 int main() {
-    Interpreter interp;
-    std::cout &lt;&lt; &quot;=== Mini 脚本语言 ===\n&quot;;
-    std::cout &lt;&lt; &quot;支持: 四则运算、变量赋值、print 输出\n&quot;;
-    std::cout &lt;&lt; &quot;输入 'quit' 退出\n\n&quot;;
+    // 1. 根据参数类型自动选择重载
+    process(42);          // 整数版本
+    process(3.14);        // 浮点版本
 
-    while (true) {
-        std::cout &lt;&lt; &quot;&gt; &quot;;
-        std::string line;
-        std::getline(std::cin, line);
-        if (line == &quot;quit&quot;) break;
-        if (line.empty()) continue;
-        interp.execute(line);
-    }
+    // 2. 仅限算术类型调用
+    printDouble(5);       // OK
+    printDouble(3.5);     // OK
+    // printDouble(string("hi")); // 编译错误！
+
+    // 3. 类模板的 enable_if
+    Container&lt;int&gt;::info();          // 整数容器
+    Container&lt;double&gt;::info();       // 通用容器
+    Container&lt;string&gt;::info();       // 通用容器
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：递归下降解析器（Recursive Descent Parser）</h3><pre class="code-block"><code class="language-cpp">// 每个优先级对应一个函数
-double expression() { return additive(); }      // 最低优先级
-double additive() {                              // + -
-    double left = multiplicative();
-    while (peek() is '+' or '-')
-        left += multiplicative();
-    return left;
-}
-double multiplicative() {                        // * /
-    double left = unary();
-    while (peek() is '*' or '/')
-        left *= unary();
-    return left;
-}
-double unary() { return -primary(); }           // 一元负号
-double primary() { return NUMBER or (expr); }   // 终结符</code></pre><p class="tip">💡 举一反三：递归下降是手写解析器的最经典方法。每个非终结符对应一个函数，内部按 BNF 文法递归调用。优先级由函数调用层级决定：越深的函数（primary）优先级越高。这是 Pratt Parser 和 LL/PEG 的基础。</p>
-<h3>语法规则：std::map 作为符号表</h3><pre class="code-block"><code class="language-cpp">#include &lt;map&gt;
-std::map&lt;std::string, double&gt; variables;
-variables[&quot;x&quot;] = 42;
-auto it = variables.find(&quot;x&quot;);
-if (it != variables.end()) { std::cout &lt;&lt; it-&gt;second; }</code></pre><p class="tip">💡 举一反三：map 基于红黑树，键自动排序，查找 O(log n)。在解释器中作为符号表（symbol table）存储变量名到值的映射。生产级语言使用哈希表（unordered_map）或继承链式作用域。</p>
-<h3>语法规则：std::stod 字符串转 double</h3><pre class="code-block"><code class="language-cpp">#include &lt;string&gt;
-double val = std::stod(&quot;3.14&quot;);     // 3.14
-double val2 = std::stod(&quot;1e3&quot;);   // 1000.0
-// size_t* pos 参数记录解析结束位置（可选）</code></pre><p class="tip">💡 举一反三：std::stod/stoi/stoll 系列是 C++11 引入的安全类型转换函数，自动处理前导空白并抛出 std::invalid_argument 或 std::out_of_range。比 atof/atoi 更安全（atoi 对非法输入返回 0，无法区分）。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：enable_if 基本用法</h3>
+                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+typename enable_if&lt;condition, ReturnType&gt;::type
+func(T arg);
+// 当 condition 为 true 时，函数有效
+// 为 false 时，该重载被 SFINAE 移除</code></pre>
+                    <p class="tip">举一反三：SFINAE = Substitution Failure Is Not An Error。模板替换失败时不报错，只移除该重载。enable_if 利用这个机制实现条件编译。C++17 用 enable_if_t 简化。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：enable_if 的三种位置</h3>
+                    <pre class="code-block"><code class="language-cpp">// 1. 返回值类型
+template&lt;T&gt; enable_if_t&lt;c, R&gt; func(T);
+// 2. 默认模板参数
+template&lt;T, enable_if_t&lt;c, int&gt; = 0&gt; func(T);
+// 3. 非类型模板参数</code></pre>
+                    <p class="tip">举一反三：三种方式各有优劣。返回值方式清晰但无法用于构造函数（无返回值）。默认参数方式最通用。C++20 的 requires 和 concepts 替代了大部分 enable_if 场景。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：类型萃取 is_* 家族</h3>
+                    <pre class="code-block"><code class="language-cpp">is_integral&lt;T&gt;       // 整数类型
+is_floating_point&lt;T&gt; // 浮点类型
+is_arithmetic&lt;T&gt;     // 算术类型
+is_pointer&lt;T&gt;        // 指针类型
+is_same&lt;T, U&gt;        // 类型相同
+// #include &lt;type_traits&gt;</code></pre>
+                    <p class="tip">举一反三：类型萃取是 enable_if 的最佳搭档。_v 后缀 (C++17) 等价于 ::value。组合类型萃取：is_arithmetic<T> && !is_const<T>。自定义萃取可实现更精细的条件控制。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_091.html" class="prev-link">&larr; 案例 91</a>
+<a href="case_093.html" class="next-link">案例 93 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,124 +1,131 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 74：状态模式 — TCP 连接状态机</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_073.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_075.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 74：std::gcd/lcm 数学工具 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 74：std::gcd/lcm 数学工具</span>
         </div>
-    </nav><main class="container"><h1>案例 74：状态模式 — TCP 连接状态机</h1><section class="intro"><p>模拟 TCP 连接的 CLOSED/ESTABLISHED 状态流转，展示状态模式如何用多态消除条件分支。</p><p><strong>核心知识点：</strong>状态模式、有限状态机 FSM、前置声明、策略 vs 状态的区别</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 74：状态模式 — TCP 连接状态机
-// 状态模式：允许对象在内部状态改变时改变其行为，看起来像换了类。
-// 本案例用状态机模拟 TCP 连接的状态流转。
-
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 74：std::gcd/lcm 数学工具</h1>
+            <section class="intro">
+<p>使用 C++17 的 gcd 和 lcm 简化数学计算，以及相关的数值算法。</p>
+            <p><strong>核心知识点：</strong>gcd、lcm、数值算法、欧几里得算法</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 74：std::gcd / lcm 数学工具
+// 最大公约数和最小公倍数
 #include &lt;iostream&gt;
-#include &lt;memory&gt;
+#include &lt;numeric&gt;
+#include &lt;vector&gt;
 #include &lt;string&gt;
+using namespace std;
 
-/* 语法规则：TCP 连接状态机
-   TCP 连接状态：
-     CLOSED → [connect] → SYN_SENT → [收到SYN+ACK] → ESTABLISHED
-     ESTABLISHED → [close] → FIN_WAIT → CLOSED
-   状态模式 vs if-else：用多态替代大量 switch/if，每个状态是一个类。
+// 分数简化
+struct Fraction {
+    long long num;   // 分子
+    long long den;   // 分母
 
-   举一反三：游戏角色状态（站立/跑步/跳跃/攻击）、
-   订单状态机（待支付/已支付/已发货/已完成/已取消）、
-   工单流程（新建/处理中/待审核/已关闭）都适合用状态模式。
-*/
-
-// 前置声明
-class TcpConnection;
-
-// 状态基类
-class TcpState {
-public:
-    virtual ~TcpState() = default;
-    virtual std::string name() const = 0;
-    virtual void connect(TcpConnection* conn);
-    virtual void disconnect(TcpConnection* conn);
-    virtual void send(TcpConnection* conn, const std::string&amp; data);
-    virtual void receive(TcpConnection* conn, const std::string&amp; data);
-};
-
-// TCP 连接（Context）
-class TcpConnection {
-    std::unique_ptr&lt;TcpState&gt; state;  // 当前状态
-public:
-    // 初始状态由外部设置
-    void setState(std::unique_ptr&lt;TcpState&gt; s) { state = std::move(s); }
-
-    void open() { state-&gt;connect(this); }
-    void close() { state-&gt;disconnect(this); }
-    void send(const std::string&amp; data) { state-&gt;send(this, data); }
-    void receive(const std::string&amp; data) { state-&gt;receive(this, data); }
-
-    std::string currentState() const { return state ? state-&gt;name() : &quot;NONE&quot;; }
-};
-
-// 默认实现：非法操作时的处理
-void TcpState::connect(TcpConnection* conn) {
-    std::cerr &lt;&lt; &quot;[错误] &quot; &lt;&lt; name() &lt;&lt; &quot; 状态下不能 connect&quot; &lt;&lt; std::endl;
-}
-void TcpState::disconnect(TcpConnection* conn) {
-    std::cerr &lt;&lt; &quot;[错误] &quot; &lt;&lt; name() &lt;&lt; &quot; 状态下不能 disconnect&quot; &lt;&lt; std::endl;
-}
-void TcpState::send(TcpConnection* conn, const std::string&amp; data) {
-    std::cerr &lt;&lt; &quot;[错误] &quot; &lt;&lt; name() &lt;&lt; &quot; 状态下不能 send&quot; &lt;&lt; std::endl;
-}
-void TcpState::receive(TcpConnection* conn, const std::string&amp; data) {
-    std::cerr &lt;&lt; &quot;[错误] &quot; &lt;&lt; name() &lt;&lt; &quot; 状态下不能 receive&quot; &lt;&lt; std::endl;
-}
-
-// 具体状态 1：已关闭
-class ClosedState : public TcpState {
-public:
-    std::string name() const override { return &quot;CLOSED&quot;; }
-    void connect(TcpConnection* conn) override {
-        std::cout &lt;&lt; &quot;[CLOSED] 发起连接...&quot; &lt;&lt; std::endl;
-        conn-&gt;setState(std::make_unique&lt;class EstablishedState&gt;());
-        std::cout &lt;&lt; &quot;[→] 状态变为 ESTABLISHED&quot; &lt;&lt; std::endl;
+    Fraction(long long n, long long d) : num(n), den(d) {
+        simplify();
     }
-};
 
-// 具体状态 2：已建立连接
-class EstablishedState : public TcpState {
-public:
-    std::string name() const override { return &quot;ESTABLISHED&quot;; }
-    void disconnect(TcpConnection* conn) override {
-        std::cout &lt;&lt; &quot;[ESTABLISHED] 关闭连接...&quot; &lt;&lt; std::endl;
-        conn-&gt;setState(std::make_unique&lt;ClosedState&gt;());
-        std::cout &lt;&lt; &quot;[→] 状态变为 CLOSED&quot; &lt;&lt; std::endl;
+    void simplify() {
+        if (den == 0) return;
+        // 处理负号：保持分母为正
+        if (den &lt; 0) { num = -num; den = -den; }
+        long long g = gcd(abs(num), abs(den));
+        num /= g;
+        den /= g;
     }
-    void send(TcpConnection* conn, const std::string&amp; data) override {
-        std::cout &lt;&lt; &quot;[发送] &quot; &lt;&lt; data &lt;&lt; std::endl;
-    }
-    void receive(TcpConnection* conn, const std::string&amp; data) override {
-        std::cout &lt;&lt; &quot;[接收] &quot; &lt;&lt; data &lt;&lt; std::endl;
+
+    string str() const {
+        if (den == 1) return to_string(num);
+        return to_string(num) + "/" + to_string(den);
     }
 };
 
 int main() {
-    TcpConnection conn;
-    conn.setState(std::make_unique&lt;ClosedState&gt;());
-    std::cout &lt;&lt; &quot;当前状态: &quot; &lt;&lt; conn.currentState() &lt;&lt; std::endl;
+    // 1. gcd 基本用法
+    cout &lt;&lt; "=== GCD (最大公约数) ===" &lt;&lt; endl;
+    cout &lt;&lt; "gcd(12, 18) = " &lt;&lt; gcd(12, 18) &lt;&lt; endl;
+    cout &lt;&lt; "gcd(48, 180) = " &lt;&lt; gcd(48, 180) &lt;&lt; endl;
+    cout &lt;&lt; "gcd(17, 13) = " &lt;&lt; gcd(17, 13) &lt;&lt; endl; // 互质 → 1
+    cout &lt;&lt; "gcd(0, 5) = " &lt;&lt; gcd(0, 5) &lt;&lt; endl;     // 5
 
-    // 未连接时不能发送（会报错）
-    conn.send(&quot;Hello&quot;);  // 报错
+    // 2. lcm 基本用法
+    cout &lt;&lt; "\n=== LCM (最小公倍数) ===" &lt;&lt; endl;
+    cout &lt;&lt; "lcm(12, 18) = " &lt;&lt; lcm(12, 18) &lt;&lt; endl;
+    cout &lt;&lt; "lcm(4, 6) = " &lt;&lt; lcm(4, 6) &lt;&lt; endl;
+    cout &lt;&lt; "lcm(7, 9) = " &lt;&lt; lcm(7, 9) &lt;&lt; endl;     // 7*9=63
 
-    // 建立连接
-    conn.open();  // CLOSED → ESTABLISHED
-    std::cout &lt;&lt; &quot;当前状态: &quot; &lt;&lt; conn.currentState() &lt;&lt; std::endl;
+    // 3. 分数简化
+    cout &lt;&lt; "\n=== 分数简化 ===" &lt;&lt; endl;
+    Fraction f1(6, 8);    // 6/8 = 3/4
+    Fraction f2(15, -25); // -15/25 = -3/5
+    Fraction f3(42, 56);  // 42/56 = 3/4
+    cout &lt;&lt; "6/8 = " &lt;&lt; f1.str() &lt;&lt; endl;
+    cout &lt;&lt; "15/(-25) = " &lt;&lt; f2.str() &lt;&lt; endl;
+    cout &lt;&lt; "42/56 = " &lt;&lt; f3.str() &lt;&lt; endl;
 
-    conn.send(&quot;Hello World&quot;);
-    conn.receive(&quot;ACK&quot;);
-
-    // 关闭
-    conn.close();  // ESTABLISHED → CLOSED
-    std::cout &lt;&lt; &quot;当前状态: &quot; &lt;&lt; conn.currentState() &lt;&lt; std::endl;
+    // 4. 批量计算多个数的 gcd
+    cout &lt;&lt; "\n=== 多个数的 GCD ===" &lt;&lt; endl;
+    vector&lt;long long&gt; nums = {120, 180, 240, 300};
+    long long g = nums[0];
+    for (size_t i = 1; i &lt; nums.size(); i++) {
+        g = gcd(g, nums[i]);
+    }
+    cout &lt;&lt; "gcd(120, 180, 240, 300) = " &lt;&lt; g &lt;&lt; endl;
 
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：前置声明（forward declaration）</h3><pre class="code-block"><code class="language-cpp">class MyClass;  // 仅声明，不定义
-// 在需要完整定义前可以使用指针/引用
-void foo(MyClass* p);  // OK
-// MyClass obj;  // 错误：需要完整定义</code></pre><p class="tip">💡 举一反三：前置声明解决头文件循环依赖问题。只要不访问成员/不创建对象，指针和引用就足够。减少编译时间，是大型 C++ 项目的必备技巧。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：gcd 和 lcm</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+int g = gcd(12, 18); // 6
+int l = lcm(12, 18); // 36
+// C++17 标准，头文件 &lt;numeric&gt;</code></pre>
+                    <p class="tip">举一反三：gcd 使用欧几里得算法（辗转相除法）。lcm(a,b) = a * b / gcd(a,b)。两个函数返回非负值。C++17 前可用 __gcd（GCC 扩展）或手写。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：gcd 的数学性质</h3>
+                    <pre class="code-block"><code class="language-cpp">gcd(a, 0) = |a|
+gcd(0, 0) = 0
+gcd(a, b) = gcd(b, a mod b)
+// 可扩展到负数：gcd(-12, 18) = 6</code></pre>
+                    <p class="tip">举一反三：gcd 结合律使批量计算简单（fold）。gcd 在密码学（RSA）、离散数学、分数运算中广泛使用。lcm 在周期问题（两个齿轮对齐时间）中有用。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：分数简化模式</h3>
+                    <pre class="code-block"><code class="language-cpp">void simplify() {
+    long long g = gcd(abs(num), abs(den));
+    num /= g; den /= g;
+    if (den &lt; 0) { num = -num; den = -den; }
+}</code></pre>
+                    <p class="tip">举一反三：化简为最简分数是 gcd 的经典应用。先取绝对值再求 gcd。约定分母为正、互质。分子 0 时 gcd(0, den) = den，化简结果为 0/1。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_073.html" class="prev-link">&larr; 案例 73</a>
+<a href="case_075.html" class="next-link">案例 75 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,149 +1,150 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 48：配置文件 INI 读写器 - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 48：单例模式(线程安全) - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 48：配置文件 INI 读写器</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;fstream&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;map&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd">#include &lt;algorithm&gt;</td><td class="cmt">trim 字符串操作</td></tr>
-<tr><td class="ln">6</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">7</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2">// INI 解析器</td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2">class IniParser {</td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2">    // sections[section名][key] = value</td></tr>
-<tr><td class="ln">12</td><td class="cd">    map&lt;string, map&lt;string, string&gt;&gt; sections;</td><td class="cmt">两级 map 结构</td></tr>
-<tr><td class="ln">13</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2">    // 去除字符串首尾空白</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">    static string trim(const string&amp; s) {</td></tr>
-<tr><td class="ln">16</td><td class="cd">        auto start = find_if_not(s.begin(), s.end(), ::isspace);</td><td class="cmt">找第一个非空白字符</td></tr>
-<tr><td class="ln">17</td><td class="cd">        auto end   = find_if_not(s.rbegin(), s.rend(), ::isspace).base();</td><td class="cmt">找最后一个非空白字符</td></tr>
-<tr><td class="ln">18</td><td class="cd">        return (start &lt; end) ? string(start, end) : "";</td><td class="cmt">返回修剪后的子串</td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">public:</td></tr>
-<tr><td class="ln">22</td><td class="cd" colspan="2">    bool load(const string&amp; filepath) {</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2">        ifstream file(filepath);</td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2">        if (!file.is_open()) return false;</td></tr>
-<tr><td class="ln">25</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">26</td><td class="cd">        string line, currentSection;</td><td class="cmt">currentSection 跟踪当前 [section]</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2">        while (getline(file, line)) {</td></tr>
-<tr><td class="ln">28</td><td class="cd" colspan="2">            line = trim(line);</td></tr>
-<tr><td class="ln">29</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">            // 跳过空行和注释（; 或 # 开头）</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2">            if (line.empty() || line[0] == ';' || line[0] == '#') continue;</td></tr>
-<tr><td class="ln">32</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">33</td><td class="cd" colspan="2">            // 解析 [Section]</td></tr>
-<tr><td class="ln">34</td><td class="cd">            if (line.front() == '[' &amp;&amp; line.back() == ']') {</td><td class="cmt">节标题</td></tr>
-<tr><td class="ln">35</td><td class="cd">                currentSection = line.substr(1, line.size() - 2);</td><td class="cmt">去掉 [ 和 ]</td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">                continue;</td></tr>
-<tr><td class="ln">37</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2">            // 解析 key = value</td></tr>
-<tr><td class="ln">40</td><td class="cd">            auto pos = line.find('=');</td><td class="cmt">找等号</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">            if (pos != string::npos) {</td></tr>
-<tr><td class="ln">42</td><td class="cd">                string key   = trim(line.substr(0, pos));</td><td class="cmt">等号前 = key</td></tr>
-<tr><td class="ln">43</td><td class="cd">                string value = trim(line.substr(pos + 1));</td><td class="cmt">等号后 = value</td></tr>
-<tr><td class="ln">44</td><td class="cd">                sections[currentSection][key] = value;</td><td class="cmt">存入两级 map</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2">        return true;</td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">49</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">50</td><td class="cd" colspan="2">    // 获取值</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2">    string get(const string&amp; section, const string&amp; key,</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">              const string&amp; def = "") const {</td></tr>
-<tr><td class="ln">53</td><td class="cd">        auto sit = sections.find(section);</td><td class="cmt">查找节</td></tr>
-<tr><td class="ln">54</td><td class="cd">        if (sit == sections.end()) return def;</td><td class="cmt">节不存在返回默认值</td></tr>
-<tr><td class="ln">55</td><td class="cd">        auto kit = sit-&gt;second.find(key);</td><td class="cmt">在该节中查找 key</td></tr>
-<tr><td class="ln">56</td><td class="cd" colspan="2">        return (kit != sit-&gt;second.end()) ? kit-&gt;second : def;</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">    // 以整数获取</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2">    int getInt(const string&amp; section, const string&amp; key, int def = 0) const {</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2">        auto val = get(section, key);</td></tr>
-<tr><td class="ln">62</td><td class="cd">        return val.empty() ? def : stoi(val);</td><td class="cmt">stoi = string to int</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">    // 遍历所有节</td></tr>
-<tr><td class="ln">66</td><td class="cd">    const auto&amp; getSections() const { return sections; }</td><td class="cmt">const 引用返回，避免拷贝</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2">};</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">69</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">    IniParser ini;</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">    ini.load("config.ini");</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">73</td><td class="cd" colspan="2">    cout &lt;&lt; "Server host: " &lt;&lt; ini.get("server", "host", "localhost") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2">    cout &lt;&lt; "Server port: " &lt;&lt; ini.getInt("server", "port", 8080) &lt;&lt; endl;</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">    cout &lt;&lt; "DB file:     " &lt;&lt; ini.get("database", "file", "data.db") &lt;&lt; endl;</td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>find_if_not 与 Lambda 查找</h3>
-<div class="rule"><strong>语法规则：</strong><code>find_if_not(first, last, pred)</code> 返回第一个使 pred 返回 false 的元素。配合 <code>::isspace</code> 函数指针可找到第一个非空白字符。rbegin/rend 提供反向迭代器，用于从末尾向前搜索。</div>
-<pre class="example"><code>string s = "  hello  ";
-// 正向找第一个非空白
-auto start = find_if_not(s.begin(), s.end(), ::isspace);
-// 反向找最后一个非空白（注意 base() 转换）
-auto end = find_if_not(s.rbegin(), s.rend(), ::isspace).base();
-string trimmed(start, end);  // "hello"</code></pre>
-</div>
-<div class="grammar-item">
-<h3>stoi / stod / stoll 字符串转数值</h3>
-<div class="rule"><strong>语法规则：</strong><code>stoi</code>（string to int）、<code>stod</code>（to double）、<code>stoll</code>（to long long）。可传第二参数（size_t*）获知转换了几个字符，第三参数为基数（默认 10）。无效输入会抛 <code>invalid_argument</code> 或 <code>out_of_range</code>。</div>
-<pre class="example"><code>int a = stoi("42");           // 42
-int b = stoi("0xFF", nullptr, 16); // 255（十六进制）
-double c = stod("3.14");          // 3.14
-// size_t pos;
-// int d = stoi("42abc", &pos);   // d=42, pos=2</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>完整的 ini 写入功能：</strong><pre><code>void save(const string& path) {
-    ofstream f(path);
-    for (auto& [sec, kv] : sections) {
-        f << "[" << sec << "]\n";
-        for (auto& [k, v] : kv) f << k << " = " << v << "\n";
-        f << "\n";
-    }
-}</code></pre><p>INi 写入只需按照标准格式逐节输出，保持可读性即可。注意空行分隔不同节。</p></li>
-<li><strong>使用 toml11 / inih 等成熟库：</strong><pre><code>#include <toml.hpp>
-auto data = toml::parse("config.toml");
-int port = toml::find<int>(data, "server", "port");</code></pre><p>INI 格式简单，但 TOML/YAML/JSON 等更现代的配置格式表达能力更强。生产项目建议用成熟库处理配置文件。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 48：单例模式(线程安全)</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 48：单例模式(线程安全)</h1>
+            <section class="intro">
+<p>实现一个线程安全的单例模式，使用 C++11 的静态局部变量保证安全。</p>
+            <p><strong>核心知识点：</strong>单例模式、静态局部变量、线程安全</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 48：单例模式（线程安全）
+// C++11 静态局部变量保证线程安全的初始化
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;thread&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_047.html">← 案例 47</a><a href="case_049.html">案例 49 →</a>
-</nav>
-</main>
+// 数据库连接管理器（单例）
+class DatabaseManager {
+private:
+    string connectionString;
+    bool connected;
+
+    // 私有构造函数
+    DatabaseManager() : connectionString("localhost:3306"), connected(false) {
+        cout &lt;&lt; "DatabaseManager 构造" &lt;&lt; endl;
+    }
+
+    // 禁止拷贝和赋值
+    DatabaseManager(const DatabaseManager&amp;) = delete;
+    DatabaseManager&amp; operator=(const DatabaseManager&amp;) = delete;
+
+public:
+    // 获取单例实例（C++11 保证线程安全）
+    static DatabaseManager&amp; getInstance() {
+        // 静态局部变量的初始化在 C++11+ 是线程安全的
+        static DatabaseManager instance;
+        return instance;
+    }
+
+    void connect() {
+        if (!connected) {
+            // 模拟连接
+            cout &lt;&lt; "连接数据库: " &lt;&lt; connectionString &lt;&lt; endl;
+            connected = true;
+        }
+    }
+
+    void query(const string&amp; sql) {
+        if (!connected) connect();
+        cout &lt;&lt; "执行: " &lt;&lt; sql &lt;&lt; endl;
+    }
+
+    ~DatabaseManager() {
+        cout &lt;&lt; "DatabaseManager 析构" &lt;&lt; endl;
+    }
+};
+
+// 配置管理器（另一个单例）
+class ConfigManager {
+private:
+    ConfigManager() { cout &lt;&lt; "ConfigManager 构造" &lt;&lt; endl; }
+    ConfigManager(const ConfigManager&amp;) = delete;
+    ConfigManager&amp; operator=(const ConfigManager&amp;) = delete;
+
+public:
+    static ConfigManager&amp; getInstance() {
+        static ConfigManager instance;
+        return instance;
+    }
+
+    string getValue(const string&amp; key) {
+        return "value_of_" + key;
+    }
+};
+
+int main() {
+    cout &lt;&lt; "=== 线程安全单例 ===" &lt;&lt; endl;
+
+    // 多线程同时获取单例
+    vector&lt;thread&gt; threads;
+    for (int i = 0; i &lt; 5; i++) {
+        threads.emplace_back([i]() {
+            auto&amp; db = DatabaseManager::getInstance();
+            db.query("SELECT * FROM users WHERE id=" + to_string(i));
+        });
+    }
+    for (auto&amp; t : threads) t.join();
+
+    // 验证：多次获取返回同一个实例
+    auto&amp; db1 = DatabaseManager::getInstance();
+    auto&amp; db2 = DatabaseManager::getInstance();
+    cout &lt;&lt; "&amp;db1 == &amp;db2: "
+         &lt;&lt; (&amp;db1 == &amp;db2 ? "true (同一实例)" : "false") &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：C++11 静态局部变量线程安全</h3>
+                    <pre class="code-block"><code class="language-cpp">static Singleton&amp; getInstance() {
+    static Singleton instance; // C++11 保证仅初始化一次，线程安全
+    return instance;
+}</code></pre>
+                    <p class="tip">举一反三：这是 C++ 中最简洁且线程安全的单例实现（Meyers Singleton）。C++11 前需要双重检查锁（DCLP）。不要忘记 delete 拷贝构造和拷贝赋值。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：= delete 禁止拷贝</h3>
+                    <pre class="code-block"><code class="language-cpp">DatabaseManager(const DatabaseManager&amp;) = delete;
+DatabaseManager&amp; operator=(const DatabaseManager&amp;) = delete;
+// 明确禁止拷贝，编译器报错而非静默通过</code></pre>
+                    <p class="tip">举一反三：C++11 引入 = delete 明确禁用函数。比 C++03 的 private 声明更明确（错误信息在编译时而非链接时）。也可 delete 任意函数以阻止特定重载。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：多线程中共享单例</h3>
+                    <pre class="code-block"><code class="language-cpp">// 多个线程均可通过 getInstance() 获取同一实例
+// 静态局部变量初始化是线程安全的
+// 但实例方法的并发访问仍需我们自己处理（如需要）</code></pre>
+                    <p class="tip">举一反三：单例的「创建」是线程安全的，但「使用」不是。如果单例持有可变状态且被多线程访问，需要在成员函数内部加锁。考虑是否真的需要单例——它本质上是全局状态。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_047.html" class="prev-link">&larr; 案例 47</a>
+<a href="case_049.html" class="next-link">案例 49 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

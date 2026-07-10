@@ -3,455 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 15：模板类：通用栈 - C++ 100工程案例</title>
+    <title>案例 15：模板类:通用栈 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
-    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
-    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
-    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
-    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
-    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
-    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
-    <a href="case_014.html" class="case-link ">14. 模板函数</a>
-    <a href="case_015.html" class="case-link active">15. 模板类：通用栈</a>
-    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
-    <a href="case_017.html" class="case-link ">17. Lambda 表达式练手</a>
-    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
-    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr 实战</a>
-    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link ">21. vector 深入</a>
-    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
-    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
-    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
-    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
-    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
-    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
-    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
-    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
-    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
-    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
-    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
-    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
-    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
-    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
-    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
-    <a href="case_037.html" class="case-link ">37. thread 入门</a>
-    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
-    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
-    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
-    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
-    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
-    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
-    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
-    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
-    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
-    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
-    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
-    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
-    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
-    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
-    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
-    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
-    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
-    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
-    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
-    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
-    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
-    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
-    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
-    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
-    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
-    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
-    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
-    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
-    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
-    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
-    <a href="case_070.html" class="case-link ">70. 策略模式</a>
-    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
-    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
-    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
-    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
-    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
-    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
-    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
-    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
-    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
-    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
-    <a href="case_081.html" class="case-link ">81. 插件系统</a>
-    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
-    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
-    <a href="case_084.html" class="case-link ">84. 连接池</a>
-    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
-    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
-    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
-    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
-    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
-    <a href="case_091.html" class="case-link ">91. 协程库</a>
-    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
-    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
-    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
-    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
-    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
-    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
-    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
-    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
-    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_014.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_016.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 15：模板类:通用栈</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 15：模板类:通用栈</h1>
+            <section class="intro">
+<p>使用模板实现一个通用栈类，支持任意类型的压栈、出栈、查看栈顶操作。</p>
+            <p><strong>核心知识点：</strong>类模板、模板成员函数、栈数据结构</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 15：模板类：通用栈
+// 实现一个支持任意类型的栈
+#include &lt;iostream&gt;
+#include &lt;stdexcept&gt; // std::out_of_range
+using namespace std;
 
-        <h1>案例 15：模板类：通用栈</h1>
+// 类模板：通用栈
+template &lt;typename T&gt;
+class Stack {
+private:
+    T* data;          // 动态数组存储栈元素
+    size_t capacity;  // 当前容量
+    size_t topIndex;  // 栈顶索引（指向下一个空位）
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;stdexcept&gt;</code></span>
-                        <span class="line-comment">标准异常类：out_of_range</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>template&lt;typename T&gt;</code></span>
-                        <span class="line-comment">类模板声明，T 是元素类型</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>class Stack {</code></span>
-                        <span class="line-comment">通用栈类</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>private:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    T* data_;</code></span>
-                        <span class="line-comment">动态数组存储元素</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>    int capacity_;</code></span>
-                        <span class="line-comment">当前容量</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    int top_;</code></span>
-                        <span class="line-comment">栈顶索引，-1 表示空栈</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    void resize() {</code></span>
-                        <span class="line-comment">扩容函数：容量翻倍</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>        capacity_ *= 2;</code></span>
-                        <span class="line-comment">容量 x2，摊销 O(1)</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>        T* new_data = new T[capacity_];</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>        for (int i = 0; i &lt;= top_; i++) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>            new_data[i] = data_[i];</code></span>
-                        <span class="line-comment">拷贝旧数据</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>        }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>        delete[] data_;</code></span>
-                        <span class="line-comment">释放旧内存</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>        data_ = new_data;</code></span>
-                        <span class="line-comment">指向新数组</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    Stack(int cap = 4) : capacity_(cap), top_(-1) {</code></span>
-                        <span class="line-comment">默认容量 4</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>        data_ = new T[capacity_];</code></span>
-                        <span class="line-comment">分配初始数组</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    ~Stack() { delete[] data_; }</code></span>
-                        <span class="line-comment">析构释放内存</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    void push(const T&amp; val) {</code></span>
-                        <span class="line-comment">入栈</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        if (top_ + 1 &gt;= capacity_) resize();</code></span>
-                        <span class="line-comment">满了就扩容</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        data_[++top_] = val;</code></span>
-                        <span class="line-comment">先自增再赋值</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    T pop() {</code></span>
-                        <span class="line-comment">出栈，返回栈顶元素</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>        if (empty()) throw out_of_range(\"Stack is empty\");</code></span>
-                        <span class="line-comment">抛异常</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>        return data_[top_--];</code></span>
-                        <span class="line-comment">先返回再自减</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>    T&amp; peek() {</code></span>
-                        <span class="line-comment">查看栈顶，不弹出</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>        if (empty()) throw out_of_range(\"Stack is empty\");</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>        return data_[top_];</code></span>
-                        <span class="line-comment">返回引用，允许修改</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    bool empty() const { return top_ == -1; }</code></span>
-                        <span class="line-comment">判空</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    int size() const { return top_ + 1; }</code></span>
-                        <span class="line-comment">元素数量</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>    Stack&lt;int&gt; s;</code></span>
-                        <span class="line-comment">模板实例化：栈中存 int</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>    for (int i = 1; i &lt;= 5; i++) s.push(i);</code></span>
-                        <span class="line-comment">push 5 个元素，触发一次扩容</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>    while (!s.empty()) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>        cout &lt;&lt; s.pop() &lt;&lt; \" \";</code></span>
-                        <span class="line-comment">后进先出：5 4 3 2 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code>    Stack&lt;string&gt; ss;</code></span>
-                        <span class="line-comment">模板实例化：栈中存 string</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    ss.push("Hello");</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>    ss.push("World");</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl &lt;&lt; ss.pop() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">World 先出</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-            </div>
-        </section>
+    // 扩容
+    void expand() {
+        capacity = (capacity == 0) ? 4 : capacity * 2;
+        T* newData = new T[capacity];
+        for (size_t i = 0; i &lt; topIndex; i++) {
+            newData[i] = data[i];
+        }
+        delete[] data;
+        data = newData;
+    }
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                <div class="grammar-item">
-                    <h3>类模板 template<typename T></h3>
-                    <div class="rule-box">在类声明前加 <code>template &lt;typename T&gt;</code>，类中的 T 在实例化时被替换为具体类型。头文件(.h)中同时包含声明和实现。</div>
-                    <pre><code>template&lt;typename T&gt;
-class Box { T value; };
-Box&lt;int&gt; bi;
-Box&lt;string&gt; bs;</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>动态扩容策略（摊销分析）</h3>
-                    <div class="rule-box">容量翻倍（x2）的策略比每次+1 高效：n 次 push 的总复制次数是 O(n)，<strong>平均每次 O(1)</strong>。</div>
-                    <pre><code>// 容量 4 -&gt; 8 -&gt; 16 -&gt; 32
-// 复制次数 = 4+8+16 = 28 次复制
-// 元素总数 = 32
-// 摊销 = 28/32 &lt; 1，每次 push 不到一次复制</code></pre>
-                </div>
-            </div>
-        </section>
+public:
+    Stack() : data(nullptr), capacity(0), topIndex(0) {}
+    ~Stack() { delete[] data; }
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                <div class="extend-item">
-                    <h4>支持移动语义</h4>
-                    <p><strong>代码：</strong><code>void push(T&& val) { ... data_[++top_] = move(val); }</code></p>
-                    <p><strong>思路：</strong>避免不必要的拷贝</p>
-                </div>
-                <div class="extend-item">
-                    <h4>实现迭代器支持范围 for</h4>
-                    <p><strong>代码：</strong><code>T* begin() { return data_; } T* end() { return data_+top_+1; }</code></p>
-                    <p><strong>思路：</strong>支持 for(auto& x : stack) 语法</p>
-                </div>
-                <div class="extend-item">
-                    <h4>模板参数自定义扩容因子</h4>
-                    <p><strong>代码：</strong><code>template<typename T, int FACTOR=2> class Stack {...}</code></p>
-                    <p><strong>思路：</strong>灵活控制扩容倍数</p>
-                </div>
-            </div>
-        </section>
+    // 压栈
+    void push(const T&amp; value) {
+        if (topIndex == capacity) expand();
+        data[topIndex++] = value;
+    }
 
-        <div class="bottom-nav">
-            <a href="case_014.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_016.html" class="nav-link">下一个 →</a>
+    // 出栈
+    T pop() {
+        if (topIndex == 0) {
+            throw out_of_range("Stack is empty!");
+        }
+        return data[--topIndex];
+    }
+
+    // 查看栈顶（不弹出）
+    T&amp; top() {
+        if (topIndex == 0) {
+            throw out_of_range("Stack is empty!");
+        }
+        return data[topIndex - 1];
+    }
+
+    bool empty() const { return topIndex == 0; }
+    size_t size() const { return topIndex; }
+};
+
+int main() {
+    // 整数栈
+    Stack&lt;int&gt; intStack;
+    intStack.push(10);
+    intStack.push(20);
+    intStack.push(30);
+    cout &lt;&lt; "int top: " &lt;&lt; intStack.top() &lt;&lt; endl;
+    cout &lt;&lt; "pop: " &lt;&lt; intStack.pop() &lt;&lt; endl;
+
+    // 字符串栈
+    Stack&lt;string&gt; strStack;
+    strStack.push("Hello");
+    strStack.push("World");
+    while (!strStack.empty()) {
+        cout &lt;&lt; strStack.pop() &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：类模板定义</h3>
+                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+class Stack {
+    T* data;
+public:
+    void push(const T&amp; value);
+};</code></pre>
+                    <p class="tip">举一反三：类模板中成员函数也是模板函数，定义时需写 template<typename T> 前缀。类模板实例化：Stack<int> s;</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：异常处理 throw/try/catch</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;stdexcept&gt;
+throw out_of_range("Stack is empty!");
+try { s.pop(); } catch (const out_of_range&amp; e) { cerr &lt;&lt; e.what(); }</code></pre>
+                    <p class="tip">举一反三：C++ 标准库提供 logic_error、runtime_error 等异常类型。what() 返回错误信息。pop() 为空时抛异常比返回默认值更安全。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：模板中的内存管理</h3>
+                    <pre class="code-block"><code class="language-cpp">void expand() {
+    T* newData = new T[capacity];
+    // 拷贝...
+    delete[] data;
+    data = newData;
+}</code></pre>
+                    <p class="tip">举一反三：模板类中使用 new[]/delete[] 需要确保 T 有默认构造函数和拷贝构造函数。扩容策略通常用 1.5~2 倍增长，摊还 O(1)。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_014.html" class="prev-link">&larr; 案例 14</a>
+<a href="case_016.html" class="next-link">案例 16 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

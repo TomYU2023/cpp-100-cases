@@ -1,245 +1,157 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>案例 45：JSON 解析器（递归下降） - C++ 100 案例</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 45：JSON解析/生成 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="top-nav">
-  <a href="index.html" class="brand">C++ 100 案例</a>
-  <div class="nav-links">
-    <span>阶段：</span>
-    <a href="case_001.html">1-20</a>
-    <a href="case_021.html">21-40</a>
-    <a href="case_041.html">41-60</a>
-    <a href="case_061.html">61-85</a>
-    <a href="case_086.html">86-100</a>
-  </div>
-</nav>
-<main>
-<h1>案例 45：JSON 解析器（递归下降）</h1>
-<div class="section"><h2>完整代码（逐行注释）</h2>
-<div class="code-block"><table class="code-table">
-<tr><td class="ln">1</td><td class="cd" colspan="2">#include &lt;iostream&gt;</td></tr>
-<tr><td class="ln">2</td><td class="cd" colspan="2">#include &lt;string&gt;</td></tr>
-<tr><td class="ln">3</td><td class="cd" colspan="2">#include &lt;vector&gt;</td></tr>
-<tr><td class="ln">4</td><td class="cd" colspan="2">#include &lt;map&gt;</td></tr>
-<tr><td class="ln">5</td><td class="cd">#include &lt;variant&gt;</td><td class="cmt">C++17 类型安全的联合体</td></tr>
-<tr><td class="ln">6</td><td class="cd">#include &lt;cctype&gt;</td><td class="cmt">isspace / isdigit</td></tr>
-<tr><td class="ln">7</td><td class="cd">#include &lt;stdexcept&gt;</td><td class="cmt">std::runtime_error</td></tr>
-<tr><td class="ln">8</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">9</td><td class="cd" colspan="2">using namespace std;</td></tr>
-<tr><td class="ln">10</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">11</td><td class="cd" colspan="2">// JSON 值类型：支持 null、bool、number、string、array、object</td></tr>
-<tr><td class="ln">12</td><td class="cd">using JsonValue = variant&lt;</td><td class="cmt">C++17 variant：同一变量可存不同类型</td></tr>
-<tr><td class="ln">13</td><td class="cd">    nullptr_t,     // null</td><td class="cmt">nullptr_t 类型表示 null</td></tr>
-<tr><td class="ln">14</td><td class="cd" colspan="2">    bool,           // true / false</td></tr>
-<tr><td class="ln">15</td><td class="cd" colspan="2">    double,         // number（统一用 double）</td></tr>
-<tr><td class="ln">16</td><td class="cd" colspan="2">    string,         // string</td></tr>
-<tr><td class="ln">17</td><td class="cd">    vector&lt;JsonValue&gt;,   // array（嵌套自身）</td><td class="cmt">需要用包装类型</td></tr>
-<tr><td class="ln">18</td><td class="cd">    map&lt;string, JsonValue&gt; // object（嵌套自身）</td><td class="cmt">需要用包装类型</td></tr>
-<tr><td class="ln">19</td><td class="cd" colspan="2">&gt;;</td></tr>
-<tr><td class="ln">20</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">21</td><td class="cd" colspan="2">// 前向声明解析函数</td></tr>
-<tr><td class="ln">22</td><td class="cd">JsonValue parseValue(const string&amp; s, size_t&amp; pos);</td><td class="cmt">递归入口</td></tr>
-<tr><td class="ln">23</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">24</td><td class="cd" colspan="2">class JsonParser {</td></tr>
-<tr><td class="ln">25</td><td class="cd">    const string&amp; s;</td><td class="cmt">引用原始 JSON 字符串</td></tr>
-<tr><td class="ln">26</td><td class="cd">    size_t&amp; pos;</td><td class="cmt">引用当前位置</td></tr>
-<tr><td class="ln">27</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">28</td><td class="cd">    void skipWhitespace() {</td><td class="cmt">跳过空白字符</td></tr>
-<tr><td class="ln">29</td><td class="cd">        while (pos &lt; s.size() &amp;&amp; isspace(s[pos])) pos++;</td><td class="cmt">isspace 识别空格/制表/换行</td></tr>
-<tr><td class="ln">30</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">31</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">32</td><td class="cd">    JsonValue parseNull() {</td><td class="cmt">解析 null</td></tr>
-<tr><td class="ln">33</td><td class="cd">        if (s.substr(pos, 4) == "null") {</td><td class="cmt">匹配 4 个字符</td></tr>
-<tr><td class="ln">34</td><td class="cd" colspan="2">            pos += 4;</td></tr>
-<tr><td class="ln">35</td><td class="cd">            return nullptr;</td><td class="cmt">返回 null 值</td></tr>
-<tr><td class="ln">36</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">37</td><td class="cd">        throw runtime_error("Expected null");</td><td class="cmt">不匹配则抛异常</td></tr>
-<tr><td class="ln">38</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">39</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">40</td><td class="cd">    JsonValue parseBool() {</td><td class="cmt">解析 true / false</td></tr>
-<tr><td class="ln">41</td><td class="cd" colspan="2">        if (s.substr(pos, 4) == "true") {</td></tr>
-<tr><td class="ln">42</td><td class="cd" colspan="2">            pos += 4; return true;</td></tr>
-<tr><td class="ln">43</td><td class="cd" colspan="2">        } else if (s.substr(pos, 5) == "false") {</td></tr>
-<tr><td class="ln">44</td><td class="cd" colspan="2">            pos += 5; return false;</td></tr>
-<tr><td class="ln">45</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">46</td><td class="cd" colspan="2">        throw runtime_error("Expected bool");</td></tr>
-<tr><td class="ln">47</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">48</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">49</td><td class="cd">    JsonValue parseNumber() {</td><td class="cmt">解析数字</td></tr>
-<tr><td class="ln">50</td><td class="cd" colspan="2">        size_t start = pos;</td></tr>
-<tr><td class="ln">51</td><td class="cd" colspan="2">        // 处理负号</td></tr>
-<tr><td class="ln">52</td><td class="cd" colspan="2">        if (s[pos] == '-') pos++;</td></tr>
-<tr><td class="ln">53</td><td class="cd" colspan="2">        // 整数部分</td></tr>
-<tr><td class="ln">54</td><td class="cd" colspan="2">        while (pos &lt; s.size() &amp;&amp; isdigit(s[pos])) pos++;</td></tr>
-<tr><td class="ln">55</td><td class="cd" colspan="2">        // 小数部分</td></tr>
-<tr><td class="ln">56</td><td class="cd" colspan="2">        if (pos &lt; s.size() &amp;&amp; s[pos] == '.') {</td></tr>
-<tr><td class="ln">57</td><td class="cd" colspan="2">            pos++;</td></tr>
-<tr><td class="ln">58</td><td class="cd" colspan="2">            while (pos &lt; s.size() &amp;&amp; isdigit(s[pos])) pos++;</td></tr>
-<tr><td class="ln">59</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">60</td><td class="cd" colspan="2">        // 科学记数法（如 1e10）</td></tr>
-<tr><td class="ln">61</td><td class="cd" colspan="2">        if (pos &lt; s.size() &amp;&amp; (s[pos] == 'e' || s[pos] == 'E')) {</td></tr>
-<tr><td class="ln">62</td><td class="cd" colspan="2">            pos++;</td></tr>
-<tr><td class="ln">63</td><td class="cd" colspan="2">            if (s[pos] == '+' || s[pos] == '-') pos++;</td></tr>
-<tr><td class="ln">64</td><td class="cd" colspan="2">            while (pos &lt; s.size() &amp;&amp; isdigit(s[pos])) pos++;</td></tr>
-<tr><td class="ln">65</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">66</td><td class="cd">        return stod(s.substr(start, pos - start));</td><td class="cmt">stod = string to double</td></tr>
-<tr><td class="ln">67</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">68</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">69</td><td class="cd">    JsonValue parseString() {</td><td class="cmt">解析字符串</td></tr>
-<tr><td class="ln">70</td><td class="cd" colspan="2">        pos++; // 跳过开头的 "</td></tr>
-<tr><td class="ln">71</td><td class="cd" colspan="2">        string result;</td></tr>
-<tr><td class="ln">72</td><td class="cd" colspan="2">        while (pos &lt; s.size() &amp;&amp; s[pos] != '"') {</td></tr>
-<tr><td class="ln">73</td><td class="cd">            if (s[pos] == '\\') {</td><td class="cmt">处理转义：\ 后跟转义字符</td></tr>
-<tr><td class="ln">74</td><td class="cd" colspan="2">                pos++;</td></tr>
-<tr><td class="ln">75</td><td class="cd" colspan="2">                switch (s[pos]) {</td></tr>
-<tr><td class="ln">76</td><td class="cd" colspan="2">                    case '"': result += '"'; break;</td></tr>
-<tr><td class="ln">77</td><td class="cd" colspan="2">                    case '\\': result += '\\'; break;</td></tr>
-<tr><td class="ln">78</td><td class="cd" colspan="2">                    case 'n': result += '\n'; break;</td></tr>
-<tr><td class="ln">79</td><td class="cd" colspan="2">                    case 't': result += '\t'; break;</td></tr>
-<tr><td class="ln">80</td><td class="cd" colspan="2">                    default: result += s[pos]; break;</td></tr>
-<tr><td class="ln">81</td><td class="cd" colspan="2">                }</td></tr>
-<tr><td class="ln">82</td><td class="cd" colspan="2">            } else {</td></tr>
-<tr><td class="ln">83</td><td class="cd" colspan="2">                result += s[pos];</td></tr>
-<tr><td class="ln">84</td><td class="cd" colspan="2">            }</td></tr>
-<tr><td class="ln">85</td><td class="cd" colspan="2">            pos++;</td></tr>
-<tr><td class="ln">86</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">87</td><td class="cd" colspan="2">        pos++; // 跳过结尾的 "</td></tr>
-<tr><td class="ln">88</td><td class="cd" colspan="2">        return result;</td></tr>
-<tr><td class="ln">89</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">90</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">91</td><td class="cd">    JsonValue parseArray() {</td><td class="cmt">解析数组 [ ... ]</td></tr>
-<tr><td class="ln">92</td><td class="cd" colspan="2">        vector&lt;JsonValue&gt; arr;</td></tr>
-<tr><td class="ln">93</td><td class="cd" colspan="2">        pos++; // 跳过 [</td></tr>
-<tr><td class="ln">94</td><td class="cd" colspan="2">        skipWhitespace();</td></tr>
-<tr><td class="ln">95</td><td class="cd">        if (s[pos] == ']') { pos++; return arr; }</td><td class="cmt">空数组快速返回</td></tr>
-<tr><td class="ln">96</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">97</td><td class="cd">        while (true) {</td><td class="cmt">循环解析元素</td></tr>
-<tr><td class="ln">98</td><td class="cd">            arr.push_back(parseValue(s, pos));</td><td class="cmt">递归解析每个元素</td></tr>
-<tr><td class="ln">99</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">100</td><td class="cd">            if (s[pos] == ']') { pos++; break; }</td><td class="cmt">数组结束</td></tr>
-<tr><td class="ln">101</td><td class="cd">            if (s[pos] == ',') pos++;</td><td class="cmt">跳过逗号</td></tr>
-<tr><td class="ln">102</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">103</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">104</td><td class="cd" colspan="2">        return arr;</td></tr>
-<tr><td class="ln">105</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">106</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">107</td><td class="cd">    JsonValue parseObject() {</td><td class="cmt">解析对象 { ... }</td></tr>
-<tr><td class="ln">108</td><td class="cd" colspan="2">        map&lt;string, JsonValue&gt; obj;</td></tr>
-<tr><td class="ln">109</td><td class="cd" colspan="2">        pos++; // 跳过 {</td></tr>
-<tr><td class="ln">110</td><td class="cd" colspan="2">        skipWhitespace();</td></tr>
-<tr><td class="ln">111</td><td class="cd">        if (s[pos] == '}') { pos++; return obj; }</td><td class="cmt">空对象快速返回</td></tr>
-<tr><td class="ln">112</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">113</td><td class="cd" colspan="2">        while (true) {</td></tr>
-<tr><td class="ln">114</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">115</td><td class="cd">            string key = get&lt;string&gt;(parseString());</td><td class="cmt">key 必定是 string，用 get 提取</td></tr>
-<tr><td class="ln">116</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">117</td><td class="cd" colspan="2">            pos++; // 跳过 :</td></tr>
-<tr><td class="ln">118</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">119</td><td class="cd">            obj[key] = parseValue(s, pos);</td><td class="cmt">递归解析 value</td></tr>
-<tr><td class="ln">120</td><td class="cd" colspan="2">            skipWhitespace();</td></tr>
-<tr><td class="ln">121</td><td class="cd">            if (s[pos] == '}') { pos++; break; }</td><td class="cmt">对象结束</td></tr>
-<tr><td class="ln">122</td><td class="cd">            if (s[pos] == ',') pos++;</td><td class="cmt">跳过逗号</td></tr>
-<tr><td class="ln">123</td><td class="cd" colspan="2">        }</td></tr>
-<tr><td class="ln">124</td><td class="cd" colspan="2">        return obj;</td></tr>
-<tr><td class="ln">125</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">126</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">127</td><td class="cd" colspan="2">public:</td></tr>
-<tr><td class="ln">128</td><td class="cd">    JsonParser(const string&amp; json, size_t&amp; p) : s(json), pos(p) {}</td><td class="cmt">构造函数：绑定 JSON 串和位置</td></tr>
-<tr><td class="ln">129</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">130</td><td class="cd">    JsonValue parse() {</td><td class="cmt">主解析入口</td></tr>
-<tr><td class="ln">131</td><td class="cd" colspan="2">        skipWhitespace();</td></tr>
-<tr><td class="ln">132</td><td class="cd" colspan="2">        char c = s[pos];</td></tr>
-<tr><td class="ln">133</td><td class="cd">        if (c == '{') return parseObject();</td><td class="cmt">对象以 { 开始</td></tr>
-<tr><td class="ln">134</td><td class="cd">        if (c == '[') return parseArray();</td><td class="cmt">数组以 [ 开始</td></tr>
-<tr><td class="ln">135</td><td class="cd">        if (c == '"') return parseString();</td><td class="cmt">字符串以 " 开始</td></tr>
-<tr><td class="ln">136</td><td class="cd">        if (c == 'n') return parseNull();</td><td class="cmt">null 以 n 开始</td></tr>
-<tr><td class="ln">137</td><td class="cd">        if (c == 't' || c == 'f') return parseBool();</td><td class="cmt">bool 以 t/f 开始</td></tr>
-<tr><td class="ln">138</td><td class="cd">        return parseNumber();</td><td class="cmt">否则尝试数字</td></tr>
-<tr><td class="ln">139</td><td class="cd" colspan="2">    }</td></tr>
-<tr><td class="ln">140</td><td class="cd" colspan="2">};</td></tr>
-<tr><td class="ln">141</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">142</td><td class="cd" colspan="2">// 递归入口（包装了 Parser 的创建）</td></tr>
-<tr><td class="ln">143</td><td class="cd" colspan="2">JsonValue parseValue(const string&amp; s, size_t&amp; pos) {</td></tr>
-<tr><td class="ln">144</td><td class="cd">    return JsonParser(s, pos).parse();</td><td class="cmt">创建 Parser 并调用 parse()</td></tr>
-<tr><td class="ln">145</td><td class="cd" colspan="2">}</td></tr>
-<tr><td class="ln">146</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">147</td><td class="cd" colspan="2">int main() {</td></tr>
-<tr><td class="ln">148</td><td class="cd">    string json = R"({"name":"Alice","age":25,"hobbies":["reading","coding"]})";</td><td class="cmt">R 原始字符串字面量</td></tr>
-<tr><td class="ln">149</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">150</td><td class="cd" colspan="2">    size_t pos = 0;</td></tr>
-<tr><td class="ln">151</td><td class="cd">    auto result = parseValue(json, pos);</td><td class="cmt">解析 JSON</td></tr>
-<tr><td class="ln">152</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">153</td><td class="cd" colspan="2">    // 访问解析结果</td></tr>
-<tr><td class="ln">154</td><td class="cd">    auto&amp; obj = get&lt;map&lt;string, JsonValue&gt;&gt;(result);</td><td class="cmt">获取解析后的 map</td></tr>
-<tr><td class="ln">155</td><td class="cd" colspan="2">    cout &lt;&lt; "name: " &lt;&lt; get&lt;string&gt;(obj["name"]) &lt;&lt; endl;</td></tr>
-<tr><td class="ln">156</td><td class="cd" colspan="2">    cout &lt;&lt; "age:  " &lt;&lt; get&lt;double&gt;(obj["age"]) &lt;&lt; endl;</td></tr>
-<tr><td class="ln">157</td><td class="cd" colspan="2"></td></tr>
-<tr><td class="ln">158</td><td class="cd" colspan="2">    return 0;</td></tr>
-<tr><td class="ln">159</td><td class="cd" colspan="2">}</td></tr>
-</table></div></div>
-<div class="section"><h2>新语法精讲</h2>
-<div class="grammar-section">
-<div class="grammar-item">
-<h3>递归下降解析器</h3>
-<div class="rule"><strong>语法规则：</strong>每个语法结构对应一个解析函数，函数间<strong>互相递归调用</strong>形成调用链。<strong>核心原则</strong>：每个函数解析成功后，pos 必须指向下一个待解析位置；解析失败则抛异常。这是最直观的手写解析器模式，适合 JSON / 表达式等上下文无关语法。</div>
-<pre class="example"><code>// 解析器调用链
-parseValue()
-  ├─ parseObject()
-  │   ├─ parseString()  // 解析 key
-  │   └─ parseValue()   // 递归解析 value
-  └─ parseArray()
-      └─ parseValue()   // 递归解析元素</code></pre>
-</div>
-<div class="grammar-item">
-<h3>std::variant（C++17 类型安全联合体）</h3>
-<div class="rule"><strong>语法规则：</strong><strong>variant</strong> 可以安全地存储多种类型中的一种，比 C 语言 union 更安全（自动调用析构、类型检查）。用 <code>get&lt;T&gt;(v)</code> 提取值，用 <code>holds_alternative&lt;T&gt;(v)</code> 检查类型。</div>
-<pre class="example"><code>variant<int, string, double> v;
-v = 42;              // 存 int
-int x = get<int>(v); // 取出 int
-v = "hello";         // 存 string
-// int y = get<int>(v);  // 抛异常！当前存的是 string
-if (holds_alternative<string>(v)) {
-    cout << get<string>(v);
-}</code></pre>
-</div>
-<div class="grammar-item">
-<h3>R 原始字符串字面量（C++11）</h3>
-<div class="rule"><strong>语法规则：</strong>R 前缀创建<strong>原始字符串</strong>，反斜杠不再是转义符。语法：<code>R"delim(内容)delim"</code>。delim 是可选的定界符。在 JSON、正则表达式、文件路径等含大量反斜杠的场景极为实用。</div>
-<pre class="example"><code>// 普通字符串：需要转义
-string s1 = "C:\\Users\\Admin\\file.txt";
-// 原始字符串：原样书写
-string s2 = R"(C:\Users\Admin\file.txt)";
-// 带定界符（内容含括号时）
-string s3 = R"delim({"key": [1, 2]})delim";</code></pre>
-</div>
-</div></div>
-<div class="section">
-<div class="extend-section">
-<h2>举一反三</h2>
-<ul>
-<li><strong>使用 nlohmann/json 库（工业标准）：</strong><pre><code>#include <nlohmann/json.hpp>
-using json = nlohmann::json;
-json j = json::parse(R"({"name":"Alice"})");
-cout << j["name"];</code></pre><p>nlohmann/json 是 C++ 中最流行的 JSON 库，header-only，一行安装。支持序列化/反序列化、类 JSON 字面量语法。</p></li>
-<li><strong>支持序列化：将 JsonValue 转回 JSON 字符串：</strong><pre><code>void printJson(const JsonValue& v) {
-    visit([](auto&& arg) {
-        using T = decay_t<decltype(arg)>;
-        if constexpr (is_same_v<T, string>) cout << '"' << arg << '"';
-        else if constexpr (is_same_v<T, nullptr_t>) cout << "null";
-        else cout << arg;
-    }, v);
-}</code></pre><p>利用 std::visit + if constexpr 实现打印，这是 C++17 处理 variant 的标准模式，避免了冗长的 if/else 类型判断。</p></li>
-</ul>
-</div></div>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 45：JSON解析/生成</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 45：JSON解析/生成</h1>
+            <section class="intro">
+<p>实现一个简易 JSON 解析器和生成器，支持 object、array、string、number 类型。</p>
+            <p><strong>核心知识点：</strong>递归下降解析、variant、string 处理</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 45：JSON 解析 / 生成
+// 使用 variant 实现简易 JSON 值类型
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;variant&gt;
+#include &lt;sstream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
 
-<nav class="prev-next">
-  <a href="case_044.html">← 案例 44</a><a href="case_046.html">案例 46 →</a>
-</nav>
-</main>
+// 前向声明
+struct JsonValue;
+
+// JSON 类型：null、bool、int、double、string、array、object
+using JsonNull = nullptr_t;
+using JsonObject = map&lt;string, JsonValue&gt;;
+using JsonArray = vector&lt;JsonValue&gt;;
+using JsonData = variant&lt;JsonNull, bool, int, double, string, JsonArray, JsonObject&gt;;
+
+struct JsonValue {
+    JsonData data;
+
+    JsonValue() : data(nullptr) {}
+    JsonValue(bool b) : data(b) {}
+    JsonValue(int i) : data(i) {}
+    JsonValue(double d) : data(d) {}
+    JsonValue(const string&amp; s) : data(s) {}
+    JsonValue(const JsonArray&amp; a) : data(a) {}
+    JsonValue(const JsonObject&amp; o) : data(o) {}
+};
+
+// 将 JsonValue 转为格式化的 JSON 字符串
+string toJsonString(const JsonValue&amp; val, int indent = 0) {
+    string pad(indent * 2, ' ');         // 缩进空格
+    string padNext((indent + 1) * 2, ' ');
+    stringstream ss;
+
+    visit([&amp;](const auto&amp; v) {
+        using T = decay_t&lt;decltype(v)&gt;;
+
+        if constexpr (is_same_v&lt;T, JsonNull&gt;) {
+            ss &lt;&lt; "null";
+        } else if constexpr (is_same_v&lt;T, bool&gt;) {
+            ss &lt;&lt; (v ? "true" : "false");
+        } else if constexpr (is_same_v&lt;T, int&gt;) {
+            ss &lt;&lt; v;
+        } else if constexpr (is_same_v&lt;T, double&gt;) {
+            ss &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; v;
+        } else if constexpr (is_same_v&lt;T, string&gt;) {
+            ss &lt;&lt; "\"" &lt;&lt; v &lt;&lt; "\"";
+        } else if constexpr (is_same_v&lt;T, JsonArray&gt;) {
+            ss &lt;&lt; "[\n";
+            for (size_t i = 0; i &lt; v.size(); i++) {
+                ss &lt;&lt; padNext &lt;&lt; toJsonString(v[i], indent + 1);
+                if (i &lt; v.size() - 1) ss &lt;&lt; ",";
+                ss &lt;&lt; "\n";
+            }
+            ss &lt;&lt; pad &lt;&lt; "]";
+        } else if constexpr (is_same_v&lt;T, JsonObject&gt;) {
+            ss &lt;&lt; "{\n";
+            size_t i = 0;
+            for (const auto&amp; [k, val2] : v) {
+                ss &lt;&lt; padNext &lt;&lt; "\"" &lt;&lt; k &lt;&lt; "\": "
+                   &lt;&lt; toJsonString(val2, indent + 1);
+                if (i++ &lt; v.size() - 1) ss &lt;&lt; ",";
+                ss &lt;&lt; "\n";
+            }
+            ss &lt;&lt; pad &lt;&lt; "}";
+        }
+    }, val.data);
+
+    return ss.str();
+}
+
+int main() {
+    // 构建 JSON 对象
+    JsonObject obj;
+    obj["name"] = JsonValue(string("Alice"));
+    obj["age"] = JsonValue(25);
+    obj["isStudent"] = JsonValue(false);
+    obj["scores"] = JsonValue(JsonArray{
+        JsonValue(95), JsonValue(87), JsonValue(92)});
+    obj["address"] = JsonValue(JsonObject{
+        {"city", JsonValue(string("Beijing"))},
+        {"zip", JsonValue(string("100000"))}
+    });
+
+    JsonValue root(obj);
+    cout &lt;&lt; toJsonString(root) &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：variant + visit 模式匹配</h3>
+                    <pre class="code-block"><code class="language-cpp">variant&lt;int,double,string&gt; v;
+v = 42;
+visit([](const auto&amp; x) {
+    // 针对每种类型处理
+}, v);</code></pre>
+                    <p class="tip">举一反三：variant 是类型安全的 union，编译期保证所有类型访问。visit 结合 if constexpr 实现编译期多态。C++17 的 overloaded 模式可简化 visit。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：递归数据结构的 variant</h3>
+                    <pre class="code-block"><code class="language-cpp">struct JsonValue;
+using JsonArray = vector&lt;JsonValue&gt;;
+using JsonObject = map&lt;string, JsonValue&gt;;
+using JsonData = variant&lt;..., JsonArray, JsonObject&gt;;</code></pre>
+                    <p class="tip">举一反三：variant 支持递归类型定义（通过 vector/map 等间接层）。前向声明 struct + using 是嵌套类型定义的标准模式。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：toJsonString 递归缩进</h3>
+                    <pre class="code-block"><code class="language-cpp">string pad(indent * 2, ' ');
+// 每层递归增加 2 空格缩进
+// 字符串构造：string(n, c) 创建 n 个 c 的字符串</code></pre>
+                    <p class="tip">举一反三：递归生成缩进格式是格式化输出的常见模式。每次递归 indent+1，退出时缩进自动恢复。可用 stringstream 替代 string 拼接提升性能。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_044.html" class="prev-link">&larr; 案例 44</a>
+<a href="case_046.html" class="next-link">案例 46 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -3,398 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 17：Lambda 表达式练手 - C++ 100工程案例</title>
+    <title>案例 17：Lambda表达式练手 - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="sidebar-header"><a href="index.html">C++ 100 工程案例</a></div>
-  <div class="stage-title">第一阶段：语法练兵场</div>
-    <a href="case_001.html" class="case-link ">1. 九九乘法表</a>
-    <a href="case_002.html" class="case-link ">2. 猜数字游戏</a>
-    <a href="case_003.html" class="case-link ">3. 简易计算器</a>
-    <a href="case_004.html" class="case-link ">4. 判断素数/回文数/完数</a>
-    <a href="case_005.html" class="case-link ">5. 数组去重 + 排序</a>
-    <a href="case_006.html" class="case-link ">6. 动态数组实现</a>
-    <a href="case_007.html" class="case-link ">7. 字符串工具</a>
-    <a href="case_008.html" class="case-link ">8. 统计文本文件字符/单词频率</a>
-    <a href="case_009.html" class="case-link ">9. 学生成绩管理系统</a>
-    <a href="case_010.html" class="case-link ">10. 复数类（运算符重载）</a>
-    <a href="case_011.html" class="case-link ">11. 字符串类（手写 String）</a>
-    <a href="case_012.html" class="case-link ">12. 银行账户类</a>
-    <a href="case_013.html" class="case-link ">13. 形状继承体系</a>
-    <a href="case_014.html" class="case-link ">14. 模板函数</a>
-    <a href="case_015.html" class="case-link ">15. 模板类：通用栈</a>
-    <a href="case_016.html" class="case-link ">16. 异常处理实战</a>
-    <a href="case_017.html" class="case-link active">17. Lambda 表达式练手</a>
-    <a href="case_018.html" class="case-link ">18. 移动语义演练</a>
-    <a href="case_019.html" class="case-link ">19. shared_ptr/unique_ptr 实战</a>
-    <a href="case_020.html" class="case-link ">20. variant + optional 小工具</a>
-  <div class="stage-title">第二阶段：STL 熟练工</div>
-    <a href="case_021.html" class="case-link ">21. vector 深入</a>
-    <a href="case_022.html" class="case-link ">22. map 实战：电话号码簿</a>
-    <a href="case_023.html" class="case-link ">23. unordered_map 实现 LRU 缓存</a>
-    <a href="case_024.html" class="case-link ">24. set 集合运算器</a>
-    <a href="case_025.html" class="case-link ">25. priority_queue 任务调度器</a>
-    <a href="case_026.html" class="case-link ">26. deque 滑动窗口工具</a>
-    <a href="case_027.html" class="case-link ">27. sort 对比实验</a>
-    <a href="case_028.html" class="case-link ">28. find_if/count_if 条件筛选器</a>
-    <a href="case_029.html" class="case-link ">29. transform 批量转换</a>
-    <a href="case_030.html" class="case-link ">30. accumulate/reduce 聚合计算</a>
-    <a href="case_031.html" class="case-link ">31. partition 快排分区</a>
-    <a href="case_032.html" class="case-link ">32. next_permutation 全排列</a>
-    <a href="case_033.html" class="case-link ">33. string_view 零拷贝分析</a>
-    <a href="case_034.html" class="case-link ">34. chrono 计时器</a>
-    <a href="case_035.html" class="case-link ">35. filesystem 文件遍历</a>
-    <a href="case_036.html" class="case-link ">36. regex 日志解析器</a>
-    <a href="case_037.html" class="case-link ">37. thread 入门</a>
-    <a href="case_038.html" class="case-link ">38. mutex+lock_guard 线程安全</a>
-    <a href="case_039.html" class="case-link ">39. condition_variable 生产者消费者</a>
-    <a href="case_040.html" class="case-link ">40. future+async 异步框架</a>
-  <div class="stage-title">第三阶段：实用小工具</div>
-    <a href="case_041.html" class="case-link ">41. 命令行参数解析器</a>
-    <a href="case_042.html" class="case-link ">42. 彩色终端输出工具</a>
-    <a href="case_043.html" class="case-link ">43. 文件 MD5/SHA256 校验</a>
-    <a href="case_044.html" class="case-link ">44. Base64 编解码器</a>
-    <a href="case_045.html" class="case-link ">45. JSON 解析器</a>
-    <a href="case_046.html" class="case-link ">46. CSV 读写工具</a>
-    <a href="case_047.html" class="case-link ">47. 简易日志系统</a>
-    <a href="case_048.html" class="case-link ">48. 配置文件读写器</a>
-    <a href="case_049.html" class="case-link ">49. 文件加密/解密器</a>
-    <a href="case_050.html" class="case-link ">50. 压缩/解压工具</a>
-    <a href="case_051.html" class="case-link ">51. 多线程文件拷贝器</a>
-    <a href="case_052.html" class="case-link ">52. 图片缩略图批量生成</a>
-    <a href="case_053.html" class="case-link ">53. Markdown 转 HTML</a>
-    <a href="case_054.html" class="case-link ">54. SQLite 数据库封装</a>
-    <a href="case_055.html" class="case-link ">55. WebSocket 客户端</a>
-    <a href="case_056.html" class="case-link ">56. 端口扫描器</a>
-    <a href="case_057.html" class="case-link ">57. 简易 Ping 工具</a>
-    <a href="case_058.html" class="case-link ">58. 目录监控器</a>
-    <a href="case_059.html" class="case-link ">59. 进程内存监控</a>
-    <a href="case_060.html" class="case-link ">60. 剪贴板管理器</a>
-  <div class="stage-title">第四阶段：工程能力锻造</div>
-    <a href="case_061.html" class="case-link ">61. 线程池实现</a>
-    <a href="case_062.html" class="case-link ">62. 内存池实现</a>
-    <a href="case_063.html" class="case-link ">63. 无锁队列</a>
-    <a href="case_064.html" class="case-link ">64. 对象池模式</a>
-    <a href="case_065.html" class="case-link ">65. TCP 聊天室</a>
-    <a href="case_066.html" class="case-link ">66. HTTP 静态文件服务器</a>
-    <a href="case_067.html" class="case-link ">67. REST API 客户端</a>
-    <a href="case_068.html" class="case-link ">68. gRPC 服务端/客户端</a>
-    <a href="case_069.html" class="case-link ">69. 观察者模式：事件总线</a>
-    <a href="case_070.html" class="case-link ">70. 策略模式</a>
-    <a href="case_071.html" class="case-link ">71. 工厂模式：对象注册表</a>
-    <a href="case_072.html" class="case-link ">72. 装饰器模式</a>
-    <a href="case_073.html" class="case-link ">73. 命令模式：撤销/重做</a>
-    <a href="case_074.html" class="case-link ">74. 状态机：TCP 连接</a>
-    <a href="case_075.html" class="case-link ">75. CMake 项目骨架</a>
-    <a href="case_076.html" class="case-link ">76. 单元测试框架（Google Test）</a>
-    <a href="case_077.html" class="case-link ">77. 库的打包与发布</a>
-    <a href="case_078.html" class="case-link ">78. 简易性能剖析器</a>
-    <a href="case_079.html" class="case-link ">79. 内存泄漏检测器</a>
-    <a href="case_080.html" class="case-link ">80. 序列化/反序列化框架</a>
-    <a href="case_081.html" class="case-link ">81. 插件系统</a>
-    <a href="case_082.html" class="case-link ">82. 简易脚本引擎</a>
-    <a href="case_083.html" class="case-link ">83. 定时器管理器</a>
-    <a href="case_084.html" class="case-link ">84. 连接池</a>
-    <a href="case_085.html" class="case-link ">85. 简易 Redis 客户端</a>
-  <div class="stage-title">第五阶段：综合项目</div>
-    <a href="case_086.html" class="case-link ">86. 命令行 TODO 管理器</a>
-    <a href="case_087.html" class="case-link ">87. 终端俄罗斯方块</a>
-    <a href="case_088.html" class="case-link ">88. 简易 Git 实现</a>
-    <a href="case_089.html" class="case-link ">89. 键值数据库 LSM-Tree</a>
-    <a href="case_090.html" class="case-link ">90. 简易 Nginx 反向代理</a>
-    <a href="case_091.html" class="case-link ">91. 协程库</a>
-    <a href="case_092.html" class="case-link ">92. 脚本语言解释器</a>
-    <a href="case_093.html" class="case-link ">93. 2D 游戏引擎基础</a>
-    <a href="case_094.html" class="case-link ">94. 简易数据库</a>
-    <a href="case_095.html" class="case-link ">95. 分布式 KV 存储</a>
-    <a href="case_096.html" class="case-link ">96. 简易 Docker</a>
-    <a href="case_097.html" class="case-link ">97. LLVM Pass 插件</a>
-    <a href="case_098.html" class="case-link ">98. 简易 Tensor 库</a>
-    <a href="case_099.html" class="case-link ">99. 多人聊天服务器</a>
-    <a href="case_100.html" class="case-link ">100. 个人作品集</a>
-</nav>
-
-    <div class="overlay" onclick="document.body.classList.toggle('sidebar-open')"></div>
-    <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
-
-    <main class="content">
-        <div class="top-nav">
-            <a href="case_016.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_018.html" class="nav-link">下一个 →</a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 17：Lambda表达式练手</span>
         </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 17：Lambda表达式练手</h1>
+            <section class="intro">
+<p>深入练习 Lambda 表达式的各种捕获方式和用法，包括值捕获、引用捕获、泛型 Lambda。</p>
+            <p><strong>核心知识点：</strong>Lambda 语法、捕获列表、泛型 Lambda、函数对象</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 17：Lambda 表达式练手
+// 练习各种捕获方式和 Lambda 用法
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;functional&gt;
+using namespace std;
 
-        <h1>案例 17：Lambda 表达式练手</h1>
+int main() {
+    int a = 10, b = 20, c = 30;
 
-        <section class="section">
-            <h2>完整代码（带逐行注释）</h2>
-            <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include &lt;algorithm&gt;</code></span>
-                        <span class="line-comment">算法库：sort, for_each, find_if</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include &lt;functional&gt;</code></span>
-                        <span class="line-comment">function 类型包装器</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>    vector&lt;int&gt; nums = {5, 2, 8, 1, 9, 3};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    auto print = [](int n) { cout &lt;&lt; n &lt;&lt; \" \"; };</code></span>
-                        <span class="line-comment">[ ] 是空捕获列表</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    for_each(nums.begin(), nums.end(), print);</code></span>
-                        <span class="line-comment">for_each 对每个元素调用 lambda</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>    int threshold = 5;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>    int count = count_if(nums.begin(), nums.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>        [threshold](int n) { return n &gt; threshold; }</code></span>
-                        <span class="line-comment">threshold 被拷贝进 lambda</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    );</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "大于 " &lt;&lt; threshold &lt;&lt; " 的个数: " &lt;&lt; count &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    int sum = 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>    for_each(nums.begin(), nums.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>        [&amp;sum](int n) { sum += n; }</code></span>
-                        <span class="line-comment">&amp;sum 按引用捕获，修改外部 sum</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    );</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "总和: " &lt;&lt; sum &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>    auto add = [](int a, int b) -&gt; double {</code></span>
-                        <span class="line-comment">-&gt; double 显式指定返回类型</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        return (a + b) / 2.0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    };</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    cout &lt;&lt; add(3, 7) &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    function&lt;bool(int, int)&gt; cmp = [](int a, int b) { return a &gt; b; };</code></span>
-                        <span class="line-comment">降序比较</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    sort(nums.begin(), nums.end(), cmp);</code></span>
-                        <span class="line-comment">自定义排序</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    for (int n : nums) cout &lt;&lt; n &lt;&lt; \" \";</code></span>
-                        <span class="line-comment">9 8 5 3 2 1</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code> </code></span>
-                        <span class="line-comment"> </span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    int x = 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>    auto inc = [x]() mutable { return ++x; };</code></span>
-                        <span class="line-comment">不加 mutable 则编译错误</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    cout &lt;&lt; inc() &lt;&lt; inc() &lt;&lt; inc() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">1 2 3，每次调用 x 递增</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "外部 x 不变: " &lt;&lt; x &lt;&lt; endl;</code></span>
-                        <span class="line-comment">外部 x 仍是 0，拷贝不受影响</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-            </div>
-        </section>
+    // 1. 值捕获：拷贝外部变量，Lambda 内修改不影响外部
+    auto f1 = [a, b]() { return a + b; };
+    cout &lt;&lt; "[a,b] 值捕获 sum = " &lt;&lt; f1() &lt;&lt; endl; // 30
 
-        <section class="section">
-            <h2>新语法讲解</h2>
-            <div class="grammar-container">
-                <div class="grammar-item">
-                    <h3>Lambda 表达式完整语法</h3>
-                    <div class="rule-box"><code>[捕获列表](参数列表) mutable -> 返回类型 { 函数体 }</code>。常见捕获方式：<code>[]</code> 不捕获、<code>[=]</code> 按值全捕获、<code>[&]</code> 按引用全捕获、<code>[this]</code> 捕获当前对象指针。</div>
-                    <pre><code>[x]   // 只按值捕获 x
-[&amp;x]  // 只按引用捕获 x
-[=, &amp;y] // 除 y 引用外其余按值
-[this] // 类成员函数中使用，捕获 this</code></pre>
-                </div>
-                <div class="grammar-item">
-                    <h3>mutable 关键字</h3>
-                    <div class="rule-box">默认情况下，按值捕获的变量在 lambda 内<strong>不可修改</strong>（const）。加 <strong>mutable</strong> 后可以修改，但只影响 lambda 内部的副本，不影响外部变量。</div>
-                    <pre><code>int n = 0;
-auto f = [n]() mutable { ++n; return n; };
-f(); // 返回 1
-f(); // 返回 2
-cout &lt;&lt; n; // 仍是 0</code></pre>
-                </div>
-            </div>
-        </section>
+    // 2. 引用捕获：可修改外部变量
+    auto f2 = [&amp;a]() { a += 5; };
+    f2();
+    cout &lt;&lt; "引用捕获后 a = " &lt;&lt; a &lt;&lt; endl; // 15
 
-        <section class="section">
-            <h2>举一反三</h2>
-            <div class="extend-container">
-                <div class="extend-item">
-                    <h4>用 lambda 实现回调</h4>
-                    <p><strong>代码：</strong><code>void doTask(function<void(int)> cb) { cb(42); }</code></p>
-                    <p><strong>思路：</strong>把 lambda 当回调函数传递</p>
-                </div>
-                <div class="extend-item">
-                    <h4>捕获 this 在类中使用</h4>
-                    <p><strong>代码：</strong><code>class Timer { void start() { auto cb=[this]{ onTick(); }; } };</code></p>
-                    <p><strong>思路：</strong>[this] 让 lambda 访问类成员</p>
-                </div>
-                <div class="extend-item">
-                    <h4>泛型 lambda (C++14)</h4>
-                    <p><strong>代码：</strong><code>auto add=[](auto a, auto b){ return a+b; };</code></p>
-                    <p><strong>思路：</strong>auto 参数类型由编译器推导</p>
-                </div>
-            </div>
-        </section>
+    // 3. 可变 Lambda：值捕获但允许在 Lambda 内修改（不影响外部）
+    auto f3 = [a]() mutable { a += 100; return a; };
+    cout &lt;&lt; "[a] mutable 内修改 = " &lt;&lt; f3() &lt;&lt; endl; // 115
+    cout &lt;&lt; "原始 a = " &lt;&lt; a &lt;&lt; endl;                // 15
 
-        <div class="bottom-nav">
-            <a href="case_016.html" class="nav-link">← 上一个</a>
-            <a href="index.html" class="nav-link">🏠 主页</a>
-            <a href="case_018.html" class="nav-link">下一个 →</a>
+    // 4. [=] 全部值捕获，[&amp;] 全部引用捕获
+    auto f4 = [=]() { return a + b + c; };
+    auto f5 = [&amp;]() { a++; b++; c++; };
+
+    // 5. 泛型 Lambda（C++14）：auto 参数
+    auto genericAdd = [](auto x, auto y) { return x + y; };
+    cout &lt;&lt; "泛型 add(3, 4.5) = " &lt;&lt; genericAdd(3, 4.5) &lt;&lt; endl;
+
+    // 6. Lambda 作为 sort 比较器
+    vector&lt;int&gt; nums = {5, 2, 8, 1, 9};
+    sort(nums.begin(), nums.end(),
+         [](int x, int y) { return x &gt; y; }); // 降序
+    cout &lt;&lt; "降序排序: ";
+    for (int n : nums) cout &lt;&lt; n &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    // 7. function 包装 Lambda（适合存储和传递）
+    function&lt;int(int, int)&gt; op = [](int x, int y) { return x * y; };
+    cout &lt;&lt; "3 * 5 = " &lt;&lt; op(3, 5) &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：Lambda 捕获列表</h3>
+                    <pre class="code-block"><code class="language-cpp">int x = 5;
+auto f = [x]() { return x; };       // 值捕获
+// 或 [&amp;x] 引用捕获，[=] 全部值捕获，[&amp;] 全部引用捕获</code></pre>
+                    <p class="tip">举一反三：值捕获的变量默认 const，加 mutable 可修改（仅影响 Lambda 内部副本）。合理使用捕获列表避免悬垂引用。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：泛型 Lambda (C++14)</h3>
+                    <pre class="code-block"><code class="language-cpp">auto add = [](auto a, auto b) { return a + b; };
+// 编译器为每种参数组合生成特化版本</code></pre>
+                    <p class="tip">举一反三：泛型 Lambda 实质上是模板化的 operator()。C++20 支持显式模板参数：[]<typename T>(T a, T b){}。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：std::function 包装</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+function&lt;int(int,int)&gt; f = [](int x, int y) { return x + y; };
+int result = f(3, 4);</code></pre>
+                    <p class="tip">举一反三：function 可存储任何可调用对象（函数指针、Lambda、函数对象）。有轻微性能开销，性能敏感场景用模板或 auto 推导。</p>
+                </div>
+            </section>
         </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_016.html" class="prev-link">&larr; 案例 16</a>
+<a href="case_018.html" class="next-link">案例 18 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

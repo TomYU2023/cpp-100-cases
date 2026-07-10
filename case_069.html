@@ -3,208 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 69：观察者模式 — 事件总线</title>
-        <link rel="stylesheet" href="style.css">
+    <title>案例 69：std::array 性能对比 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-phase">
-            <span class="phase-label">Phase 4:</span>
-            <a href="case_061.html">线程池</a>
-            <a href="case_062.html">内存池</a>
-            <a href="case_063.html">无锁队列</a>
-            <a href="case_064.html">对象池</a>
-            <a href="case_065.html">TCP聊天</a>
-            <a href="case_066.html">HTTP服务</a>
-            <a href="case_067.html">REST客户端</a>
-            <a href="case_068.html">gRPC</a>
-            <a href="case_069.html">观察者</a>
-            <a href="case_070.html">策略</a>
-        </div>
-        <div class="nav-links">
-            <a href="case_065.html"><a href="case_068.html">← 上一案例</a></a>
-            <span class="sep">|</span>
-            <a href="case_067.html"><a href="case_070.html">下一案例 →</a></a>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 69：std::array 性能对比</span>
         </div>
     </nav>
     <main class="container">
-        <h1>案例 69：观察者模式 — 事件总线</h1>
-        <section class="intro">
-            <p>实现经典的观察者模式（接口式）和现代 C++ 事件总线（基于 std::function），对比两种方式的差异。</p>
-            <p><strong>核心知识点：</strong>观察者模式、抽象类、erase-remove 惯用法、std::function 类型擦除、事件驱动架构</p>
-        </section>
-        <section class="code-section">
-            <h2>完整代码（含逐行注释）</h2>
-            <pre class="code-block"><code class="language-cpp">// 案例 69：观察者模式（Observer Pattern）— 事件总线实现
-// 观察者模式：定义一对多依赖关系，当一个对象（Subject）状态变化时，
-// 所有依赖它的对象（Observer）自动收到通知并更新。
-// 典型场景：GUI 按钮点击、消息订阅、股票行情推送、数据绑定。
-
+        <div class="content">
+            <h1>案例 69：std::array 性能对比</h1>
+            <section class="intro">
+<p>对比 array、vector 和 C 数组在性能上的差异，理解栈分配 vs 堆分配。</p>
+            <p><strong>核心知识点：</strong>array、栈分配、编译期大小、性能基准</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 69：std::array 性能对比
+// 对比 array、vector 和 C 数组的访问性能
 #include &lt;iostream&gt;
-#include &lt;string&gt;
+#include &lt;array&gt;
 #include &lt;vector&gt;
-#include &lt;functional&gt;
-#include &lt;memory&gt;
+#include &lt;chrono&gt;
+#include &lt;numeric&gt;
+using namespace std;
+using namespace chrono;
 
-/* ── 语法规则：观察者模式结构 ──
-   Subject（被观察者/主题）：维护观察者列表，状态变化时调用 notify()
-   Observer（观察者）：定义 update() 接口，收到通知后执行自己的逻辑
+constexpr int SIZE = 10000000;
 
-   经典 UML：
-     Subject ◇──► Observer (接口)
-       │              ▲
-       │              │
-     ConcreteSubject  ConcreteObserver
-
-   示例（股票行情）：
-     StockMarket subject;       // 被观察者：股市数据源
-     Investor alice, bob;      // 观察者：两个投资者
-     subject.attach(&amp;alice);   // alice 订阅
-     subject.attach(&amp;bob);     // bob 订阅
-     subject.setPrice(&quot;AAPL&quot;, 150.0); // 价格变动 → 自动通知两人
-     subject.detach(&amp;bob);     // bob 取消订阅
-
-   举一反三：观察者模式是 MVC 架构的核心——Model 变化自动通知 View 更新。
-   现代 C++ 常用 std::function 替代纯虚接口，更灵活（见本案例的事件总线实现）。
-*/
-
-// 方式一：经典接口式（纯虚函数）
-class IObserver {                    // 观察者接口
-public:
-    virtual ~IObserver() = default;  // 虚析构：保证子类正确析构
-    virtual void update(const std::string&amp; msg) = 0;  // 纯虚函数：子类必须实现
-};
-
-class Subject {                      // 被观察者
-    std::vector&lt;IObserver*&gt; observers;  // 裸指针列表（实际项目用 weak_ptr 更安全）
-
-public:
-    void attach(IObserver* obs) {    // 订阅
-        observers.push_back(obs);
-    }
-
-    void detach(IObserver* obs) {    // 取消订阅
-        // erase-remove 惯用法：remove 把目标元素移到末尾，erase 真正删除
-        observers.erase(
-            std::remove(observers.begin(), observers.end(), obs),
-            observers.end()
-        );
-    }
-
-    void notify(const std::string&amp; msg) {  // 通知所有观察者
-        for (auto* obs : observers) {
-            obs-&gt;update(msg);              // 调用每个观察者的 update
-        }
-    }
-};
-
-// 具体观察者：打印消息
-class ConsoleLogger : public IObserver {
-    std::string name;
-public:
-    ConsoleLogger(const std::string&amp; n) : name(n) {}
-    void update(const std::string&amp; msg) override {
-        std::cout &lt;&lt; &quot;[&quot; &lt;&lt; name &lt;&lt; &quot;] 收到: &quot; &lt;&lt; msg &lt;&lt; std::endl;
-    }
-};
-
-// ============ 方式二：现代 C++ 事件总线（std::function） ============
-// 更灵活：不需要继承接口，lambda / 函数指针 / 成员函数都能当观察者
-class EventBus {
-public:
-    // 定义回调类型：接受 string 参数，无返回值
-    using Callback = std::function&lt;void(const std::string&amp;)&gt;;
-
-private:
-    // 存储所有回调函数及其 ID
-    struct Entry {
-        int id;
-        Callback callback;
-    };
-    std::vector&lt;Entry&gt; handlers;
-    int nextId = 0;
-
-public:
-    // 订阅：返回订阅 ID 用于取消
-    int subscribe(Callback cb) {
-        handlers.push_back({nextId, std::move(cb)});
-        return nextId++;       // 返回当前 ID，然后自增
-    }
-
-    // 取消订阅：根据 ID 移除
-    void unsubscribe(int id) {
-        handlers.erase(
-            std::remove_if(handlers.begin(), handlers.end(),
-                [id](const Entry&amp; e) { return e.id == id; }),  // 按 ID 匹配
-            handlers.end()
-        );
-    }
-
-    // 发布事件：触发所有回调
-    void publish(const std::string&amp; event) {
-        for (auto&amp; h : handlers) {
-            h.callback(event);  // 执行回调
-        }
-    }
-};
+// 计时辅助函数
+template &lt;typename F&gt;
+double measure(F&amp;&amp; func, const string&amp; name) {
+    auto start = high_resolution_clock::now();
+    func();
+    auto end = high_resolution_clock::now();
+    double ms = duration&lt;double, milli&gt;(end - start).count();
+    cout &lt;&lt; name &lt;&lt; ": " &lt;&lt; ms &lt;&lt; " ms" &lt;&lt; endl;
+    return ms;
+}
 
 int main() {
-    // ===== 测试经典观察者模式 =====
-    std::cout &lt;&lt; &quot;=== 经典观察者模式 ===&quot; &lt;&lt; std::endl;
-    Subject subject;
-    ConsoleLogger alice(&quot;Alice&quot;);
-    ConsoleLogger bob(&quot;Bob&quot;);
+    cout &lt;&lt; "=== 容器性能对比 (N=" &lt;&lt; SIZE &lt;&lt; ") ===" &lt;&lt; endl;
 
-    subject.attach(&amp;alice);
-    subject.attach(&amp;bob);
-    subject.notify(&quot;AAPL 涨到 $150&quot;);   // 两人都收到通知
+    // 1. C 风格数组
+    int* cArr = new int[SIZE];
+    iota(cArr, cArr + SIZE, 0);
 
-    subject.detach(&amp;bob);               // Bob 退订
-    subject.notify(&quot;TSLA 跌到 $200&quot;);   // 只有 Alice 收到
+    // 2. std::array（假设 SIZE 较小的版本）
+    // array 必须在编译期确定大小，用 1000 做演示
+    constexpr int SMALL = 100000;
+    array&lt;int, SMALL&gt; stdArr;
+    iota(stdArr.begin(), stdArr.end(), 0);
 
-    // ===== 测试事件总线 =====
-    std::cout &lt;&lt; &quot;\n=== 事件总线 (std::function) ===&quot; &lt;&lt; std::endl;
-    EventBus bus;
+    // 3. std::vector
+    vector&lt;int&gt; vec(SIZE);
+    iota(vec.begin(), vec.end(), 0);
 
-    // 订阅 1：lambda 表达式
-    int id1 = bus.subscribe([](const std::string&amp; e) {
-        std::cout &lt;&lt; &quot;Lambda 收到: &quot; &lt;&lt; e &lt;&lt; std::endl;
-    });
+    // 测试顺序访问
+    cout &lt;&lt; "\n--- 顺序求和 ---" &lt;&lt; endl;
 
-    // 订阅 2：函数指针
-    auto handler = [](const std::string&amp; e) {
-        std::cout &lt;&lt; &quot;Handler 收到: &quot; &lt;&lt; e &lt;&lt; std::endl;
-    };
-    int id2 = bus.subscribe(handler);
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SIZE; i++) sum += cArr[i];
+    }, "C数组 (heap)");
 
-    bus.publish(&quot;系统启动完成&quot;);   // 两个回调都触发
-    bus.unsubscribe(id1);          // 取消第一个
-    bus.publish(&quot;日志已清理&quot;);     // 只有第二个收到
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SMALL; i++) sum += stdArr[i];
+    }, "std::array (stack) x10");
 
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SIZE; i++) sum += vec[i];
+    }, "std::vector");
+
+    // 测试随机访问
+    cout &lt;&lt; "\n--- 随机访问 ---" &lt;&lt; endl;
+
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SIZE; i++) {
+            int idx = (i * 1234567 + 7654321) % SIZE;
+            sum += cArr[idx];
+        }
+    }, "C数组 随机");
+
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SIZE; i++) {
+            int idx = (i * 1234567 + 7654321) % SIZE;
+            sum += vec[idx];
+        }
+    }, "vector 随机");
+
+    // 对比 at() vs operator[]
+    cout &lt;&lt; "\n--- at() vs operator[] ---" &lt;&lt; endl;
+
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SMALL; i++) sum += stdArr.at(i);
+    }, "array::at() (带边界检查)");
+
+    measure([&amp;]() {
+        volatile long long sum = 0;
+        for (int i = 0; i &lt; SMALL; i++) sum += stdArr[i];
+    }, "array::operator[] (无检查)");
+
+    delete[] cArr;
     return 0;
 }</code></pre>
-        </section>
-        <section class="grammar-section">
-            <h3>语法规则：erase-remove 惯用法</h3>
-            <pre class="code-block"><code class="language-cpp">// 删除 vector 中所有值为 target 的元素
-vec.erase(std::remove(vec.begin(), vec.end(), target), vec.end());
-// remove 把匹配元素移到末尾，返回新末尾迭代器；erase 真正删除</code></pre>
-            <p class="tip">💡 举一反三：这是 C++ 中 O(n) 删除元素的惯用法。remove_if 用法相同但接受谓词。C++20 引入 std::erase(vec, target) 简化。</p>
-            <h3>语法规则：std::function 类型擦除</h3>
-            <pre class="code-block"><code class="language-cpp">std::function&lt;int(int, int)&gt; fn;
-fn = [](int a, int b) { return a + b; };  // lambda
-fn = std::multiplies&lt;int&gt;();                // 函数对象
-fn = &amp;someFunction;                         // 函数指针
-int result = fn(3, 4);  // 调用</code></pre>
-            <p class="tip">💡 举一反三：std::function 是万能函数包装器，能够存储任意可调用对象（lambda/函数指针/成员函数/bind）。代价是虚函数调用的微小开销。</p>
-            <h3>语法规则：纯虚函数与抽象类</h3>
-            <pre class="code-block"><code class="language-cpp">class Interface {
-  virtual void method() = 0;  // =0 表示纯虚函数
-};  // Interface 是抽象类，不能直接实例化
-// 子类必须实现所有纯虚函数才能被实例化</code></pre>
-            <p class="tip">💡 举一反三：纯虚函数用来定义接口契约。类似 Java 的 interface、Go 的 interface、Rust 的 trait。析构函数也应 virtual，保证 delete 基类指针时调用子类析构。</p>
-        </section>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：array vs vector vs C数组</h3>
+                    <pre class="code-block"><code class="language-cpp">// array: 栈分配，编译期大小，无动态分配
+array&lt;int, 100&gt; arr;
+// vector: 堆分配，运行时大小，可动态增长
+vector&lt;int&gt; vec(100);
+// C数组: 需手动管理，无边界信息
+int cArr[100];</code></pre>
+                    <p class="tip">举一反三：array 是 C 数组的现代替代，支持迭代器、size()、at() 等。无额外开销（sizeof(array) == sizeof(C数组)）。编译期确定大小是限制也是优势。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：operator[] vs at()</h3>
+                    <pre class="code-block"><code class="language-cpp">arr[5];    // 不检查边界，越界是 UB
+arr.at(5); // 检查边界，越界抛 out_of_range
+// at() 有 1~3% 的性能开销（分支预测良好的情况下）</code></pre>
+                    <p class="tip">举一反三：operator[] 用于确定不会越界的场景（如循环中已知范围）。at() 用于不确定的场景（如用户输入索引）。Debug 模式下编译器的 operator[] 可能也有检查。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：array 初始化和赋值</h3>
+                    <pre class="code-block"><code class="language-cpp">array&lt;int, 5&gt; a = {1, 2, 3, 4, 5}; // 列表初始化
+a.fill(0);                              // 全部填充
+auto b = a;                            // 值拷贝（而非指针拷贝）</code></pre>
+                    <p class="tip">举一反三：与 C 数组不同，array 可以直接赋值和拷贝。fill() 比 memset 类型安全。array 可以整体传给函数（按值或引用），保留大小信息。</p>
+                </div>
+            </section>
+        </div>
     </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_068.html" class="prev-link">&larr; 案例 68</a>
+<a href="case_070.html" class="next-link">案例 70 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

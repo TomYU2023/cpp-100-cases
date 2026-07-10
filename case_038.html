@@ -3,495 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 38: mutex 线程安全 | C++ 100 案例</title>
+    <title>案例 38：mutex+lock_guard - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <div class="app">
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html"><h2>C++ 100 案例</h2></a>
-            </div>
-            <div class="sidebar-nav">
-<div class="section-title">阶段一：语法练兵场</div>
-<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
-<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
-<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
-<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
-<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
-<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
-<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
-<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
-<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
-<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
-<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
-<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
-<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
-<a href="case_014.html" class="nav-item ">14. 模板函数</a>
-<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
-<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
-<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
-<a href="case_018.html" class="nav-item ">18. 移动语义</a>
-<a href="case_019.html" class="nav-item ">19. 智能指针</a>
-<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
-<div class="section-title">阶段二：STL 熟练工</div>
-<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
-<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
-<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
-<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
-<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
-<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
-<a href="case_027.html" class="nav-item ">27. sort 对比实验</a>
-<a href="case_028.html" class="nav-item ">28. find_if 条件筛选</a>
-<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
-<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
-<a href="case_031.html" class="nav-item ">31. partition 分区</a>
-<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
-<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
-<a href="case_034.html" class="nav-item ">34. chrono 计时器</a>
-<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
-<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
-<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
-<a href="case_038.html" class="nav-item active">38. mutex 线程安全</a>
-<a href="case_039.html" class="nav-item ">39. condition_variable 生产者消费者</a>
-<a href="case_040.html" class="nav-item ">40. future/async 异步任务</a>
-<div class="section-title">阶段三：实用小工具</div>
-<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
-<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
-<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
-<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
-<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
-<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
-<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
-<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
-<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
-<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
-<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
-<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
-<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
-<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
-<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
-<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
-<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
-<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
-<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
-<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
-<div class="section-title">阶段四：工程能力锻造</div>
-<a href="case_061.html" class="nav-item ">61. 线程池</a>
-<a href="case_062.html" class="nav-item ">62. 内存池</a>
-<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
-<a href="case_064.html" class="nav-item ">64. 对象池</a>
-<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
-<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
-<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
-<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
-<a href="case_069.html" class="nav-item ">69. 事件总线</a>
-<a href="case_070.html" class="nav-item ">70. 策略模式</a>
-<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
-<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
-<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
-<a href="case_074.html" class="nav-item ">74. 状态机</a>
-<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
-<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
-<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
-<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
-<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
-<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
-<a href="case_081.html" class="nav-item ">81. 插件系统</a>
-<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
-<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
-<a href="case_084.html" class="nav-item ">84. 连接池</a>
-<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
-<div class="section-title">阶段五：综合项目</div>
-<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
-<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
-<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
-<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
-<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
-<a href="case_091.html" class="nav-item ">91. 协程库</a>
-<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
-<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
-<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
-<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
-<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
-<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
-<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
-<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
-<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
-            </div>
-        </nav>
-        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-        <main class="content">
-            <header class="case-header">
-                <span class="case-badge">案例 038</span>
-                <h1>mutex 线程安全</h1>
-            </header>
-
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 38：mutex+lock_guard</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 38：mutex+lock_guard</h1>
+            <section class="intro">
+<p>使用 mutex 和 lock_guard 保护共享资源，实现线程安全的计数器。</p>
+            <p><strong>核心知识点：</strong>mutex、lock_guard、临界区、死锁预防</p>
+            </section>
             <section class="code-section">
-                <h2>完整代码（逐行注释）</h2>
-                <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;thread&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include &lt;mutex&gt;</code></span>
-                        <span class="line-comment">互斥锁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include &lt;shared_mutex&gt;</code></span>
-                        <span class="line-comment">读写锁 (C++17)</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>#include &lt;string&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>// 线程安全的计数器（互斥锁版）</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>class Counter {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code>    mutable mutex mtx_;</code></span>
-                        <span class="line-comment">mutable 允许在 const 方法中加锁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    int value_ = 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>    void increment() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>        lock_guard&lt;mutex&gt; lock(mtx_);</code></span>
-                        <span class="line-comment">RAII 自动加锁/解锁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>        value_++;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code>    int get() const {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>        lock_guard&lt;mutex&gt; lock(mtx_);</code></span>
-                        <span class="line-comment">const 方法也能加锁（因为有 mutable）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>        return value_;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>// 线程安全的容器（读写锁版）</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>class ThreadSafeVector {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    mutable shared_mutex rw_mtx_;</code></span>
-                        <span class="line-comment">读写锁</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code>    vector&lt;string&gt; data_;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>public:</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    void add(const string&amp; item) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        unique_lock&lt;shared_mutex&gt; lock(rw_mtx_);</code></span>
-                        <span class="line-comment">写锁（独占）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>        data_.push_back(item);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    string get(size_t idx) const {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>        shared_lock&lt;shared_mutex&gt; lock(rw_mtx_);</code></span>
-                        <span class="line-comment">读锁（共享）</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>        return idx &lt; data_.size() ? data_[idx] : "";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    size_t size() const {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>        shared_lock&lt;shared_mutex&gt; lock(rw_mtx_);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>        return data_.size();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>};</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    // 测试互斥锁版计数器</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>    Counter counter;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>    vector&lt;thread&gt; threads;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code>    for (int i = 0; i &lt; 10; i++) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>        threads.emplace_back([&amp;counter]() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>            for (int j = 0; j &lt; 10000; j++)</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">50</span>
-                        <span class="line-code"><code>                counter.increment();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">51</span>
-                        <span class="line-code"><code>        });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">52</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">53</span>
-                        <span class="line-code"><code>    for (auto&amp; t : threads) t.join();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">54</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "计数器: " &lt;&lt; counter.get() &lt;&lt; " (应为 100000)" &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">55</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">56</span>
-                        <span class="line-code"><code>    // 测试读写锁版容器</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">57</span>
-                        <span class="line-code"><code>    ThreadSafeVector sv;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">58</span>
-                        <span class="line-code"><code>    threads.clear();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">59</span>
-                        <span class="line-code"><code>    for (int i = 0; i &lt; 5; i++) {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">60</span>
-                        <span class="line-code"><code>        threads.emplace_back([&amp;sv, i]() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">61</span>
-                        <span class="line-code"><code>            sv.add("thread-" + to_string(i));</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">62</span>
-                        <span class="line-code"><code>        });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">63</span>
-                        <span class="line-code"><code>    }</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">64</span>
-                        <span class="line-code"><code>    for (auto&amp; t : threads) t.join();</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">65</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "容器 size: " &lt;&lt; sv.size() &lt;&lt; endl;</code></span>
-                        <span class="line-comment">应为 5</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">66</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">67</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">68</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-                </div>
-                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
-            </section>
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 38：mutex + lock_guard
+// 使用互斥锁保护共享数据
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;vector&gt;
+using namespace std;
 
-            <section class="grammar-section">
-                <h2>新语法讲解</h2>
-            <div class="grammar-card">
-                <h3>lock_guard / unique_lock / scoped_lock</h3>
-                <div class="grammar-rule"><strong>lock_guard</strong>：最简单的 RAII 锁，构造时 lock，析构时 unlock，不可手动解锁。<strong>unique_lock</strong>：更灵活，支持 defer（延迟加锁）、try_lock、手动 unlock，开销略大于 lock_guard。<strong>scoped_lock</strong>（C++17）：可同时锁多个 mutex，避免死锁。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>// 推荐选择
-lock_guard<mutex> lg(m);  // 简单场景，性能最优
-unique_lock<mutex> ul(m); // 需要条件变量或手动控制
-scoped_lock lk(m1, m2);  // 需要同时锁多个</code></pre>
-                </div>
-            </div>
-            <div class="grammar-card">
-                <h3>mutable 与 const 方法加锁</h3>
-                <div class="grammar-rule">锁操作修改了 mutex 的内部状态，但 const 方法不允许修改成员变量。解决方案：把 mutex 声明为 <strong>mutable</strong>，允许在 const 方法中修改。这是 mutex 用 mutable 的唯一正当场景。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>class C {
-    mutable mutex mtx_;
-    int data_;
+// 线程安全的计数器
+class ThreadSafeCounter {
+private:
+    mutable mutex mtx; // mutable 允许在 const 函数中加锁
+    int value;
+
 public:
+    ThreadSafeCounter() : value(0) {}
+
+    // 递增
+    void increment() {
+        lock_guard&lt;mutex&gt; lock(mtx); // 构造时自动加锁
+        value++;
+        // lock 在离开作用域时自动解锁
+    }
+
+    // 递减
+    void decrement() {
+        lock_guard&lt;mutex&gt; lock(mtx);
+        value--;
+    }
+
+    // 读取（const 但需要加锁，所以 mtx 声明为 mutable）
     int get() const {
-        lock_guard<mutex> lg(mtx_); // 不加 mutable 编译不过
-        return data_;
+        lock_guard&lt;mutex&gt; lock(mtx);
+        return value;
     }
-};</code></pre>
-                </div>
-            </div>
-            </section>
+};
 
-            <section class="extend-section">
-                <h2>举一反三</h2>
-            <div class="extend-card">
-                <h3>递归锁 recursive_mutex</h3>
-                <pre><code>recursive_mutex rm;
-void f() { lock_guard lg(rm); g(); } // f 中调用 g
-void g() { lock_guard lg(rm); /* OK */ } // 同一线程可多次加锁</code></pre>
-                <p>同一线程可重复加锁，但尽量不用，说明设计有问题</p>
-            </div>
-            <div class="extend-card">
-                <h3>timed_mutex 超时加锁</h3>
-                <pre><code>timed_mutex tm;
-if(tm.try_lock_for(100ms)) {
-  // 成功加锁
-  tm.unlock();
-} else {
-  // 超时，做别的事
+// 不安全版本（用于对比）
+class UnsafeCounter {
+private:
+    int value;
+public:
+    UnsafeCounter() : value(0) {}
+    void increment() { value++; } // 非原子操作！
+    int get() const { return value; }
+};
+
+int main() {
+    const int NUM_THREADS = 10;
+    const int ITERATIONS = 100000;
+
+    // 测试线程安全版本
+    {
+        ThreadSafeCounter safeCounter;
+        vector&lt;thread&gt; threads;
+
+        for (int i = 0; i &lt; NUM_THREADS; i++) {
+            threads.emplace_back([&amp;safeCounter, ITERATIONS]() {
+                for (int j = 0; j &lt; ITERATIONS; j++) {
+                    safeCounter.increment();
+                }
+            });
+        }
+        for (auto&amp; t : threads) t.join();
+
+        cout &lt;&lt; "线程安全计数器: " &lt;&lt; safeCounter.get()
+             &lt;&lt; " (期望: " &lt;&lt; NUM_THREADS * ITERATIONS &lt;&lt; ")" &lt;&lt; endl;
+    }
+
+    // 测试不安全版本
+    {
+        UnsafeCounter unsafeCounter;
+        vector&lt;thread&gt; threads;
+
+        for (int i = 0; i &lt; NUM_THREADS; i++) {
+            threads.emplace_back([&amp;unsafeCounter, ITERATIONS]() {
+                for (int j = 0; j &lt; ITERATIONS; j++) {
+                    unsafeCounter.increment();
+                }
+            });
+        }
+        for (auto&amp; t : threads) t.join();
+
+        cout &lt;&lt; "非安全计数器: " &lt;&lt; unsafeCounter.get()
+             &lt;&lt; " (期望: " &lt;&lt; NUM_THREADS * ITERATIONS &lt;&lt; ")" &lt;&lt; endl;
+    }
+
+    return 0;
 }</code></pre>
-                <p>避免无限等待，提高响应性</p>
-            </div>
-            <div class="extend-card">
-                <h3>死锁的四个必要条件</h3>
-                <pre><code>// 1. 互斥
-// 2. 持有并等待
-// 3. 不可抢占
-// 4. 循环等待
-// 解决办法：统一加锁顺序，或用 scoped_lock
-scoped_lock lock(mtx1, mtx2); // 原子加锁</code></pre>
-                <p>破坏任意一个条件就能预防死锁</p>
-            </div>
             </section>
-
-            <nav class="case-nav">
-                <a href="case_037.html" class="nav-prev">← 上一案例</a>
-                <a href="index.html" class="nav-home">回首页</a>
-                <a href="case_039.html" class="nav-next">下一案例 →</a>
-            </nav>
-        </main>
-    </div>
-    <script>
-    function copyCode(container) {
-        const lines = container.querySelectorAll('.line-code code');
-        let code = '';
-        lines.forEach(l => code += l.textContent + '\n');
-        navigator.clipboard.writeText(code);
-    }
-    </script>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：lock_guard RAII 加锁</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;mutex&gt;
+mutex mtx;
+void safeFunc() {
+    lock_guard&lt;mutex&gt; lock(mtx); // 自动加锁
+    // 临界区操作
+} // 离开作用域自动解锁</code></pre>
+                    <p class="tip">举一反三：lock_guard 不可手动解锁，构造后即拥有锁。C++17 的 scoped_lock 可同时锁多个 mutex 避免死锁。unique_lock 提供更多灵活性。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：mutable 关键字</h3>
+                    <pre class="code-block"><code class="language-cpp">class Counter {
+    mutable mutex mtx; // const 函数中也可修改
+public:
+    int get() const { lock_guard&lt;mutex&gt; lk(mtx); return val; }
+};</code></pre>
+                    <p class="tip">举一反三：mutable 允许在 const 成员函数中修改成员。mutex 通常声明为 mutable，因为加锁是一种不影响逻辑 const 的物理操作。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：避免死锁的原则</h3>
+                    <pre class="code-block"><code class="language-cpp">// 1. 固定加锁顺序
+// 2. 使用 scoped_lock(mtx1, mtx2) 同时加锁
+// 3. 尽量缩小临界区
+// 4. 避免在持锁时调用外部代码</code></pre>
+                    <p class="tip">举一反三：死锁发生条件：互斥、持有并等待、不可抢占、循环等待。破坏任一条件即可预防。C++17 的 scoped_lock 通过同时获取多锁来避免死锁。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_037.html" class="prev-link">&larr; 案例 37</a>
+<a href="case_039.html" class="next-link">案例 39 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>

@@ -1,118 +1,126 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>案例 75：CMake 构建系统入门</title>    <link rel="stylesheet" href="style.css"></head><body>
-    <nav class="nav-bar">
-        <div class="nav-brand"><a href="index.html">C++ 100 Cases</a></div>
-        <div class="nav-links">
-            <a href="case_074.html">← 上一案例</a>
-            <span class="sep">|</span>
-            <a href="case_076.html">下一案例 →</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例 75：std::sample 随机抽样 - C++ 100 案例</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 75：std::sample 随机抽样</span>
         </div>
-    </nav><main class="container"><h1>案例 75：CMake 构建系统入门</h1><section class="intro"><p>展示从单文件到多目录库的完整 CMakeLists.txt 配置，详解 PRIVATE/PUBLIC/INTERFACE 依赖传递规则。</p><p><strong>核心知识点：</strong>CMake 构建系统、target_link_libraries 传递控制、add_subdirectory、C++17 标准设置</p></section>
-<section class="code-section"><h2>完整代码（含逐行注释）</h2><pre class="code-block"><code class="language-cpp">// 案例 75：CMake 构建系统入门
-// CMake 是 C++ 生态的事实标准构建系统，用 CMakeLists.txt 描述项目结构。
-// 本案例展示从单文件到多目录库的完整 CMake 配置。
-
-/* 语法规则：CMake 核心语法
-   CMake 命令不区分大小写（推荐小写），变量区分大小写。
-   基本结构：
-     cmake_minimum_required(VERSION 3.16)  # 最低版本要求
-     project(MyProject VERSION 1.0 LANGUAGES CXX)  # 项目定义
-     add_executable(app main.cpp)  # 生成可执行文件
-     add_library(mylib STATIC src/lib.cpp)  # 生成库
-     target_link_libraries(app PRIVATE mylib)  # 链接库
-
-   变量：set(VAR value)、${VAR} 引用
-   条件：if/elseif/else/endif
-   循环：foreach/endforeach
-   函数：function(name arg1 arg2)/endfunction
-
-   示例：最简单的 CMakeLists.txt
-     cmake_minimum_required(VERSION 3.16)
-     project(Hello)
-     add_executable(hello main.cpp)
-
-   举一反三：CMake 还负责查找第三方库（find_package）、
-   设置编译选项（target_compile_features）、安装规则（install）、
-   打包（CPack）、测试（CTest）。掌握 CMake 是 C++ 工程师的硬门槛。
-*/
-
-// ============= CMakeLists.txt（项目根目录）=============
-/*
-cmake_minimum_required(VERSION 3.16)
-
-# 项目信息
-project(CppProject
-    VERSION 1.0.0
-    DESCRIPTION &quot;C++ 项目演示&quot;
-    LANGUAGES CXX
-)
-
-# 设置 C++ 标准
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)     # 强制要求，不支持则报错
-set(CMAKE_CXX_EXTENSIONS OFF)           # 禁用编译器扩展，保证可移植性
-
-# 添加子目录（自动处理子目录的 CMakeLists.txt）
-add_subdirectory(src)
-
-# 可选：测试
-option(BUILD_TESTS &quot;构建测试&quot; OFF)
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
-*/
-
-// ============= src/CMakeLists.txt =============
-/*
-# 静态库：核心功能
-add_library(core STATIC
-    core/utils.cpp
-    core/logger.cpp
-)
-
-# 为目标设置包含目录（core/ 的头文件在 core/ 下）
-target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-# 可执行文件
-add_executable(myapp main.cpp)
-
-# 链接库：PRIVATE = 仅 myapp 使用，不传递给依赖者
-target_link_libraries(myapp PRIVATE core)
-*/
-
-// ============= 构建命令 =============
-// mkdir build &amp;&amp; cd build
-// cmake ..                    # 生成构建文件
-// cmake --build .             # 编译
-// cmake --build . --config Release  # 编译 Release 版
-// cmake --install . --prefix ../out  # 安装
-
-// ============= C++ 源码示例 =============
-// main.cpp
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 75：std::sample 随机抽样</h1>
+            <section class="intro">
+<p>使用 sample 进行随机抽样，练习随机数生成器的正确使用。</p>
+            <p><strong>核心知识点：</strong>sample、random_device、mt19937、分布</p>
+            </section>
+            <section class="code-section">
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 75：std::sample 随机抽样
+// 从大数据集中随机抽取样本
 #include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;random&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;iterator&gt;
+using namespace std;
 
 int main() {
-    std::cout &lt;&lt; &quot;案例 75：CMake 构建系统&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;=========================&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;CMake 核心概念：&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  1. CMakeLists.txt — 项目描述文件&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  2. add_executable — 构建可执行文件&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  3. add_library — 构建库（STATIC/SHARED）&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  4. target_link_libraries — 链接依赖&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  5. PRIVATE/PUBLIC/INTERFACE — 依赖传递控制&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;\n依赖传递规则：&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  PRIVATE   — 仅自己用，不传递给下游&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  PUBLIC    — 自己用 + 下游也能用&quot; &lt;&lt; std::endl;
-    std::cout &lt;&lt; &quot;  INTERFACE — 自己不用，下游用（纯头文件库）&quot; &lt;&lt; std::endl;
+    // 1. 准备数据集
+    vector&lt;string&gt; students = {
+        "Alice", "Bob", "Charlie", "David", "Eve",
+        "Frank", "Grace", "Henry", "Ivy", "Jack",
+        "Kate", "Leo", "Mary", "Nick", "Olivia"
+    };
+
+    cout &lt;&lt; "总人数: " &lt;&lt; students.size() &lt;&lt; endl;
+
+    // 2. 使用 sample 随机抽取
+    random_device rd;                     // 真随机种子
+    mt19937 gen(rd());                    // 梅森旋转生成器
+
+    const int SAMPLE_COUNT = 5;
+
+    // 稳定抽样：保持被选中元素的原始顺序
+    vector&lt;string&gt; sample1;
+    sample(students.begin(), students.end(),
+           back_inserter(sample1), SAMPLE_COUNT, gen);
+
+    cout &lt;&lt; "\n=== 稳定抽样 (保持顺序) ===" &lt;&lt; endl;
+    for (size_t i = 0; i &lt; sample1.size(); i++) {
+        cout &lt;&lt; i + 1 &lt;&lt; ". " &lt;&lt; sample1[i] &lt;&lt; endl;
+    }
+
+    // 3. 不放回抽样（默认）
+    cout &lt;&lt; "\n=== 第二次抽样 ===" &lt;&lt; endl;
+    vector&lt;string&gt; sample2;
+    sample(students.begin(), students.end(),
+           back_inserter(sample2), SAMPLE_COUNT, gen);
+
+    for (size_t i = 0; i &lt; sample2.size(); i++) {
+        cout &lt;&lt; i + 1 &lt;&lt; ". " &lt;&lt; sample2[i] &lt;&lt; endl;
+    }
+
+    // 4. 从中奖池抽奖
+    vector&lt;int&gt; pool(100);
+    iota(pool.begin(), pool.end(), 1); // 1~100
+
+    vector&lt;int&gt; winners;
+    sample(pool.begin(), pool.end(),
+           back_inserter(winners), 3, gen);
+
+    cout &lt;&lt; "\n=== 抽奖结果 (1-100) ===" &lt;&lt; endl;
+    for (size_t i = 0; i &lt; winners.size(); i++) {
+        cout &lt;&lt; "第 " &lt;&lt; i + 1 &lt;&lt; " 名: " &lt;&lt; winners[i] &lt;&lt; " 号" &lt;&lt; endl;
+    }
+
     return 0;
-}</code></pre></section>
-<section class="grammar-section"><h3>语法规则：CMake PRIVATE/PUBLIC/INTERFACE 传递控制</h3><pre class="code-block"><code class="language-cpp"># A → B → C（链接依赖链）
-# target_link_libraries(B PRIVATE A)
-#   → C 看不到 A 的头文件和符号
-# target_link_libraries(B PUBLIC A)
-#   → C 可以看到 A
-# target_link_libraries(B INTERFACE A)
-#   → B 自己不用 A，但 C 能看（常用于 header-only lib）</code></pre><p class="tip">💡 举一反三：这是 CMake 最核心的设计概念。PUBLIC 用于 API 暴露（如你的库头文件引用了第三方库），PRIVATE 用于内部实现细节。</p>
-<h3>语法规则：target_include_directories 包含路径</h3><pre class="code-block"><code class="language-cpp">target_include_directories(mylib PUBLIC include/)
-# PUBLIC: 使用 mylib 的目标也能访问 include/ 下的头文件
-# PRIVATE: 只有 mylib 自己编译时能用</code></pre><p class="tip">💡 举一反三：不要再用 include_directories() 全局设置！它是 CMake 2.x 的遗留物，污染所有目标。</p></section></main></body></html>
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：random_device 与 mt19937</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;random&gt;
+random_device rd;           // 硬件熵源
+mt19937 gen(rd());          // 梅森旋转引擎
+// random_device 生成真随机种子
+// mt19937 是高质量伪随机数生成器</code></pre>
+                    <p class="tip">举一反三：不要使用 rand()（质量差+全局状态不安全）。random_device 可能在某些平台是伪随机的（如 MinGW）。mt19937 是 32 位，mt19937_64 是 64 位。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：std::sample</h3>
+                    <pre class="code-block"><code class="language-cpp">sample(src.begin(), src.end(),
+       back_inserter(dst), count, gen);
+// 从 src 中不放回随机抽 count 个元素
+// 默认保持原始顺序</code></pre>
+                    <p class="tip">举一反三：sample (C++17) 保证均匀分布。算法复杂度 O(N)（N 为输入大小）。抽样的结果顺序与原始一致（稳定）。n 必须 ≤ dst 剩余空间，否则 UB。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：其他常用分布</h3>
+                    <pre class="code-block"><code class="language-cpp">uniform_int_distribution&lt;int&gt; dist(1, 6); // [1,6]
+uniform_real_distribution&lt;double&gt; dist(0, 1);
+normal_distribution&lt;double&gt; dist(0, 1); // 正态
+bernoulli_distribution dist(0.7); // 70% true</code></pre>
+                    <p class="tip">举一反三：C++ 随机数库分引擎（产生原始随机位）+ 分布（映射为目标范围）。分布负责保证均匀性/目标形状。永远不要用 rand() % N（造成偏向性）。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_074.html" class="prev-link">&larr; 案例 74</a>
+<a href="case_076.html" class="next-link">案例 76 &rarr;</a>
+        </div>
+    </footer>
+</body>
+</html>

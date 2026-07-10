@@ -3,405 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案例 28: find_if 条件筛选 | C++ 100 案例</title>
+    <title>案例 28：find_if/count_if - C++ 100 案例</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><![CDATA[ ]]></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
-    <div class="app">
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html"><h2>C++ 100 案例</h2></a>
-            </div>
-            <div class="sidebar-nav">
-<div class="section-title">阶段一：语法练兵场</div>
-<a href="case_001.html" class="nav-item ">1. 九九乘法表</a>
-<a href="case_002.html" class="nav-item ">2. 猜数字游戏</a>
-<a href="case_003.html" class="nav-item ">3. 简易计算器</a>
-<a href="case_004.html" class="nav-item ">4. 判断素数/回文数/完数</a>
-<a href="case_005.html" class="nav-item ">5. 数组去重与排序</a>
-<a href="case_006.html" class="nav-item ">6. 动态数组实现</a>
-<a href="case_007.html" class="nav-item ">7. 字符串反转/查找/替换</a>
-<a href="case_008.html" class="nav-item ">8. 统计文本文件词频</a>
-<a href="case_009.html" class="nav-item ">9. 学生成绩管理系统</a>
-<a href="case_010.html" class="nav-item ">10. 复数类与运算符重载</a>
-<a href="case_011.html" class="nav-item ">11. 手写 String 类</a>
-<a href="case_012.html" class="nav-item ">12. 银行账户类</a>
-<a href="case_013.html" class="nav-item ">13. 形状继承体系</a>
-<a href="case_014.html" class="nav-item ">14. 模板函数</a>
-<a href="case_015.html" class="nav-item ">15. 模板类通用栈</a>
-<a href="case_016.html" class="nav-item ">16. 异常处理实战</a>
-<a href="case_017.html" class="nav-item ">17. Lambda 表达式</a>
-<a href="case_018.html" class="nav-item ">18. 移动语义</a>
-<a href="case_019.html" class="nav-item ">19. 智能指针</a>
-<a href="case_020.html" class="nav-item ">20. variant 与 optional</a>
-<div class="section-title">阶段二：STL 熟练工</div>
-<a href="case_021.html" class="nav-item ">21. vector 深度探索</a>
-<a href="case_022.html" class="nav-item ">22. map 电话号码簿</a>
-<a href="case_023.html" class="nav-item ">23. LRU 缓存</a>
-<a href="case_024.html" class="nav-item ">24. set 集合运算</a>
-<a href="case_025.html" class="nav-item ">25. priority_queue 任务调度</a>
-<a href="case_026.html" class="nav-item ">26. deque 滑动窗口</a>
-<a href="case_027.html" class="nav-item ">27. sort 对比实验</a>
-<a href="case_028.html" class="nav-item active">28. find_if 条件筛选</a>
-<a href="case_029.html" class="nav-item ">29. transform 数据转换</a>
-<a href="case_030.html" class="nav-item ">30. accumulate 聚合</a>
-<a href="case_031.html" class="nav-item ">31. partition 分区</a>
-<a href="case_032.html" class="nav-item ">32. 全排列生成器</a>
-<a href="case_033.html" class="nav-item ">33. string_view 零拷贝</a>
-<a href="case_034.html" class="nav-item ">34. chrono 计时器</a>
-<a href="case_035.html" class="nav-item ">35. filesystem 文件遍历</a>
-<a href="case_036.html" class="nav-item ">36. regex 日志解析器</a>
-<a href="case_037.html" class="nav-item ">37. thread 并行求和</a>
-<a href="case_038.html" class="nav-item ">38. mutex 线程安全</a>
-<a href="case_039.html" class="nav-item ">39. condition_variable 生产者消费者</a>
-<a href="case_040.html" class="nav-item ">40. future/async 异步任务</a>
-<div class="section-title">阶段三：实用小工具</div>
-<a href="case_041.html" class="nav-item ">41. 命令行参数解析器</a>
-<a href="case_042.html" class="nav-item ">42. 彩色终端输出</a>
-<a href="case_043.html" class="nav-item ">43. 文件哈希校验</a>
-<a href="case_044.html" class="nav-item ">44. Base64 编解码</a>
-<a href="case_045.html" class="nav-item ">45. JSON 解析器</a>
-<a href="case_046.html" class="nav-item ">46. CSV 读写工具</a>
-<a href="case_047.html" class="nav-item ">47. 简易日志系统</a>
-<a href="case_048.html" class="nav-item ">48. INI 配置读写</a>
-<a href="case_049.html" class="nav-item ">49. 文件加密解密</a>
-<a href="case_050.html" class="nav-item ">50. zlib 压缩工具</a>
-<a href="case_051.html" class="nav-item ">51. 多线程文件拷贝</a>
-<a href="case_052.html" class="nav-item ">52. 图片缩略图生成</a>
-<a href="case_053.html" class="nav-item ">53. Markdown 转 HTML</a>
-<a href="case_054.html" class="nav-item ">54. SQLite 数据库封装</a>
-<a href="case_055.html" class="nav-item ">55. WebSocket 客户端</a>
-<a href="case_056.html" class="nav-item ">56. 端口扫描器</a>
-<a href="case_057.html" class="nav-item ">57. 简易 Ping 工具</a>
-<a href="case_058.html" class="nav-item ">58. 目录监控器</a>
-<a href="case_059.html" class="nav-item ">59. 进程内存监控</a>
-<a href="case_060.html" class="nav-item ">60. 剪贴板管理器</a>
-<div class="section-title">阶段四：工程能力锻造</div>
-<a href="case_061.html" class="nav-item ">61. 线程池</a>
-<a href="case_062.html" class="nav-item ">62. 内存池</a>
-<a href="case_063.html" class="nav-item ">63. 无锁队列</a>
-<a href="case_064.html" class="nav-item ">64. 对象池</a>
-<a href="case_065.html" class="nav-item ">65. TCP 聊天室</a>
-<a href="case_066.html" class="nav-item ">66. HTTP 静态服务器</a>
-<a href="case_067.html" class="nav-item ">67. REST API 客户端</a>
-<a href="case_068.html" class="nav-item ">68. gRPC 服务</a>
-<a href="case_069.html" class="nav-item ">69. 事件总线</a>
-<a href="case_070.html" class="nav-item ">70. 策略模式</a>
-<a href="case_071.html" class="nav-item ">71. 工厂模式</a>
-<a href="case_072.html" class="nav-item ">72. 装饰器模式</a>
-<a href="case_073.html" class="nav-item ">73. 命令模式撤销重做</a>
-<a href="case_074.html" class="nav-item ">74. 状态机</a>
-<a href="case_075.html" class="nav-item ">75. CMake 项目骨架</a>
-<a href="case_076.html" class="nav-item ">76. Google Test 单元测试</a>
-<a href="case_077.html" class="nav-item ">77. 库的打包发布</a>
-<a href="case_078.html" class="nav-item ">78. 性能剖析器</a>
-<a href="case_079.html" class="nav-item ">79. 内存泄漏检测器</a>
-<a href="case_080.html" class="nav-item ">80. 序列化框架</a>
-<a href="case_081.html" class="nav-item ">81. 插件系统</a>
-<a href="case_082.html" class="nav-item ">82. 简易脚本引擎</a>
-<a href="case_083.html" class="nav-item ">83. 定时器管理器</a>
-<a href="case_084.html" class="nav-item ">84. 连接池</a>
-<a href="case_085.html" class="nav-item ">85. Redis 客户端</a>
-<div class="section-title">阶段五：综合项目</div>
-<a href="case_086.html" class="nav-item ">86. 命令行 TODO 管理器</a>
-<a href="case_087.html" class="nav-item ">87. 终端俄罗斯方块</a>
-<a href="case_088.html" class="nav-item ">88. 简易 Git</a>
-<a href="case_089.html" class="nav-item ">89. 键值数据库</a>
-<a href="case_090.html" class="nav-item ">90. HTTP 反向代理</a>
-<a href="case_091.html" class="nav-item ">91. 协程库</a>
-<a href="case_092.html" class="nav-item ">92. 脚本语言解释器</a>
-<a href="case_093.html" class="nav-item ">93. 2D 游戏引擎</a>
-<a href="case_094.html" class="nav-item ">94. 简易数据库</a>
-<a href="case_095.html" class="nav-item ">95. Raft 共识</a>
-<a href="case_096.html" class="nav-item ">96. 简易 Docker</a>
-<a href="case_097.html" class="nav-item ">97. LLVM Pass</a>
-<a href="case_098.html" class="nav-item ">98. 简易 Tensor 库</a>
-<a href="case_099.html" class="nav-item ">99. 百万并发聊天</a>
-<a href="case_100.html" class="nav-item ">100. 个人作品集</a>
-            </div>
-        </nav>
-        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-        <main class="content">
-            <header class="case-header">
-                <span class="case-badge">案例 028</span>
-                <h1>find_if 条件筛选</h1>
-            </header>
-
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-title">C++ 100 案例</a>
+            <span class="nav-location">案例 28：find_if/count_if</span>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="content">
+            <h1>案例 28：find_if/count_if</h1>
+            <section class="intro">
+<p>使用 find_if 和 count_if 算法查找满足条件的元素，练习谓词函数的多种写法。</p>
+            <p><strong>核心知识点：</strong>find_if、count_if、谓词（函数对象、Lambda）</p>
+            </section>
             <section class="code-section">
-                <h2>完整代码（逐行注释）</h2>
-                <div class="code-container">
-                    <div class="code-line">
-                        <span class="line-no"> 1</span>
-                        <span class="line-code"><code>#include &lt;iostream&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 2</span>
-                        <span class="line-code"><code>#include &lt;vector&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 3</span>
-                        <span class="line-code"><code>#include &lt;algorithm&gt;</code></span>
-                        <span class="line-comment">find_if, copy_if, remove_if</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 4</span>
-                        <span class="line-code"><code>#include &lt;string&gt;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 5</span>
-                        <span class="line-code"><code>#include &lt;numeric&gt;</code></span>
-                        <span class="line-comment">iota</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 6</span>
-                        <span class="line-code"><code>using namespace std;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 7</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 8</span>
-                        <span class="line-code"><code>int main() {</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no"> 9</span>
-                        <span class="line-code"><code>    vector&lt;int&gt; v(20);</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">10</span>
-                        <span class="line-code"><code>    iota(v.begin(), v.end(), 1); // 1..20</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">11</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">12</span>
-                        <span class="line-code"><code>    // 1. find_if: 找第一个满足条件的元素</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">13</span>
-                        <span class="line-code"><code>    auto it = find_if(v.begin(), v.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">14</span>
-                        <span class="line-code"><code>        [](int n) { return n &gt; 15 &amp;&amp; n % 2 == 0; }</code></span>
-                        <span class="line-comment">大于 15 且偶数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">15</span>
-                        <span class="line-code"><code>    );</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">16</span>
-                        <span class="line-code"><code>    if (it != v.end())</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">17</span>
-                        <span class="line-code"><code>        cout &lt;&lt; "第一个 &gt;15 的偶数: " &lt;&lt; *it &lt;&lt; endl;</code></span>
-                        <span class="line-comment">16</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">18</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">19</span>
-                        <span class="line-code"><code>    // 2. copy_if: 复制满足条件的元素到新容器</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">20</span>
-                        <span class="line-code"><code>    vector&lt;int&gt; evens;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">21</span>
-                        <span class="line-code"><code>    copy_if(v.begin(), v.end(), back_inserter(evens),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">22</span>
-                        <span class="line-code"><code>        [](int n) { return n % 2 == 0; }</code></span>
-                        <span class="line-comment">偶数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">23</span>
-                        <span class="line-code"><code>    );</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">24</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "偶数: ";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">25</span>
-                        <span class="line-code"><code>    for (int n : evens) cout &lt;&lt; n &lt;&lt; ' ';</code></span>
-                        <span class="line-comment">2 4 6 ... 20</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">26</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">27</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">28</span>
-                        <span class="line-code"><code>    // 3. remove_if + erase: 删除满足条件的元素</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">29</span>
-                        <span class="line-code"><code>    auto newEnd = remove_if(v.begin(), v.end(),</code></span>
-                        <span class="line-comment">remove_if 把要删除的移到末尾</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">30</span>
-                        <span class="line-code"><code>        [](int n) { return n % 3 == 0; }</code></span>
-                        <span class="line-comment">3 的倍数</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">31</span>
-                        <span class="line-code"><code>    );</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">32</span>
-                        <span class="line-code"><code>    v.erase(newEnd, v.end());</code></span>
-                        <span class="line-comment">真正删除尾部元素</span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">33</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "删除3的倍数后 size=" &lt;&lt; v.size() &lt;&lt; " 元素: ";</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">34</span>
-                        <span class="line-code"><code>    for (int n : v) cout &lt;&lt; n &lt;&lt; ' ';</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">35</span>
-                        <span class="line-code"><code>    cout &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">36</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">37</span>
-                        <span class="line-code"><code>    // 4. any_of / all_of / none_of</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">38</span>
-                        <span class="line-code"><code>    bool allPositive = all_of(v.begin(), v.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">39</span>
-                        <span class="line-code"><code>        [](int n) { return n &gt; 0; });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">40</span>
-                        <span class="line-code"><code>    bool anyEven = any_of(v.begin(), v.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">41</span>
-                        <span class="line-code"><code>        [](int n) { return n % 2 == 0; });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">42</span>
-                        <span class="line-code"><code>    bool noneNegative = none_of(v.begin(), v.end(),</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">43</span>
-                        <span class="line-code"><code>        [](int n) { return n &lt; 0; });</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">44</span>
-                        <span class="line-code"><code>    cout &lt;&lt; "all&gt;0:" &lt;&lt; allPositive</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">45</span>
-                        <span class="line-code"><code>         &lt;&lt; " anyEven:" &lt;&lt; anyEven</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">46</span>
-                        <span class="line-code"><code>         &lt;&lt; " none&lt;0:" &lt;&lt; noneNegative &lt;&lt; endl;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">47</span>
-                        <span class="line-code"><code></code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">48</span>
-                        <span class="line-code"><code>    return 0;</code></span>
-                    </div>
-                    <div class="code-line">
-                        <span class="line-no">49</span>
-                        <span class="line-code"><code>}</code></span>
-                    </div>
-                </div>
-                <a href="#" class="copy-btn" onclick="copyCode(this.parentElement)">复制代码</a>
-            </section>
+                <h2>完整代码（含逐行注释）</h2>
+                <pre class="code-block"><code class="language-cpp">// 案例 28：find_if / count_if
+// 使用谓词查找和统计满足条件的元素
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;string&gt;
+using namespace std;
 
-            <section class="grammar-section">
-                <h2>新语法讲解</h2>
-            <div class="grammar-card">
-                <h3>remove_if 和 erase-remove 惯用法</h3>
-                <div class="grammar-rule"><strong>remove_if</strong> 并不是真的删除元素，它只是把不满足条件的元素移到前面，返回新的逻辑终点。必须配合 <strong>erase</strong> 才能真正删除。这是 C++ 社区著名的 <strong>erase-remove idiom</strong>。C++20 引入了 <code>std::erase_if</code> 一步搞定。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>// C++17 及之前
-v.erase(remove_if(v.begin(),v.end(), pred), v.end());
-// C++20 一步
-erase_if(v, pred); // 对所有标准容器适用</code></pre>
-                </div>
-            </div>
-            <div class="grammar-card">
-                <h3>any_of / all_of / none_of</h3>
-                <div class="grammar-rule">三个谓词判断算法，都是<strong>短路求值</strong>：any_of 遇到第一个 true 就停止，all_of 遇到第一个 false 停止，none_of 遇到第一个 true 停止。不需要 O(n) 就能提前结束。</div>
-                <div class="grammar-example">
-                    <h4>举一反三</h4>
-                    <pre><code>vector<int> v = {2,4,6,7,8};
-all_of(v.begin(),v.end(), [](int n){return n%2==0;});
-// 遇到 7 就返回 false，不看后面的 8</code></pre>
-                </div>
-            </div>
-            </section>
-
-            <section class="extend-section">
-                <h2>举一反三</h2>
-            <div class="extend-card">
-                <h3>用 find_if 实现二分查找的通用版</h3>
-                <pre><code>auto it = find_if(v.begin(),v.end(),bind(greater<>(),_1,10));
-// 找第一个 >10 的元素（无序数组）</code></pre>
-                <p>bind 绑定谓词参数</p>
-            </div>
-            <div class="extend-card">
-                <h3>C++20 ranges::find_if</h3>
-                <pre><code>#include <ranges>
-auto it = ranges::find_if(v, [](int n){return n>10;});
-// 不传 begin/end，直接对容器操作</code></pre>
-                <p>range 版本更简洁</p>
-            </div>
-            <div class="extend-card">
-                <h3>partition 稳定分区</h3>
-                <pre><code>auto mid = stable_partition(v.begin(), v.end(),
-  [](int n){return n%2==0;});
-// 偶数在前，奇数在后，各自内部保持原序</code></pre>
-                <p>stable_partition 保证同组内相对顺序不变</p>
-            </div>
-            </section>
-
-            <nav class="case-nav">
-                <a href="case_027.html" class="nav-prev">← 上一案例</a>
-                <a href="index.html" class="nav-home">回首页</a>
-                <a href="case_029.html" class="nav-next">下一案例 →</a>
-            </nav>
-        </main>
-    </div>
-    <script>
-    function copyCode(container) {
-        const lines = container.querySelectorAll('.line-code code');
-        let code = '';
-        lines.forEach(l => code += l.textContent + '\n');
-        navigator.clipboard.writeText(code);
+// 函数对象：判断是否及格
+struct IsPass {
+    int passLine;
+    IsPass(int line) : passLine(line) {}
+    bool operator()(int score) const {
+        return score &gt;= passLine;
     }
-    </script>
+};
+
+int main() {
+    vector&lt;int&gt; scores = {45, 78, 92, 60, 55, 88, 73, 49, 95, 61};
+
+    // 1. count_if：统计及格人数（使用 Lambda）
+    int pass = count_if(scores.begin(), scores.end(),
+                        [](int s) { return s &gt;= 60; });
+    cout &lt;&lt; "总人数: " &lt;&lt; scores.size() &lt;&lt; endl;
+    cout &lt;&lt; "及格人数(&gt;=60): " &lt;&lt; pass &lt;&lt; endl;
+    cout &lt;&lt; "不及格人数: " &lt;&lt; scores.size() - pass &lt;&lt; endl;
+
+    // 2. count_if：统计优秀人数（使用函数对象）
+    IsPass excellent(85);
+    int exc = count_if(scores.begin(), scores.end(), excellent);
+    cout &lt;&lt; "优秀人数(&gt;=85): " &lt;&lt; exc &lt;&lt; endl;
+
+    // 3. find_if：找到第一个不及格的学生
+    auto it = find_if(scores.begin(), scores.end(),
+                      [](int s) { return s &lt; 60; });
+    if (it != scores.end()) {
+        cout &lt;&lt; "第一个不及格分数: " &lt;&lt; *it
+             &lt;&lt; " (位置: " &lt;&lt; (it - scores.begin()) &lt;&lt; ")" &lt;&lt; endl;
+    }
+
+    // 4. 找出所有优秀分数的位置
+    cout &lt;&lt; "优秀分数位置: ";
+    auto pos = scores.begin();
+    while ((pos = find_if(pos, scores.end(),
+            [](int s) { return s &gt;= 85; })) != scores.end()) {
+        cout &lt;&lt; (pos - scores.begin()) &lt;&lt; "(" &lt;&lt; *pos &lt;&lt; ") ";
+        pos++; // 移到下一个继续搜索
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+            </section>
+            <section class="grammar-section">
+                <div class="grammar-point">
+                    <h3>语法规则：find_if / count_if</h3>
+                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+auto it = find_if(v.begin(), v.end(), [](int x) { return x &lt; 0; });
+int n = count_if(v.begin(), v.end(), [](int x) { return x &gt; 10; });</code></pre>
+                    <p class="tip">举一反三：_if 后缀版本接受谓词而非值。find 查找等于给定值的元素，find_if 按条件查找。还有 find_if_not（C++11 起）取反版本。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：谓词的三种写法</h3>
+                    <pre class="code-block"><code class="language-cpp">// 1. Lambda（最常用）
+[](int s) { return s &gt;= 60; }
+// 2. 函数指针
+bool isPass(int s) { return s &gt;= 60; }
+// 3. 函数对象（可携状态）
+struct Check { int n; bool operator()(int x) { return x &gt; n; } };</code></pre>
+                    <p class="tip">举一反三：Lambda 最简洁；函数对象可携带状态适合复杂逻辑；函数指针适合复用已有函数。C++20 支持 ranges::find_if 直接接受容器。</p>
+                </div>
+                <div class="grammar-point">
+                    <h3>语法规则：循环中 find_if 查找所有匹配</h3>
+                    <pre class="code-block"><code class="language-cpp">auto it = v.begin();
+while ((it = find_if(it, v.end(), pred)) != v.end()) {
+    // 处理 *it
+    ++it; // 移到下一个继续
+}</code></pre>
+                    <p class="tip">举一反三：这是找到所有满足条件元素的惯用法。每次 find_if 从上次找到的位置 +1 开始。如果不 ++it 会无限循环找到同一个元素。</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="footer-nav">
+<a href="case_027.html" class="prev-link">&larr; 案例 27</a>
+<a href="case_029.html" class="next-link">案例 29 &rarr;</a>
+        </div>
+    </footer>
 </body>
 </html>
