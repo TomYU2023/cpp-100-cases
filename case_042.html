@@ -128,30 +128,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== ANSI 彩色终端输出 ===
+
+基本颜色: [31m红色[0m [32m绿色[0m [34m蓝色[0m [33m黄色[0m
+[1m[34m粗体蓝色[0m [4m[36m下划线青色[0m
+
+[1m[32m[INFO][0m 服务启动成功
+[1m[33m[WARN][0m 磁盘空间不足
+[1m[31m[ERROR][0m 连接超时
+[36m[DEBUG][0m 变量 x = 42</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：ANSI 转义序列</h3>
-                    <pre class="code-block"><code class="language-cpp">\033[31m 红色文字 \033[0m
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>ANSI 转义序列</h3>
+                        <p class="grammar-rule">【规则】ANSI 转义序列 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">\033[31m 红色文字 \033[0m
 // \033 是 ESC 字符（ASCII 27）
 // [ 是 CSI (Control Sequence Introducer)
 // m 表示设置图形属性</code></pre>
-                    <p class="tip">举一反三：ANSI 码在大多数现代终端模拟器上有效，Windows 10+ 通过启用虚拟终端序列（ENABLE_VIRTUAL_TERMINAL_PROCESSING）支持。颜色范围：30-37 前景，40-47 背景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 ANSI 转义序列 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 ANSI 转义序列 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ ANSI 转义序列」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：命名空间组织常量</h3>
-                    <pre class="code-block"><code class="language-cpp">namespace Color {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>命名空间组织常量</h3>
+                        <p class="grammar-rule">【规则】命名空间组织常量 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">namespace Color {
     namespace FG {
         const string RED = "\033[31m";
     }
 }
 // 使用: Color::FG::RED</code></pre>
-                    <p class="tip">举一反三：嵌套命名空间组织相关常量，避免命名冲突。C++17 可用 namespace Color::FG { } 简化语法。enum class 也可用于颜色枚举，但需映射到字符串。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 命名空间组织常量 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 命名空间组织常量 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 命名空间组织常量」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：输出后务必 RESET</h3>
-                    <pre class="code-block"><code class="language-cpp">cout &lt;&lt; RED &lt;&lt; "text" &lt;&lt; RESET;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>输出后务必 RESET</h3>
+                        <p class="grammar-rule">【规则】输出后务必 RESET 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cout &lt;&lt; RED &lt;&lt; "text" &lt;&lt; RESET;
 // 忘记 RESET 会导致后续输出保持红色</code></pre>
-                    <p class="tip">举一反三：RAII 模式封装（构造时输出颜色码，析构时输出 RESET）可避免忘记重置。或包装成函数内部自动重置。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 输出后务必 RESET 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 输出后务必 RESET 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 输出后务必 RESET」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

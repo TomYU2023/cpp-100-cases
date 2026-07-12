@@ -44,28 +44,67 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>1x1= 1  
+1x2= 2  2x2= 4  
+1x3= 3  2x3= 6  3x3= 9  
+1x4= 4  2x4= 8  3x4=12  4x4=16  
+1x5= 5  2x5=10  3x5=15  4x5=20  5x5=25  
+1x6= 6  2x6=12  3x6=18  4x6=24  5x6=30  6x6=36  
+1x7= 7  2x7=14  3x7=21  4x7=28  5x7=35  6x7=42  7x7=49  
+1x8= 8  2x8=16  3x8=24  4x8=32  5x8=40  6x8=48  7x8=56  8x8=64  
+1x9= 9  2x9=18  3x9=27  4x9=36  5x9=45  6x9=54  7x9=63  8x9=72  9x9=81</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：嵌套 for 循环</h3>
-                    <pre class="code-block"><code class="language-cpp">for (int i = 1; i &lt;= 9; i++) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>嵌套 for 循环</h3>
+                        <p class="grammar-rule">【规则】外层循环控制行（或大步骤），内层循环控制列（或小步骤），两层循环各自维护独立的计数器。适用于矩阵遍历、二维图形打印、排列组合等场景。</p>
+                        <p class="grammar-principle">【原理】嵌套循环的本质是笛卡尔积的执行模型——外层每迭代 1 次，内层完整执行一轮。C++ 编译器将嵌套循环编译为两层跳转指令，内层循环完全展开在外层循环体内部，这使得 CPU 的分支预测和缓存局部性对性能影响极大——将访问模式连续的维度放在内层可显著减少 cache miss。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 内外层使用了同一个循环变量名（如都用 i），导致内层修改了外层的迭代状态；2. 把 O(n²) 的嵌套循环写成 O(n³) 甚至更高阶却没有意识到——套三层循环前先问自己'能否用哈希表降一维？'</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">for (int i = 1; i &lt;= 9; i++) {
     for (int j = 1; j &lt;= i; j++) {
         cout &lt;&lt; i * j &lt;&lt; " ";
     }
 }</code></pre>
-                    <p class="tip">举一反三：外层控制行、内层控制列，两层循环各自独立计数。常见用于矩阵遍历、图形打印等场景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>修改程序，打印倒三角乘法表（从 9x9 到 1x1），即第一行显示 1x9 到 9x9，最后一行只显示 1x1。提示：改变外层循环的起止方向和内层循环上限。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>用嵌套循环输出一个菱形图案（高度由用户输入），例如输入 5 则输出 5 行的上半三角 + 4 行的下半三角。提示：分别处理上半和下半，每行先打印空格再打印星号。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ loop interchange 循环交换优化」了解嵌套循环的 cache 优化技巧；参考案例 005（vector 遍历）和案例 028（find_if 查找）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：setw() 格式化输出</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>setw() 格式化输出</h3>
+                        <p class="grammar-rule">【规则】setw(n) 设置下一次输出的最小字段宽度为 n 个字符，不足则左侧填充空格（默认右对齐）。包含在 <iomanip> 头文件中。适用于表格对齐、格式化打印等。</p>
+                        <p class="grammar-principle">【原理】setw 是流操纵符（stream manipulator），本质是一个函数对象——它修改了输出流的格式化状态中的 width 字段。关键设计是「一次性生效」：每次输出后 width 自动重置为 0，这避免了格式化状态泄漏到后续输出。与之对比，setprecision 和 setfill 是持久生效的。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 以为 setw 设置一次后所有列都会对齐——实际上每次输出前都要重新调用 setw；2. 中文字符在等宽字体终端中占 2 个英文字符宽度，setw 按 char 计数，导致中英混排时列不对齐。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
 cout &lt;&lt; setw(4) &lt;&lt; 42;</code></pre>
-                    <p class="tip">举一反三：<iomanip> 还提供 setprecision、setfill 等操作符。setw 只对紧接着的一次输出生效。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>修改乘法表，让每列宽度为 4 个字符（setw(4)），输出格式变为右对齐的矩阵样式。同时把分隔符从 'x' 和 '=' 改为 '×' 和 '＝'，观察中文字符对对齐的影响。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>用 setw + setfill 输出一个右对齐的数字金字塔：输入 n，每行输出 1 到 row 的数字序列，总宽度为 n*2-1。例如 n=5 时，最后一行居中输出 123454321。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>查阅 <iomanip> 中的 setprecision、setfill、left、right 操纵符；参考案例 009（格式化表格）和案例 056（cout 格式化全攻略）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：using namespace std;</h3>
-                    <pre class="code-block"><code class="language-cpp">using namespace std;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>using namespace std;</h3>
+                        <p class="grammar-rule">【规则】将 std 命名空间中的所有名称导入当前作用域，之后可直接使用 cout、string、vector 等标准库标识符，无需添加 std:: 前缀。适用于小型练习程序、竞赛代码等。</p>
+                        <p class="grammar-principle">【原理】C++ 引入命名空间是为了解决大型项目中的符号冲突。std 命名空间包含数千个标识符，using namespace std 相当于把这些全部摊开在全局——这在小型程序中没有问题，但在大型项目中可能引入难以排查的编译错误（ADL 规则下尤其隐蔽）。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在头文件 (.h/.hpp) 中使用 using namespace std——这会强制所有包含该头文件的 .cpp 也引入 std，造成全局污染，是 C++ 编程的大忌；2. 定义了与 std 中同名的函数（如 swap、move），ADL 会优先匹配 std 版本而导致意料之外的行为。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">using namespace std;
 // 之后可直接使用 cout、string、vector 等
 cout &lt;&lt; "Hello" &lt;&lt; endl;</code></pre>
-                    <p class="tip">举一反三：小型程序常用，大型项目建议用 std::cout 避免命名冲突。头文件中绝不使用 using namespace。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>把当前程序的 using namespace std; 删掉，手动给每个标准库符号加上 std:: 前缀（std::cout、std::endl、std::setw 等），编译运行确保结果一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>只引入需要用到的具体符号：using std::cout; using std::endl; using std::setw; 观察编译是否通过，体会「最小引入原则」。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>查阅 C++ Core Guidelines 中关于命名空间使用的建议（SF.6、SF.7）；在大型项目中推荐的做法是：.cpp 文件内可折中使用，.h 文件禁止。</p>
+                    </div>
                 </div>
             </section>
         </div>

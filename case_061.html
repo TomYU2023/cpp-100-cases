@@ -138,28 +138,64 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>任务 0 结果: 0
+任务 1 结果: 1
+任务 2 结果: 4
+任务 3 结果: 9
+任务 4 结果: 16
+任务 5 结果: 25
+任务 6 结果: 36
+任务 7 结果: 49
+任务 8 结果: 64
+任务 9 结果: 81</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：线程池架构</h3>
-                    <pre class="code-block"><code class="language-cpp">class ThreadPool {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>线程池架构</h3>
+                        <p class="grammar-rule">【规则】线程池架构 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class ThreadPool {
     vector&lt;thread&gt; workers;        // 线程池
     queue&lt;function&lt;void()&gt;&gt; tasks; // 任务队列
     mutex mtx;                     // 保护队列
     condition_variable cv;         // 通知机制
 };</code></pre>
-                    <p class="tip">举一反三：线程池避免频繁创建/销毁线程的开销。核心组件：工作线程集合 + 线程安全任务队列 + 同步机制。典型应用：Web服务器、数据库连接池、异步任务执行。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 线程池架构 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 线程池架构 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 线程池架构」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：packaged_task + future 返回结果</h3>
-                    <pre class="code-block"><code class="language-cpp">using ReturnType = result_of&lt;F(Args...)&gt;::type;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>packaged_task + future 返回结果</h3>
+                        <p class="grammar-rule">【规则】packaged_task + future 返回结果 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">using ReturnType = result_of&lt;F(Args...)&gt;::type;
 auto task = make_shared&lt;packaged_task&lt;ReturnType()&gt;&gt;(f);
 future&lt;ReturnType&gt; result = task-&gt;get_future();
 // packaged_task 包装可调用对象，future 获取结果</code></pre>
-                    <p class="tip">举一反三：packaged_task 是可移动的可调用对象包装器，其 get_future() 返回关联 future。任务执行完 future 就绪。C++17 可用 invoke_result 替代 result_of。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 packaged_task + future 返回结果 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 packaged_task + future 返回结果 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ packaged_task + future 返回结果」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：工作线程主循环模式</h3>
-                    <pre class="code-block"><code class="language-cpp">while (true) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>工作线程主循环模式</h3>
+                        <p class="grammar-rule">【规则】工作线程主循环模式 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">while (true) {
     unique_lock&lt;mutex&gt; lock(mtx);
     cv.wait(lock, []{ return stop || !tasks.empty(); });
     if (stop &amp;&amp; tasks.empty()) return;
@@ -168,7 +204,11 @@ future&lt;ReturnType&gt; result = task-&gt;get_future();
     lock.unlock(); // 尽早释放锁
     task();        // 在锁外执行
 }</code></pre>
-                    <p class="tip">举一反三：工作线程在循环中等待任务。先获取锁检查队列，有任务则取出后在锁外执行（避免长时间持锁）。stop 标志 + 空队列作为退出条件。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 工作线程主循环模式 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 工作线程主循环模式 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 工作线程主循环模式」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

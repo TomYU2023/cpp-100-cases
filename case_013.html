@@ -94,29 +94,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>形状信息：
+  圆形 - 面积：78.54
+  矩形 - 面积：24.00
+  三角形 - 面积：6.00
+---
+通过基类指针遍历所有形状并计算面积：
+  Circle 面积：78.54
+  Rectangle 面积：24.00
+  Triangle 面积：6.00
+所有形状总面积：108.54</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：虚函数与多态</h3>
-                    <pre class="code-block"><code class="language-cpp">class Base {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>虚函数与多态</h3>
+                        <p class="grammar-rule">【规则】虚函数（virtual）允许通过基类指针/引用调用派生类的重写版本，实现运行时多态。基类中声明 virtual，派生类中用同名函数覆盖。适用于基于继承的多态体系，如案例 013 的形状类。</p>
+                        <p class="grammar-principle">【原理】编译器为包含虚函数的类生成虚函数表（vtable），每个对象有一个隐藏的 vptr 指向该表。调用虚函数时，通过 vptr→vtable→函数指针的两步间接跳转实现动态派发。这与普通函数调用的直接跳转相比多了两次内存访问，但换来了灵活的运行时行为。C++ 选择「不为不使用虚函数的类付出 vtable 开销」的原则。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在构造函数和析构函数中调用虚函数——此时 vptr 指向当前构造/析构阶段的类，不会派发到派生类，与直觉不符；2. 派生类中覆盖虚函数时参数签名不完全一致（如少了个 const），这变成了「隐藏」而非「覆盖」，不会触发多态。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class Base {
 public:
     virtual void draw(); // 虚函数
 };
 Base* p = new Derived();
 p-&gt;draw(); // 调用 Derived::draw()</code></pre>
-                    <p class="tip">举一反三：virtual 关键字让函数调用在运行时动态绑定。非虚函数是静态绑定（编译时决定）。多态需通过指针或引用调用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在案例 013 的形状体系中新增一个 Trapezoid（梯形）类，实现 area() 和 name() 覆盖。在 main() 中通过 Shape* 指针遍历所有形状，验证多态是否正确调用 Trapezoid 的 area。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>在基类 Shape 的构造函数中加入对虚函数 area() 的调用，输出其返回值。观察派生类对象构造时 area() 的行为是否符合预期，理解构造/析构期间 vptr 的切换过程。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ vtable layout and virtual dispatch」；查阅 final 和 override 关键字的使用规范；参考案例 054（CRTP 静态多态）与之对比。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：纯虚函数与抽象类</h3>
-                    <pre class="code-block"><code class="language-cpp">class Shape {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>纯虚函数与抽象类</h3>
+                        <p class="grammar-rule">【规则】纯虚函数（virtual func() = 0）声明接口但不提供实现，包含纯虚函数的类成为抽象类——不能实例化。派生类必须实现所有纯虚函数才能成为具体类。适用于定义通用接口（如 Shape、Animal 等）。</p>
+                        <p class="grammar-principle">【原理】纯虚函数在 vtable 中对应的槽位被填充为 __cxa_pure_virtual（一个产生运行时错误的桩函数）。= 0 的语法巧妙之处在于：它既标记了「无实现」（通过零值表示），又允许基类提供默认实现（可以在类外定义 Shape::area() 供派生类显式调用）。这给接口设计提供了灵活性。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 以为加了 = 0 就不能有函数体——实际上纯虚函数可以有默认实现（在类外定义），派生类可显式调用 Base::func()；2. 抽象类的析构函数没有设为 virtual——通过基类指针删除派生对象时只调用基类析构，资源泄漏。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class Shape {
 public:
     virtual double area() const = 0; // 纯虚函数
 };</code></pre>
-                    <p class="tip">举一反三：含纯虚函数的类为抽象类，不能实例化。派生类必须实现所有纯虚函数否则自身也是抽象类。相当于 Java 的 interface。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为 Shape 的纯虚函数 area() 添加默认实现（在类外定义 Shape::area() { return 0; }），然后在 Circle::area() 中通过 Shape::area() 显式调用基类版本，观察效果。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>在案例 013 中故意不实现某一个派生类的 area()，观察编译错误信息。然后添加 override 关键字到每个覆盖函数，感受 override 比纯 virtual 更准确的场景诊断能力。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ pure virtual with implementation」了解纯虚函数带默认实现的奇技；查阅接口类（interface class）的设计模式；参考案例 049（工厂模式）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：override 关键字</h3>
-                    <pre class="code-block"><code class="language-cpp">double area() const override { /* ... */ }</code></pre>
-                    <p class="tip">举一反三：C++11 引入，明确表示此函数覆盖基类虚函数。编译器会检查签名是否匹配，防止因拼写错误而意外创建新函数。</p>
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>override 关键字</h3>
+                        <p class="grammar-rule">【规则】在派生类虚函数声明末尾添加 override 关键字，显式表明该函数覆盖基类虚函数。若函数签名不匹配导致没有覆盖任何基类虚函数，编译器报错。适用于所有派生类虚函数。</p>
+                        <p class="grammar-principle">【原理】override 是 C++11 引入的编译期安全网。在没有 override 之前，如果派生类中不小心改变了参数类型（如少了 const 或参数类型变了），只会「隐藏」而非「覆盖」基类函数——编译器不会报错，但多态失效。override 将这个隐晦的错误变成了编译错误——这是「让编译器帮你找 bug」的典型范例。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. override 不能和 virtual 之外的修饰符一起使用（如 final override 是合法的，但 static override 不合法）；2. 在非虚函数声明后添加 override——编译错误，override 只能用于虚函数覆盖。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">double area() const override { /* ... */ }</code></pre>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在案例 013 所有派生类的虚函数声明中添加 override 关键字。然后故意将 Circle::area() 的签名改为 area(int unused)，观察编译器报告的 override 错误。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 override 和 final 结合使用——在某个派生类中将 area 声明为 final，然后在更深层的派生类中尝试覆盖它，观察编译错误。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ override vs final」了解两个关键字的配合使用；查阅 C++ 核心指南中关于虚函数的设计建议（C.128）。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -92,27 +92,66 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>启动异步任务...（3 个任务并行执行）
+Task 1 started (duration: 1s)
+Task 2 started (duration: 2s)
+Task 3 started (duration: 0.5s)
+Task 3 completed: result = 100
+Task 1 completed: result = 200
+Task 2 completed: result = 300
+All tasks completed in 2.01 seconds
+Total sum of results: 600</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::async 启动策略</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;future&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::async 启动策略</h3>
+                        <p class="grammar-rule">【规则】std::async 启动策略 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;future&gt;
 auto f = async(launch::async, func, args...); // 新线程执行
 auto f = async(launch::deferred, func, args...); // 延迟执行
 auto f = async(func, args...); // 由实现决定</code></pre>
-                    <p class="tip">举一反三：launch::async 确保在新线程中执行。launch::deferred 只在 get()/wait() 时才执行（惰性求值）。默认是 async|deferred 组合。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::async 启动策略 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::async 启动策略 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::async 启动策略」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：future::get() / wait()</h3>
-                    <pre class="code-block"><code class="language-cpp">future&lt;int&gt; f = async(task);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>future::get() / wait()</h3>
+                        <p class="grammar-rule">【规则】future::get() / wait() 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">future&lt;int&gt; f = async(task);
 f.wait();    // 等待完成，不获取结果
 int v = f.get(); // 获取结果（只能调用一次！）</code></pre>
-                    <p class="tip">举一反三：get() 会移动结果，再次调用会抛 future_error。shared_future 允许多次获取。f.valid() 检查是否可获取。wait_for/wait_until 支持超时。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 future::get() / wait() 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 future::get() / wait() 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ future::get() / wait()」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：async 生命周期陷阱</h3>
-                    <pre class="code-block"><code class="language-cpp">// 小心：async 返回的 future 在析构时会阻塞等待任务完成
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>async 生命周期陷阱</h3>
+                        <p class="grammar-rule">【规则】async 生命周期陷阱 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 小心：async 返回的 future 在析构时会阻塞等待任务完成
 // 所以需要有意保存 future 或使用 shared_future</code></pre>
-                    <p class="tip">举一反三：std::async 返回的 future 在析构时如果任务未完成会 join。这是一个坑——如果忘了保存 future 变量，主线程会在此处阻塞。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 async 生命周期陷阱 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 async 生命周期陷阱 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ async 生命周期陷阱」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

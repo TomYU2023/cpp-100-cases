@@ -74,30 +74,80 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== std::clamp ===
+clamp(5, 0, 10) = 5
+clamp(-3, 0, 10) = 0
+clamp(15, 0, 10) = 10
+
+原始数据: -5 0 25 50 75 100 125 
+裁剪到 [0, 100]: 0 0 25 50 75 100 100 
+
+=== 进度百分比 ===
+-10% -&gt;  0%
+0% -&gt;  0%
+45.5% -&gt; ######### 45.5%
+89.3% -&gt; ################# 89.3%
+100% -&gt; #################### 100%
+120% -&gt; #################### 100%
+55% -&gt; ########### 55%
+
+=== clamp vs min+max ===
+clamp(150, 0, 100) = 100
+min(max(150,0),100) = 100</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::clamp 基本用法</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::clamp 基本用法</h3>
+                        <p class="grammar-rule">【规则】std::clamp 基本用法 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
 int result = clamp(value, min, max);
 // 等价于 max(min, min(max, value))
 // 但只调用一次比较（更高效）</code></pre>
-                    <p class="tip">举一反三：clamp (C++17) 比嵌套 min/max 更清晰且可能更高效。对自定义类型，要求 operator< 已定义。clamp 的参数顺序：值、下界、上界。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::clamp 基本用法 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::clamp 基本用法 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::clamp 基本用法」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：clamp 与容器操作</h3>
-                    <pre class="code-block"><code class="language-cpp">vector&lt;int&gt; v;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>clamp 与容器操作</h3>
+                        <p class="grammar-rule">【规则】clamp 与容器操作 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">vector&lt;int&gt; v;
 transform(v.begin(), v.end(), v.begin(),
     [](int x) { return clamp(x, 0, 100); });
 // 批量裁剪数据到合法范围</code></pre>
-                    <p class="tip">举一反三：clamp 配合 transform 是批量数据清洗的常见组合。也可用 ranges (C++20)：v | views::transform([](int x){ return clamp(x, 0, 100); })。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 clamp 与容器操作 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 clamp 与容器操作 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ clamp 与容器操作」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：clamp 的注意事项</h3>
-                    <pre class="code-block"><code class="language-cpp">// clamp 对下界大于上界的行为是未定义的
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>clamp 的注意事项</h3>
+                        <p class="grammar-rule">【规则】clamp 的注意事项 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// clamp 对下界大于上界的行为是未定义的
 clamp(5, 10, 0); // UB!
 // 如果使用自定义比较器，需保证 lo &lt;= hi
 // 断言：assert(lo &lt;= hi);</code></pre>
-                    <p class="tip">举一反三：clamp 假定 lo <= hi，否则行为未定义。对于浮点数 NaN 的比较，clamp 的结果也是未定义的。可以写一个 safe_clamp 先检查参数有效性。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 clamp 的注意事项 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 clamp 的注意事项 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ clamp 的注意事项」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

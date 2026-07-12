@@ -76,27 +76,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>max(10, 20) = 20
+max(3.14, 2.72) = 3.14
+max("abc", "abd") = abd
+[ 1, 2, 3, 4, 5 ]
+[ 1.1, 2.2, 3.3 ]
+交换后: x=20, y=10</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：函数模板定义</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>函数模板定义</h3>
+                        <p class="grammar-rule">【规则】函数模板定义 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
 T myMax(T a, T b) {
     return (a &gt; b) ? a : b;
 }</code></pre>
-                    <p class="tip">举一反三：typename 和 class 关键字在模板参数中等价。编译器根据调用实参自动推导 T 的类型，也可显式指定：myMax<int>(3, 5)。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 函数模板定义 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 函数模板定义 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 函数模板定义」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：类型推导与显式指定</h3>
-                    <pre class="code-block"><code class="language-cpp">myMax(3, 5);      // 推导为 int
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>类型推导与显式指定</h3>
+                        <p class="grammar-rule">【规则】类型推导与显式指定 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">myMax(3, 5);      // 推导为 int
 myMax(3.0, 5.0);  // 推导为 double
 myMax&lt;int&gt;(3, 5); // 显式指定</code></pre>
-                    <p class="tip">举一反三：类型推导要求所有参数类型一致，否则需显式指定或使用多个模板参数。模板参数不限于类型，也可是非类型参数如 template <int N>。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 类型推导与显式指定 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 类型推导与显式指定 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 类型推导与显式指定」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：引用传递模板</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>引用传递模板</h3>
+                        <p class="grammar-rule">【规则】引用传递模板 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
 void mySwap(T&amp; a, T&amp; b) { /* ... */ }</code></pre>
-                    <p class="tip">举一反三：使用引用参数可修改实参。对于大对象用 const T& 避免拷贝。泛型编程中引用传递是常见模式。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 引用传递模板 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 引用传递模板 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 引用传递模板」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

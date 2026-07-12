@@ -114,28 +114,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 线程安全单例 ===
+DatabaseManager 构造
+连接数据库: localhost:3306
+执行: SELECT * FROM users WHERE id=0
+执行: SELECT * FROM users WHERE id=2
+执行: SELECT * FROM users WHERE id=1
+执行: SELECT * FROM users WHERE id=4
+执行: SELECT * FROM users WHERE id=3
+&amp;db1 == &amp;db2: true (同一实例)
+DatabaseManager 析构</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：C++11 静态局部变量线程安全</h3>
-                    <pre class="code-block"><code class="language-cpp">static Singleton&amp; getInstance() {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>C++11 静态局部变量线程安全</h3>
+                        <p class="grammar-rule">【规则】C++11 静态局部变量线程安全 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">static Singleton&amp; getInstance() {
     static Singleton instance; // C++11 保证仅初始化一次，线程安全
     return instance;
 }</code></pre>
-                    <p class="tip">举一反三：这是 C++ 中最简洁且线程安全的单例实现（Meyers Singleton）。C++11 前需要双重检查锁（DCLP）。不要忘记 delete 拷贝构造和拷贝赋值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 C++11 静态局部变量线程安全 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 C++11 静态局部变量线程安全 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ C++11 静态局部变量线程安全」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：= delete 禁止拷贝</h3>
-                    <pre class="code-block"><code class="language-cpp">DatabaseManager(const DatabaseManager&amp;) = delete;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>= delete 禁止拷贝</h3>
+                        <p class="grammar-rule">【规则】= delete 禁止拷贝 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">DatabaseManager(const DatabaseManager&amp;) = delete;
 DatabaseManager&amp; operator=(const DatabaseManager&amp;) = delete;
 // 明确禁止拷贝，编译器报错而非静默通过</code></pre>
-                    <p class="tip">举一反三：C++11 引入 = delete 明确禁用函数。比 C++03 的 private 声明更明确（错误信息在编译时而非链接时）。也可 delete 任意函数以阻止特定重载。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 = delete 禁止拷贝 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 = delete 禁止拷贝 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ = delete 禁止拷贝」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：多线程中共享单例</h3>
-                    <pre class="code-block"><code class="language-cpp">// 多个线程均可通过 getInstance() 获取同一实例
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>多线程中共享单例</h3>
+                        <p class="grammar-rule">【规则】多线程中共享单例 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 多个线程均可通过 getInstance() 获取同一实例
 // 静态局部变量初始化是线程安全的
 // 但实例方法的并发访问仍需我们自己处理（如需要）</code></pre>
-                    <p class="tip">举一反三：单例的「创建」是线程安全的，但「使用」不是。如果单例持有可变状态且被多线程访问，需要在成员函数内部加锁。考虑是否真的需要单例——它本质上是全局状态。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 多线程中共享单例 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 多线程中共享单例 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 多线程中共享单例」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -91,31 +91,70 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>[ERROR] 404: 页面未找到
+[WARN] 1001: 磁盘空间不足
+[INFO] 0: 系统启动完成
+
+addSwapped(10, 20, 30) = 60
+addFive(10, 3) = 18
+
+[10,20] 范围内的元素数: 3
+counter = 2</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::bind 基本用法</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::bind 基本用法</h3>
+                        <p class="grammar-rule">【规则】std::bind 基本用法 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
 using namespace placeholders;
 auto f = bind(func, _1, _2, _3);
 // _1, _2, ... 是调用 f(a,b,c) 时的参数位置
 // 可绑定部分参数，固定其他参数的值</code></pre>
-                    <p class="tip">举一反三：bind 复制所有参数（值语义）。占位符 _1 对应新函数的第一个参数，_2 对应第二个。可用来创建参数更少的函数对象。C++11 后 Lambda 通常是更好的选择。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::bind 基本用法 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::bind 基本用法 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::bind 基本用法」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：占位符重排</h3>
-                    <pre class="code-block"><code class="language-cpp">auto f = bind(func, _2, _1, _3);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>占位符重排</h3>
+                        <p class="grammar-rule">【规则】占位符重排 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto f = bind(func, _2, _1, _3);
 // f(a, b, c) → func(b, a, c)
 // 可重复使用占位符： bind(func, _1, _1)  → func(a, a)
 // 可跳过占位符：  bind(func, _1, 42, _2) → func(a, 42, b)</code></pre>
-                    <p class="tip">举一反三：占位符最多 _N（实现决定，通常 20+）。在 Lambda 中需手动写参数转发，而 bind 用占位符更简洁。N 个占位符对应 N 个新函数参数。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 占位符重排 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 占位符重排 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 占位符重排」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：ref / cref 引用绑定</h3>
-                    <pre class="code-block"><code class="language-cpp">int x = 0;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>ref / cref 引用绑定</h3>
+                        <p class="grammar-rule">【规则】ref / cref 引用绑定 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int x = 0;
 auto f = bind(func, ref(x)); // 传递引用
 auto g = bind(func, cref(x)); // const 引用
 // bind 默认复制参数，ref/cref 强制传递引用</code></pre>
-                    <p class="tip">举一反三：bind 内部存储的是参数的副本（值语义）。要修改外部变量必须用 ref。Lambda 通过捕获 [&] 或 [&x] 更自然地支持引用。这是 Lambda 优于 bind 的一个理由。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 ref / cref 引用绑定 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 ref / cref 引用绑定 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ ref / cref 引用绑定」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

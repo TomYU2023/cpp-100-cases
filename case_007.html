@@ -70,25 +70,58 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>反转: ++C olleH ,dlroW olleH
+"World" 出现在位置 6
+替换后: 你好 World, 你好 C++</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::reverse</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::reverse</h3>
+                        <p class="grammar-rule">【规则】std::reverse(begin, end) 反转指定范围内元素的顺序，包含在 <algorithm> 中。适用于字符串反转、数组逆序、回文检查等场景。</p>
+                        <p class="grammar-principle">【原理】reverse 内部实现为逐对交换首尾元素（swap(first, last-1)），时间复杂度 O(n/2) 次交换。对于支持随机访问的迭代器（如 vector、string），复杂度为 O(n)。对于双向迭代器（如 list），每次定位需遍历，复杂度不变但常数更大。reverse 是纯算法函数，不关心容器类型。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 习惯写成 reverse(str) 而非 reverse(str.begin(), str.end())——reverse 是两个迭代器参数，不能直接传容器；2. 在 range-for 中调用 reverse 操作了同一个容器，导致迭代器失效。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
 string s = "abc";
 reverse(s.begin(), s.end()); // s = "cba"</code></pre>
-                    <p class="tip">举一反三：reverse 也适用于 vector、数组等。时间复杂度 O(n)。区间为 [begin, end)，左闭右开。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>不用 std::reverse，手动实现 reverse_string 函数（使用双指针法，一头一尾向中间交换），并对比两种实现在大字符串（100 万字符）上的性能。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现「句子反转」：输入 'Hello World C++'，输出 'olleH dlroW ++C'（每个单词内部反转，单词顺序不变）。结合 find(' ') 和 reverse 完成。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ in-place algorithm」了解原地算法的优势；查阅 std::reverse_copy 的用法；参考案例 079（std::rotate 旋转移位）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：string::find()</h3>
-                    <pre class="code-block"><code class="language-cpp">size_t pos = s.find("hello");
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>string::find()</h3>
+                        <p class="grammar-rule">【规则】string::find(str, pos) 从 pos 开始搜索子串 str，返回首次出现的索引（size_t），未找到返回 string::npos。适用于文本查找、模式匹配、URL 解析等。</p>
+                        <p class="grammar-principle">【原理】string::find 的具体实现取决于标准库——GCC 的 libstdc++ 使用两阶段算法：先用 memchr 快速跳过不匹配的字节，再用 memcmp 精确匹配；MSVC 使用带优化的朴素搜索。对于大型文本搜索，KMP 或 Boyer-Moore 算法更优。npos 是 size_t 的最大值（static const），不要与 int 混用。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将 find 返回值赋给 int 变量——当返回 npos 时，-1 和 size_t 最大值之间的截断导致逻辑错误；2. 在循环中用 find 查找所有匹配时没有更新 pos = found + 1，导致死循环在同一个位置反复匹配。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">size_t pos = s.find("hello");
 if (pos != string::npos) { /* 找到了 */ }</code></pre>
-                    <p class="tip">举一反三：find 返回首次出现的位置，未找到返回 string::npos。还有 rfind（反向查找）、find_first_of 等变体。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>实现函数 vector<size_t> find_all(const string& text, const string& pattern)，返回 pattern 在 text 中所有出现位置的列表。使用 while 循环和 find 的第二个参数实现。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现简易的文本搜索替换工具：读取文件，使用 find + replace 将所有「C++」替换为「C++ (Modern)」，写入新文件。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ string find complexity」了解不同实现的时间复杂度；查阅 Boyer-Moore 和 KMP 算法的 C++ 实现；参考案例 086（std::search 子序列查找）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：string::replace()</h3>
-                    <pre class="code-block"><code class="language-cpp">s.replace(pos, len, "new");
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>string::replace()</h3>
+                        <p class="grammar-rule">【规则】string::replace(pos, len, newStr) 将从 pos 开始的 len 个字符替换为 newStr。可删除、替换或插入内容。适用于文本修改、模板填充、数据清洗等。</p>
+                        <p class="grammar-principle">【原理】replace 会修改原字符串，可能触发内存重分配（如果 newStr 比被替换部分长）。它是 O(n) 操作——被替换位置之后的字符都需要移动。批量替换时如果每次调用都触发整体位移，复杂度会达到 O(n·m)。更高效的做法是先遍历确定总位移量，一次性构造新字符串。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在循环中调用 replace，但替换操作改变了字符串长度，导致后续位置的索引全部偏移——正确的做法是从后往前替换，或使用 find 的返回值作为相对位置；2. replace 的 pos 参数越界——如果 pos >= size() 或 pos + len > size()，会抛出 std::out_of_range。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">s.replace(pos, len, "new");
 // 从 pos 开始替换 len 个字符</code></pre>
-                    <p class="tip">举一反三：replace 有多种重载形式，支持迭代器区间替换和 C 字符串替换。注意操作后字符串长度可能变化。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>实现高效的「全部替换」函数 replace_all(string& s, const string& from, const string& to)，使用 while(find) + replace 循环，注意处理 to 包含 from 导致的死循环（如把 'a' 替换为 'aa' 时会无限增长）。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现一个简易 URL 编码器：扫描字符串，将空格替换为 %20，将特殊字符替换为 %XX（XX 为十六进制 ASCII 码）。使用 replace 和字符串拼接完成。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ replace_all string performance」了解批量替换的最佳实现；查阅 std::regex_replace 的使用方法（参考案例 036）。</p>
+                    </div>
                 </div>
             </section>
         </div>

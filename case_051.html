@@ -105,10 +105,29 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 升序 ===
+排序前: 3 -1 4 -5 2 -9 7 
+排序后: -9 -5 -1 2 3 4 7 
+
+=== 降序 ===
+排序前: -9 -5 -1 2 3 4 7 
+排序后: 7 4 3 2 -1 -5 -9 
+
+=== 绝对值排序 ===
+排序前: 7 4 3 2 -1 -5 -9 
+排序后: -1 2 3 4 -5 7 -9</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：策略模式结构</h3>
-                    <pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>策略模式结构</h3>
+                        <p class="grammar-rule">【规则】策略模式结构 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
 using Strategy = function&lt;void(vector&lt;T&gt;&amp;)&gt;;
 
 class Context {
@@ -116,22 +135,44 @@ class Context {
     void setStrategy(Strategy&lt;T&gt; ns) { s = ns; }
     void execute() { s(data); }
 };</code></pre>
-                    <p class="tip">举一反三：策略模式将算法从使用它的类中分离出来，使其可独立变化。C++ 实现：编译时用模板参数（零开销），运行时用 function/virtual（灵活）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 策略模式结构 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 策略模式结构 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 策略模式结构」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：编译时 vs 运行时策略</h3>
-                    <pre class="code-block"><code class="language-cpp">// 编译时：template &lt;typename Strategy&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>编译时 vs 运行时策略</h3>
+                        <p class="grammar-rule">【规则】编译时 vs 运行时策略 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 编译时：template &lt;typename Strategy&gt;
 // 运行时：function&lt;void(Data&amp;)&gt; strategy;
 // 编译时零开销但编译慢，运行时灵活但有间接调用开销</code></pre>
-                    <p class="tip">举一反三：模板策略每个实例化生成独立代码（类似 Rust trait 单态化）。function 策略通过类型擦除统一接口。选择取决于是否需要运行时切换。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 编译时 vs 运行时策略 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 编译时 vs 运行时策略 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 编译时 vs 运行时策略」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：greater<T> 函数对象</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>greater<T> 函数对象</h3>
+                        <p class="grammar-rule">【规则】greater<T> 函数对象 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
 sort(v.begin(), v.end(), greater&lt;int&gt;());
 // greater&lt;T&gt; 返回 a &gt; b
 // 等价于 Lambda: [](int a,int b){ return a &gt; b; }</code></pre>
-                    <p class="tip">举一反三：<functional> 预定义了 plus、minus、multiplies、greater、less 等常用函数对象。它们可以像普通函数一样用在 STL 算法中。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 greater<T> 函数对象 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 greater<T> 函数对象 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ greater<T> 函数对象」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -104,28 +104,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>slowFunction 耗时: 1.4161 ms (1456.6 us)
+accumulate 耗时: 2.2236 ms  sum=499999500000
+手动循环 耗时: 2.2373 ms  sum=499999500000
+1秒 = 1000 ms
+1秒 = 1000000 us</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：high_resolution_clock</h3>
-                    <pre class="code-block"><code class="language-cpp">using namespace chrono;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>high_resolution_clock</h3>
+                        <p class="grammar-rule">【规则】high_resolution_clock 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">using namespace chrono;
 auto start = high_resolution_clock::now();
 // ... 执行代码 ...
 auto elapsed = high_resolution_clock::now() - start;</code></pre>
-                    <p class="tip">举一反三：high_resolution_clock 是系统最高精度时钟。now() 返回 time_point。差值产生 duration 对象，通常为纳秒精度。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 high_resolution_clock 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 high_resolution_clock 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ high_resolution_clock」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：duration 与时间单位</h3>
-                    <pre class="code-block"><code class="language-cpp">auto d = duration&lt;double, milli&gt;(end - start);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>duration 与时间单位</h3>
+                        <p class="grammar-rule">【规则】duration 与时间单位 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto d = duration&lt;double, milli&gt;(end - start);
 cout &lt;&lt; d.count() &lt;&lt; " ms";  // count() 获取数值</code></pre>
-                    <p class="tip">举一反三：chrono 的时间运算在编译期做单位转换，不会损失精度。duration_cast 截断转换，用 duration<double,...> 保留小数。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 duration 与时间单位 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 duration 与时间单位 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ duration 与时间单位」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：chrono 字面量 (C++14)</h3>
-                    <pre class="code-block"><code class="language-cpp">using namespace chrono_literals;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>chrono 字面量 (C++14)</h3>
+                        <p class="grammar-rule">【规则】chrono 字面量 (C++14) 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">using namespace chrono_literals;
 auto t1 = 500ms;
 auto t2 = 3s;
 auto t3 = 100us;</code></pre>
-                    <p class="tip">举一反三：需在 using namespace 后使用。支持 h, min, s, ms, us, ns。配合 sleep_for(t1) 实现可读性高的延时。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 chrono 字面量 (C++14) 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 chrono 字面量 (C++14) 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ chrono 字面量 (C++14)」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

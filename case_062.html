@@ -114,29 +114,99 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>消费: 生产: 11
+
+生产: 2
+  消费: 2
+生产: 3
+生产:   消费: 4
+3
+生产: 5
+  消费: 4
+生产: 6
+  消费: 生产: 57
+
+生产: 8
+  消费: 6
+生产: 9
+生产: 10
+  消费: 7
+生产: 11
+  消费: 8
+生产: 12
+  消费: 生产: 913
+
+生产: 14
+  消费: 10
+生产: 15
+  消费: 生产: 1116
+
+生产: 17
+  消费: 12
+生产: 18
+生产:   消费: 1913
+
+生产: 20
+  消费: 14
+  消费: 15
+  消费: 16
+  消费: 17
+  消费: 18
+  消费: 19
+  消费: 20</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：环形缓冲区 SPSC</h3>
-                    <pre class="code-block"><code class="language-cpp">// BufferSize = Capacity + 1（区分空和满）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>环形缓冲区 SPSC</h3>
+                        <p class="grammar-rule">【规则】环形缓冲区 SPSC 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// BufferSize = Capacity + 1（区分空和满）
 // 空: writePos == readPos
 // 满: (writePos + 1) % N == readPos
 // 多一个空位避免写追读</code></pre>
-                    <p class="tip">举一反三：环形缓冲区是无锁队列的经典实现。+1 的「哨兵」位使得空/满状态可以区分。不额外留空则需额外标记位或计数器，增加了复杂度。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 环形缓冲区 SPSC 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 环形缓冲区 SPSC 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 环形缓冲区 SPSC」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：memory_order acquire/release</h3>
-                    <pre class="code-block"><code class="language-cpp">// 生产者写完后 release，消费者读前 acquire
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>memory_order acquire/release</h3>
+                        <p class="grammar-rule">【规则】memory_order acquire/release 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 生产者写完后 release，消费者读前 acquire
 writePos.store(next, memory_order_release);
 if (next == readPos.load(memory_order_acquire))
 // 形成 happens-before 关系，保证数据可见</code></pre>
-                    <p class="tip">举一反三：release 保证之前的所有写操作对后续 acquire 可见。acquire 保证之后的所有读操作看到 release 前的写入。两者配对形成同步关系，核心在于保证数据正确性。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 memory_order acquire/release 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 memory_order acquire/release 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ memory_order acquire/release」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：SPSC vs MPMC</h3>
-                    <pre class="code-block"><code class="language-cpp">// SPSC: 最简单，只需两个原子变量
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>SPSC vs MPMC</h3>
+                        <p class="grammar-rule">【规则】SPSC vs MPMC 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// SPSC: 最简单，只需两个原子变量
 // MPMC: 需处理多个 writePos/readPos 冲突
 // 性能: SPSC &gt;&gt; MPSC/SPMC &gt;&gt; MPMC</code></pre>
-                    <p class="tip">举一反三：SPSC 性能最佳（无竞争），常用于两个线程间的数据管道。MPMC 需要 CAS 循环处理多线程竞争。根据实际需求选择最简方案。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 SPSC vs MPMC 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 SPSC vs MPMC 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ SPSC vs MPMC」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

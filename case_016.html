@@ -81,35 +81,72 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>Resource [文件句柄] 已获取
+开始计算 10 / 0 ...
+Resource [文件句柄] 已释放
+程序继续执行...
+
+[stderr]
+自定义异常: 除数不能为零！</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：try-catch 异常捕获</h3>
-                    <pre class="code-block"><code class="language-cpp">try {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>try-catch 异常捕获</h3>
+                        <p class="grammar-rule">【规则】try-catch 异常捕获 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">try {
     riskyCode();
 } catch (const MyException&amp; e) {
     cerr &lt;&lt; e.what();
 } catch (...) {
     // 兜底
 }</code></pre>
-                    <p class="tip">举一反三：catch 块按声明顺序匹配，派生类异常应先于基类。catch(...) 必须放在最后。异常未被捕获时程序调用 std::terminate 终止。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 try-catch 异常捕获 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 try-catch 异常捕获 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ try-catch 异常捕获」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：栈展开与 RAII</h3>
-                    <pre class="code-block"><code class="language-cpp">// 异常抛出时，从 throw 点向上搜索 catch
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>栈展开与 RAII</h3>
+                        <p class="grammar-rule">【规则】栈展开与 RAII 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 异常抛出时，从 throw 点向上搜索 catch
 // 期间所有局部对象的析构函数被调用
 {
     Resource r; // 构造
     throw exception(); // r 自动析构
 }</code></pre>
-                    <p class="tip">举一反三：这是 C++ 异常安全的核心机制。确保所有资源用 RAII 管理（智能指针、容器等），这样异常发生时资源不会泄漏。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 栈展开与 RAII 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 栈展开与 RAII 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 栈展开与 RAII」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：自定义异常类</h3>
-                    <pre class="code-block"><code class="language-cpp">class MyException : public runtime_error {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>自定义异常类</h3>
+                        <p class="grammar-rule">【规则】自定义异常类 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class MyException : public runtime_error {
 public:
     MyException(const string&amp; msg) : runtime_error(msg) {}
 };</code></pre>
-                    <p class="tip">举一反三：继承 std::exception 或其子类。what() 返回 const char*，建议用 runtime_error 或 logic_error 做基类。命名以 Exception 或 Error 结尾。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 自定义异常类 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 自定义异常类 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 自定义异常类」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -78,32 +78,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>总人数: 10
+及格人数(&gt;=60): 7
+不及格人数: 3
+优秀人数(&gt;=85): 3
+第一个不及格分数: 45 (位置: 0)
+优秀分数位置: 2(92) 5(88) 8(95)</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：find_if / count_if</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>find_if / count_if</h3>
+                        <p class="grammar-rule">【规则】find_if / count_if 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;algorithm&gt;
 auto it = find_if(v.begin(), v.end(), [](int x) { return x &lt; 0; });
 int n = count_if(v.begin(), v.end(), [](int x) { return x &gt; 10; });</code></pre>
-                    <p class="tip">举一反三：_if 后缀版本接受谓词而非值。find 查找等于给定值的元素，find_if 按条件查找。还有 find_if_not（C++11 起）取反版本。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 find_if / count_if 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 find_if / count_if 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ find_if / count_if」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：谓词的三种写法</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. Lambda（最常用）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>谓词的三种写法</h3>
+                        <p class="grammar-rule">【规则】谓词的三种写法 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. Lambda（最常用）
 [](int s) { return s &gt;= 60; }
 // 2. 函数指针
 bool isPass(int s) { return s &gt;= 60; }
 // 3. 函数对象（可携状态）
 struct Check { int n; bool operator()(int x) { return x &gt; n; } };</code></pre>
-                    <p class="tip">举一反三：Lambda 最简洁；函数对象可携带状态适合复杂逻辑；函数指针适合复用已有函数。C++20 支持 ranges::find_if 直接接受容器。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 谓词的三种写法 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 谓词的三种写法 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 谓词的三种写法」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：循环中 find_if 查找所有匹配</h3>
-                    <pre class="code-block"><code class="language-cpp">auto it = v.begin();
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>循环中 find_if 查找所有匹配</h3>
+                        <p class="grammar-rule">【规则】循环中 find_if 查找所有匹配 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto it = v.begin();
 while ((it = find_if(it, v.end(), pred)) != v.end()) {
     // 处理 *it
     ++it; // 移到下一个继续
 }</code></pre>
-                    <p class="tip">举一反三：这是找到所有满足条件元素的惯用法。每次 find_if 从上次找到的位置 +1 开始。如果不 ++it 会无限循环找到同一个元素。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 循环中 find_if 查找所有匹配 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 循环中 find_if 查找所有匹配 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 循环中 find_if 查找所有匹配」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

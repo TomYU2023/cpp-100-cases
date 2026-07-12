@@ -81,31 +81,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>int: 整数 (int)
+double: 双精度浮点 (double)
+char: 未知类型
+string: 字符串 (string)
+int*: 指向 整数 (int) 的指针
+const double: const 双精度浮点 (double)
+const int*: 指向 const 整数 (int) 的指针</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：全特化 vs 偏特化</h3>
-                    <pre class="code-block"><code class="language-cpp">// 全特化: template&lt;&gt; 为特定类型提供定制
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>全特化 vs 偏特化</h3>
+                        <p class="grammar-rule">【规则】全特化 vs 偏特化 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 全特化: template&lt;&gt; 为特定类型提供定制
 template &lt;&gt; struct MyClass&lt;int&gt; { ... };
 // 偏特化: 为类型族提供定制（指针/const/引用）
 template &lt;typename T&gt; struct MyClass&lt;T*&gt; { ... };</code></pre>
-                    <p class="tip">举一反三：全特化实例化时完全匹配。偏特化覆盖一类类型。匹配规则：全特化优先级最高，然后最具体的偏特化，最后主模板。函数模板只支持全特化。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 全特化 vs 偏特化 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 全特化 vs 偏特化 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 全特化 vs 偏特化」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：偏特化模式</h3>
-                    <pre class="code-block"><code class="language-cpp">// T* : 所有指针类型
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>偏特化模式</h3>
+                        <p class="grammar-rule">【规则】偏特化模式 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// T* : 所有指针类型
 template &lt;typename T&gt; struct S&lt;T*&gt; { ... };
 // const T : 所有 const 类型
 template &lt;typename T&gt; struct S&lt;const T&gt; { ... };
 // T&amp; : 所有引用类型</code></pre>
-                    <p class="tip">举一反三：偏特化不能用于函数模板（但可用重载代替）。偏特化是模板元编程的基础（配合 SFINAE）。常见模式：移除 const/引用（decay）、提取元素类型。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 偏特化模式 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 偏特化模式 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 偏特化模式」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：匹配规则与歧义</h3>
-                    <pre class="code-block"><code class="language-cpp">// 当多个偏特化都匹配时，选择「更特化」的那个
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>匹配规则与歧义</h3>
+                        <p class="grammar-rule">【规则】匹配规则与歧义 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 当多个偏特化都匹配时，选择「更特化」的那个
 // 如 const int* 匹配 T* 也匹配 const T
 // 但 const T* 比两者都更特化
 // 编译器选择最特化的匹配</code></pre>
-                    <p class="tip">举一反三：匹配遵循「最特化优先」原则。如果无法确定哪个最特化，编译报错（歧义）。了解匹配规则有助于设计正确的特化层次。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 匹配规则与歧义 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 匹配规则与歧义 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 匹配规则与歧义」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

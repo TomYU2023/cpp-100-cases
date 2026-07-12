@@ -77,29 +77,61 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>数组: 1 3 -1 -3 5 3 6 7 
+滑动窗口大小=3 的最大值: 3 3 5 5 6 7</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：deque 双端操作</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;deque&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>deque 双端操作</h3>
+                        <p class="grammar-rule">【规则】std::deque（double-ended queue）支持在首尾 O(1) 时间插入/删除，并支持随机访问。内部由多个固定大小的内存块组成。适用于滑动窗口、BFS 队列、撤销/重做栈。</p>
+                        <p class="grammar-principle">【原理】deque 的内部结构是一个「中控器」（指针数组）+ 多个固定大小的连续内存块（通常 512 字节或 4096 字节）。push_front 时如果首块已满则分配新块并更新中控器指针。随机访问需要计算块号 + 块内偏移——比 vector 略慢（多一次间接访问），但避免了 vector 扩容时的全量移动。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在 deque 中间位置插入/删除——deque 的随机插入也是 O(n)，不比 vector 快；2. 假设 deque 的元素在内存中是连续的——deque 是「块连续」而非「全连续」，用 &dq[0] 取地址传给需要连续内存的 C 接口会出问题。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;deque&gt;
 dq.push_front(1);   // 头部插入
 dq.push_back(2);    // 尾部插入
 dq.pop_front();     // 头部删除
 dq.pop_back();      // 尾部删除</code></pre>
-                    <p class="tip">举一反三：deque 支持 O(1) 的头尾插入删除。内存分段存储，不像 vector 整体连续。适合需要在两端频繁操作的场景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>用 deque 实现「滑动窗口最大值」：给定数组和窗口大小 k，输出每个窗口中的最大值。使用 deque 维护单调递减队列（存索引而非值）。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>对比 deque 和 vector 的 push_back 性能：各插入 100 万个元素，deque 不需要扩容拷贝，vector 需要反复扩容和移动。用 chrono 计时并计算 deque 的速度优势比例。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ deque internal structure」了解块分配机制；查阅单调队列（monotonic queue）算法；参考案例 026（deque 滑动窗口）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：单调队列技巧</h3>
-                    <pre class="code-block"><code class="language-cpp">// 维护队列元素单调（递增或递减）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>单调队列技巧</h3>
+                        <p class="grammar-rule">【规则】单调队列维护一个元素值单调递增/递减的 deque，在滑动窗口问题中可将查询最值的时间从 O(k) 降至均摊 O(1)。适用于滑动窗口最值、子数组约束问题等。</p>
+                        <p class="grammar-principle">【原理】单调递减队列的维护规则：入队时，从队尾弹出所有小于新元素的值（因为它们永远不会成为最大值）；出队时，如果队首元素滑出窗口则弹出。每个元素入队一次出队一次，均摊 O(1)。这是「摊还分析」的经典案例——虽然单次入队可能弹出多个元素，但总操作次数 ≤ 2n。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. deque 中直接存元素值而非元素索引——无法判断元素是否已滑出窗口，导致窗口外的过时值保留在队列中；2. 弹出条件写错——如维护递增队列时写成从队尾弹出大于新元素的值（应为弹出小于新元素的值）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 维护队列元素单调（递增或递减）
 // 入队前将破坏单调性的元素出队
 while (!dq.empty() &amp;&amp; nums[dq.back()] &lt; nums[i])
     dq.pop_back();</code></pre>
-                    <p class="tip">举一反三：单调队列是滑动窗口问题的经典解法。每个元素最多入队出队各一次，总复杂度 O(n)。也可用 priority_queue 但复杂度是 O(n log n)。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在案例 026 的基础上，用单调队列解决「和至少为 K 的最短子数组」——这个变体比滑动窗口最大值更复杂，需要前缀和 + 单调递增队列。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现「二维滑动窗口最大值」：将一维单调队列扩展为二维，先从行方向处理再从列方向处理。这是图像处理中「最大池化」的算法基础。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「monotonic queue algorithm」和「sliding window maximum」；查阅 LeetCode 239、862 等对应题目；参考案例 026（deque 滑动窗口）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：deque 随机访问</h3>
-                    <pre class="code-block"><code class="language-cpp">dq[0];    // 随机访问 O(1)
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>deque 随机访问</h3>
+                        <p class="grammar-rule">【规则】deque 支持 operator[] 和 at()，可在 O(1) 时间内访问任意位置元素。与 vector 不同，deque 的元素不存储在连续内存中。适用于需要随机访问和双端操作的场景。</p>
+                        <p class="grammar-principle">【原理】deque 的 operator[] 实现：先通过 (index + first_block_offset) / block_size 定位块号，再通过 % block_size 定位块内偏移。两步指针解引用：中控器[index/block_size] -> 数据块[offset]。这就是为什么 deque 的随机访问比 vector 慢约 1.5x-2x——多了一次指针追踪。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 使用 &deq[i] 获取地址后缓存该指针——deque 在 push_front 或 push_back 时可能重新分配中控器，导致缓存的指针失效；2. 假设 deque 的元素地址是连续的——用两个相邻元素的地址差判断大小是完全错误的。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">dq[0];    // 随机访问 O(1)
 dq.at(3); // 带边界检查</code></pre>
-                    <p class="tip">举一反三：deque 支持随机访问但不如 vector 快（需计算块偏移）。当需要头尾插入 + 随机访问时，deque 是最佳选择。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>编写基准测试：分别对 vector 和 deque 执行 100 万次随机位置访问（访问索引由 rand() 生成），用 chrono 测量平均访问时间差异。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>用 deque 实现一个支持 O(1) 随机访问的环形缓冲区（与 SPSC 无锁队列对比设计理念），用于数据流处理的固定窗口缓存。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ deque random access complexity」；查阅 deque 迭代器失效规则（与 vector 对比）；参考案例 069（array vs vector 性能对比）。</p>
+                    </div>
                 </div>
             </section>
         </div>

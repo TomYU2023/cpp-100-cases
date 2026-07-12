@@ -92,31 +92,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>tuple 内容: 42, 3.14, hello, A
+编译期数组: 42 42 42 42 42 
+
+遍历 tuple:
+  元素: 42
+  元素: 3.14
+  元素: hello
+  元素: A</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：integer_sequence 概念</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;typename T, T... Ints&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>integer_sequence 概念</h3>
+                        <p class="grammar-rule">【规则】integer_sequence 概念 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;typename T, T... Ints&gt;
 struct integer_sequence;
 // 编译期的整数序列，如 integer_sequence&lt;int, 0, 1, 2, 3&gt;
 // index_sequence&lt;I...&gt; = integer_sequence&lt;size_t, I...&gt;</code></pre>
-                    <p class="tip">举一反三：integer_sequence 是纯编译期结构，无运行时开销。通过模板参数展开实现「编译期循环」。常用于 tuple 展开、编译期数组生成、多参数转发等。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 integer_sequence 概念 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 integer_sequence 概念 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ integer_sequence 概念」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：make_index_sequence</h3>
-                    <pre class="code-block"><code class="language-cpp">make_index_sequence&lt;N&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>make_index_sequence</h3>
+                        <p class="grammar-rule">【规则】make_index_sequence 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">make_index_sequence&lt;N&gt;
 // 生成 index_sequence&lt;0, 1, 2, ..., N-1&gt;
 make_integer_sequence&lt;T, N&gt;
 // 生成 integer_sequence&lt;T, 0, 1, ..., N-1&gt;</code></pre>
-                    <p class="tip">举一反三：make_index_sequence 是生成整数序列的标准方式。N 必须是编译期常量。index_sequence_for<Args...> 生成 sizeof...(Args) 长度的序列。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 make_index_sequence 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 make_index_sequence 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ make_index_sequence」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：折叠表达式 + index_sequence</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;size_t... I&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>折叠表达式 + index_sequence</h3>
+                        <p class="grammar-rule">【规则】折叠表达式 + index_sequence 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;size_t... I&gt;
 void func(index_sequence&lt;I...&gt;) {
     (do_something(I), ...); // C++17 折叠表达式
 }
 // 配合使用是 C++17 元编程的常见模式</code></pre>
-                    <p class="tip">举一反三：C++17 之前需要用递归模板 + 初始化列表展开。C++17 折叠表达式 + index_sequence 让 tuple 遍历变得简洁。expanding with comma 操作符是最常见的展开技巧。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 折叠表达式 + index_sequence 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 折叠表达式 + index_sequence 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 折叠表达式 + index_sequence」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

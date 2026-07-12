@@ -92,26 +92,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>[独占资源] 创建
+使用 [独占资源]
+u1 已为空
+[独占资源] 销毁
+---
+[共享资源] 创建
+引用计数 = 2
+使用 [共享资源]
+引用计数 = 1
+[共享资源] 销毁
+---
+Node [Node1] 销毁
+Node [Node2] 销毁</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：unique_ptr 独占所有权</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;memory&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>unique_ptr 独占所有权</h3>
+                        <p class="grammar-rule">【规则】unique_ptr 独占所有权 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;memory&gt;
 auto p = make_unique&lt;Resource&gt;("r");
 unique_ptr&lt;Resource&gt; q = move(p); // 转移所有权</code></pre>
-                    <p class="tip">举一反三：unique_ptr 不可拷贝只可移动，确保资源唯一所有者。离开作用域自动释放。优先使用 make_unique（C++14）而非 new。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 unique_ptr 独占所有权 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 unique_ptr 独占所有权 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ unique_ptr 独占所有权」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：shared_ptr 引用计数</h3>
-                    <pre class="code-block"><code class="language-cpp">auto s1 = make_shared&lt;Resource&gt;("r");
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>shared_ptr 引用计数</h3>
+                        <p class="grammar-rule">【规则】shared_ptr 引用计数 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto s1 = make_shared&lt;Resource&gt;("r");
 auto s2 = s1; // ref=2
 cout &lt;&lt; s1.use_count(); // 2</code></pre>
-                    <p class="tip">举一反三：shared_ptr 通过引用计数实现共享所有权。use_count() 获取当前引用数。控制块额外分配内存（make_shared 可合并分配）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 shared_ptr 引用计数 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 shared_ptr 引用计数 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ shared_ptr 引用计数」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：weak_ptr 打破循环引用</h3>
-                    <pre class="code-block"><code class="language-cpp">weak_ptr&lt;Node&gt; prev;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>weak_ptr 打破循环引用</h3>
+                        <p class="grammar-rule">【规则】weak_ptr 打破循环引用 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">weak_ptr&lt;Node&gt; prev;
 if (auto sp = prev.lock()) { sp-&gt;use(); }</code></pre>
-                    <p class="tip">举一反三：weak_ptr 不增加引用计数，通过 lock() 获取临时 shared_ptr。主要用于：打破循环引用、缓存场景、观察者模式。使用前须检查 lock() 返回值是否为空。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 weak_ptr 打破循环引用 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 weak_ptr 打破循环引用 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ weak_ptr 打破循环引用」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

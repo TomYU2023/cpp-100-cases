@@ -73,29 +73,90 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 1. 宽度控制 (setw) ===
+      Name     Age       Score
+     Alice      25        95.5
+       Bob      30          88
+
+=== 2. 对齐方式 ===
+左对齐: Hello          |
+右对齐:           Hello|
+内部对齐: -            42|
+
+=== 3. 精度控制 ===
+默认: 3.14159
+precision(3): 3.14
+fixed + prec(3): 3.142
+scientific + prec(3): 3.142e+00
+
+=== 4. 进制表示 ===
+十进制: 255
+十六进制: 0xff
+八进制: 0377
+
+=== 5. 布尔值显示 ===
+默认: 1 0
+boolalpha: true false
+
+=== 6. 填充字符 ===
+*************42
+
+=== 7. 显示正号和小数点 ===
++42 -42
++1.000e+01</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：setw 宽度控制</h3>
-                    <pre class="code-block"><code class="language-cpp">cout &lt;&lt; setw(10) &lt;&lt; "Name" &lt;&lt; setw(8) &lt;&lt; 25;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>setw 宽度控制</h3>
+                        <p class="grammar-rule">【规则】setw 宽度控制 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cout &lt;&lt; setw(10) &lt;&lt; "Name" &lt;&lt; setw(8) &lt;&lt; 25;
 // setw 只对紧接着的一次输出生效
 // 默认右对齐，左对齐用 cout &lt;&lt; left;</code></pre>
-                    <p class="tip">举一反三：setw 是唯一只对一次输出生效的 manipulator（其他都是永久性的）。设置宽度后必须紧接着输出，且每次输出后自动重置为 0。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 setw 宽度控制 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 setw 宽度控制 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ setw 宽度控制」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：setprecision 精度</h3>
-                    <pre class="code-block"><code class="language-cpp">cout &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; pi;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>setprecision 精度</h3>
+                        <p class="grammar-rule">【规则】setprecision 精度 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cout &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; pi;
 // fixed: 固定小数位数
 // scientific: 科学计数法
 // defaultfloat: 默认（自动选择）</code></pre>
-                    <p class="tip">举一反三：C++11 后引入 defaultfloat 恢复默认。setprecision 控制的是有效数字位数（defaultfloat）或小数位数（fixed/scientific）。fixed 对小数值友好，scientific 对大数值友好。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 setprecision 精度 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 setprecision 精度 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ setprecision 精度」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：进制操纵符</h3>
-                    <pre class="code-block"><code class="language-cpp">cout &lt;&lt; hex &lt;&lt; showbase &lt;&lt; 255; // 0xff
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>进制操纵符</h3>
+                        <p class="grammar-rule">【规则】进制操纵符 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cout &lt;&lt; hex &lt;&lt; showbase &lt;&lt; 255; // 0xff
 cout &lt;&lt; oct &lt;&lt; 255;            // 377
 cout &lt;&lt; dec; // 恢复十进制
 // showbase 添加前缀 0x/0</code></pre>
-                    <p class="tip">举一反三：hex/oct/dec 是永久性设置。showbase 影响 hex(0x) 和 oct(0)。noshowbase 取消前缀。setbase(n) (n=8,10,16) 一次性设置，受 <iomanip> 支持。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 进制操纵符 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 进制操纵符 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 进制操纵符」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

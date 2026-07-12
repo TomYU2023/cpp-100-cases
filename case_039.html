@@ -122,26 +122,89 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>生产者2 生产: 2000 (缓冲区: 1)
+生产者2 生产: 2001 (缓冲区: 2)
+生产者2 生产: 2002 (缓冲区: 3)
+生产者2 生产: 2003 (缓冲区: 4)
+生产者2 生产: 2004 (缓冲区: 5)
+消费者1 消费: 2000 (缓冲区: 4)
+消费者1 消费: 2001 (缓冲区: 3)
+消费者1 消费: 2002 (缓冲区: 2)
+消费者1 消费: 2003 (缓冲区: 1)
+消费者1 消费: 2004 (缓冲区: 0)
+生产者1 生产: 1000 (缓冲区: 1)
+生产者1 生产: 1001 (缓冲区: 2)
+生产者1 生产: 1002 (缓冲区: 3)
+生产者1 生产: 1003 (缓冲区: 4)
+生产者1 生产: 1004 (缓冲区: 5)
+消费者2 消费: 1000 (缓冲区: 4)
+消费者2 消费: 1001 (缓冲区: 3)
+消费者2 消费: 1002 (缓冲区: 2)
+消费者2 消费: 1003 (缓冲区: 1)
+消费者2 消费: 1004 (缓冲区: 0)
+生产者1 生产: 1005 (缓冲区: 1)
+生产者1 生产: 1006 (缓冲区: 2)
+生产者1 生产: 1007 (缓冲区: 3)
+消费者2 消费: 1005 (缓冲区: 2)
+消费者2 消费: 1006 (缓冲区: 1)
+消费者2 消费: 1007 (缓冲区: 0)
+生产者2 生产: 2005 (缓冲区: 1)
+生产者2 生产: 2006 (缓冲区: 2)
+生产者2 生产: 2007 (缓冲区: 3)
+消费者2 消费: 2005 (缓冲区: 2)
+消费者2 消费: 2006 (缓冲区: 1)
+消费者2 消费: 2007 (缓冲区: 0)
+生产-消费完成</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：condition_variable::wait</h3>
-                    <pre class="code-block"><code class="language-cpp">unique_lock&lt;mutex&gt; lock(mtx);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>condition_variable::wait</h3>
+                        <p class="grammar-rule">【规则】condition_variable::wait 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">unique_lock&lt;mutex&gt; lock(mtx);
 cv.wait(lock, []() { return condition; });
 // 等价于: while (!condition) cv.wait(lock);</code></pre>
-                    <p class="tip">举一反三：wait 在条件不满足时释放锁并阻塞，被唤醒后重新获取锁并检查条件。lambda 版本可防止虚假唤醒。注意：wait 必须配合 unique_lock。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 condition_variable::wait 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 condition_variable::wait 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ condition_variable::wait」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：notify_one vs notify_all</h3>
-                    <pre class="code-block"><code class="language-cpp">cv.notify_one(); // 唤醒一个等待线程
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>notify_one vs notify_all</h3>
+                        <p class="grammar-rule">【规则】notify_one vs notify_all 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cv.notify_one(); // 唤醒一个等待线程
 cv.notify_all(); // 唤醒所有等待线程</code></pre>
-                    <p class="tip">举一反三：notify_one 适用于一个产品唤醒一个消费者的场景。notify_all 适用于状态改变影响多个线程的场景（如 setDone）。通知前通常先释放锁。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 notify_one vs notify_all 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 notify_one vs notify_all 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ notify_one vs notify_all」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：生产者-消费者模式要点</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. 使用两个条件变量：一个通知「缓冲区有空间」，另一个通知「缓冲区有数据」
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>生产者-消费者模式要点</h3>
+                        <p class="grammar-rule">【规则】生产者-消费者模式要点 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. 使用两个条件变量：一个通知「缓冲区有空间」，另一个通知「缓冲区有数据」
 // 2. 消费者退出条件：缓冲区为空 且 生产已完成
 // 3. 尽量在锁外处理业务逻辑</code></pre>
-                    <p class="tip">举一反三：单条件变量可行但性能差（每次 notify 会唤醒错误的消费者/生产者）。用两个条件变量可精准通知，减少不必要的线程切换。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 生产者-消费者模式要点 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 生产者-消费者模式要点 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 生产者-消费者模式要点」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

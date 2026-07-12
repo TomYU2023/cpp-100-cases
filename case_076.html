@@ -84,31 +84,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>数据规模: 10000000
+accumulate (顺序): 32.7128 ms, 结果=50000005000000
+reduce (顺序): 41.2487 ms, 结果=50000005000000
+reduce (并行): 44.0955 ms, 结果=50000005000000
+
+乘积: 2 * 3 * 4 * 5 = 120
+平方和: 55</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：reduce vs accumulate</h3>
-                    <pre class="code-block"><code class="language-cpp">// accumulate: 严格从左到右，不能并行
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>reduce vs accumulate</h3>
+                        <p class="grammar-rule">【规则】reduce vs accumulate 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// accumulate: 严格从左到右，不能并行
 // reduce: 允许任意顺序组合，可并行
 long long sum = reduce(v.begin(), v.end(), 0LL);
 // 要求二元操作满足结合律和交换律</code></pre>
-                    <p class="tip">举一反三：reduce (C++17) 是 accumulate 的并行友好替代。浮点数加法不满足结合律，所以 reduce 的浮点结果可能与 accumulate 有微小差异。整数运算无此问题。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 reduce vs accumulate 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 reduce vs accumulate 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ reduce vs accumulate」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：execution 策略</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;execution&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>execution 策略</h3>
+                        <p class="grammar-rule">【规则】execution 策略 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;execution&gt;
 execution::seq      // 顺序执行
 execution::par      // 并行执行
 execution::par_unseq // 并行+向量化
 // 需要链接 TBB 库（GCC/Clang）或 /std:c++17（MSVC）</code></pre>
-                    <p class="tip">举一反三：并行策略是提示而非强制。实现可能降级为顺序执行（如单核或无 TBB）。par_unseq 额外允许向量化和交错执行。使用前确认硬件和库支持。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 execution 策略 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 execution 策略 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ execution 策略」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：transform_reduce</h3>
-                    <pre class="code-block"><code class="language-cpp">// 组合映射和归约：先对每个元素应用映射函数，再归约
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>transform_reduce</h3>
+                        <p class="grammar-rule">【规则】transform_reduce 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 组合映射和归约：先对每个元素应用映射函数，再归约
 int r = transform_reduce(v.begin(), v.end(), 0,
     plus&lt;&gt;(), [](int x) { return x * 2; });
 // 等价于 reduce + transform 但只需一次遍历</code></pre>
-                    <p class="tip">举一反三：transform_reduce 把两个操作融合为一次遍历，减少中间分配。类似 MapReduce 概念但单机实现。对复杂操作（如字符串拼接），自定义二元操作很重要。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 transform_reduce 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 transform_reduce 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ transform_reduce」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

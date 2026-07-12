@@ -91,30 +91,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>姓名: Alice, 年龄: 25, 身高: 1.68m
+sum = 10
+10*20+30 = 230
+
+=== 批量调用 ===
+姓名: Bob, 年龄: 30, 身高: 1.75m
+姓名: Charlie, 年龄: 22, 身高: 1.82m
+姓名: David, 年龄: 28, 身高: 1.7m
+Task 42: 处理完成</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::apply</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;tuple&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::apply</h3>
+                        <p class="grammar-rule">【规则】std::apply 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;tuple&gt;
 apply(func, myTuple);
 // 等价于 func(get&lt;0&gt;(t), get&lt;1&gt;(t), ..., get&lt;N-1&gt;(t))
 // func 和 tuple 的元素数量必须匹配</code></pre>
-                    <p class="tip">举一反三：apply (C++17) 是 tuple 到函数调用的桥梁。类似 Python 的 func(*args)。参数数量和类型在编译期检查。常用于延迟调用和参数存储。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::apply 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::apply 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::apply」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：apply + Lambda</h3>
-                    <pre class="code-block"><code class="language-cpp">apply([](int x, int y) { return x + y; }, make_tuple(1, 2));
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>apply + Lambda</h3>
+                        <p class="grammar-rule">【规则】apply + Lambda 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">apply([](int x, int y) { return x + y; }, make_tuple(1, 2));
 // Lambda 的参数从 tuple 展开
 // 不需要显式指定 Lambda 参数类型（从 tuple 推导）</code></pre>
-                    <p class="tip">举一反三：apply+Lambda 是最常见的组合。比直接传 tuple 到算法更灵活（因为算法通常需要原始参数）。可以配合完美转发（forward）实现高效参数传递。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 apply + Lambda 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 apply + Lambda 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ apply + Lambda」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：apply 与 invoke 的区别</h3>
-                    <pre class="code-block"><code class="language-cpp">// apply: 将 tuple 展开为函数的多个参数
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>apply 与 invoke 的区别</h3>
+                        <p class="grammar-rule">【规则】apply 与 invoke 的区别 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// apply: 将 tuple 展开为函数的多个参数
 apply(func, tuple);
 // invoke: 统一调用（函数/成员函数/函数对象）
 invoke(func, arg1, arg2);
 // 两者组合: apply(invoke, tuple(成员函数, 对象, 参数...))</code></pre>
-                    <p class="tip">举一反三：apply 解决「参数打包」问题。invoke 解决「调用方式统一」问题。两者正交互补。make_from_tuple 类似 apply 但用于构造对象。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 apply 与 invoke 的区别 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 apply 与 invoke 的区别 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ apply 与 invoke 的区别」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

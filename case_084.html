@@ -83,30 +83,70 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>原始: 1 1 2 2 2 3 1 1 4 4 5 
+unique 后: 1 2 3 1 4 5 
+(注意: 1 没有完全去除，因为不连续)
+
+原始: 3 1 4 1 5 9 2 6 5 3 5 
+sort + unique 完全去重: 1 2 3 4 5 6 9 
+
+unique_copy: 1 2 3 4 
+
+按绝对值去重: -1 2 -3 5</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::unique</h3>
-                    <pre class="code-block"><code class="language-cpp">auto last = unique(v.begin(), v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::unique</h3>
+                        <p class="grammar-rule">【规则】std::unique 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto last = unique(v.begin(), v.end());
 v.erase(last, v.end());
 // 将连续重复元素移到最后，返回新 end 迭代器
 // 不真正删除元素（只是前移），需要 erase 配合</code></pre>
-                    <p class="tip">举一反三：这是 erase-remove 惯用法的一部分。unique 返回的是逻辑上的新结尾，实际元素还在后面。必须配合 erase 真正删除。只去连续重复。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::unique 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::unique 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::unique」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：sort + unique 完全去重</h3>
-                    <pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>sort + unique 完全去重</h3>
+                        <p class="grammar-rule">【规则】sort + unique 完全去重 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end());
 auto last = unique(v.begin(), v.end());
 v.erase(last, v.end());
 // 排序把相同元素聚到一起，unique 去除连续重复</code></pre>
-                    <p class="tip">举一反三：两步完成完全去重。复杂度 O(N log N)（排序为主）。如果元素已有序，只需要 unique。unordered_set 可 O(N) 去重（但额外内存和不保证顺序）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 sort + unique 完全去重 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 sort + unique 完全去重 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ sort + unique 完全去重」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：unique_copy</h3>
-                    <pre class="code-block"><code class="language-cpp">unique_copy(src.begin(), src.end(), back_inserter(dst));
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>unique_copy</h3>
+                        <p class="grammar-rule">【规则】unique_copy 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">unique_copy(src.begin(), src.end(), back_inserter(dst));
 // 去重的同时复制到新容器
 // 不修改原容器
 // 结果也是相邻去重（通常配合 sorted 源）</code></pre>
-                    <p class="tip">举一反三：unique_copy 保持源容器不变。适合不可变数据或需要保留原始的情况。对有序源可完全去重。支持自定义比较器。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 unique_copy 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 unique_copy 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ unique_copy」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

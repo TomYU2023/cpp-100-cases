@@ -87,31 +87,81 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>总人数: 15
+
+=== 稳定抽样 (保持顺序) ===
+1. Bob
+2. David
+3. Grace
+4. Kate
+5. Nick
+
+=== 第二次抽样 ===
+1. Alice
+2. Henry
+3. Leo
+4. Mary
+5. Olivia
+
+=== 抽奖结果 (1-100) ===
+第 1 名: 26 号
+第 2 名: 70 号
+第 3 名: 92 号</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：random_device 与 mt19937</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;random&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>random_device 与 mt19937</h3>
+                        <p class="grammar-rule">【规则】random_device 与 mt19937 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;random&gt;
 random_device rd;           // 硬件熵源
 mt19937 gen(rd());          // 梅森旋转引擎
 // random_device 生成真随机种子
 // mt19937 是高质量伪随机数生成器</code></pre>
-                    <p class="tip">举一反三：不要使用 rand()（质量差+全局状态不安全）。random_device 可能在某些平台是伪随机的（如 MinGW）。mt19937 是 32 位，mt19937_64 是 64 位。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 random_device 与 mt19937 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 random_device 与 mt19937 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ random_device 与 mt19937」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：std::sample</h3>
-                    <pre class="code-block"><code class="language-cpp">sample(src.begin(), src.end(),
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::sample</h3>
+                        <p class="grammar-rule">【规则】std::sample 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">sample(src.begin(), src.end(),
        back_inserter(dst), count, gen);
 // 从 src 中不放回随机抽 count 个元素
 // 默认保持原始顺序</code></pre>
-                    <p class="tip">举一反三：sample (C++17) 保证均匀分布。算法复杂度 O(N)（N 为输入大小）。抽样的结果顺序与原始一致（稳定）。n 必须 ≤ dst 剩余空间，否则 UB。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::sample 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::sample 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::sample」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：其他常用分布</h3>
-                    <pre class="code-block"><code class="language-cpp">uniform_int_distribution&lt;int&gt; dist(1, 6); // [1,6]
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>其他常用分布</h3>
+                        <p class="grammar-rule">【规则】其他常用分布 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">uniform_int_distribution&lt;int&gt; dist(1, 6); // [1,6]
 uniform_real_distribution&lt;double&gt; dist(0, 1);
 normal_distribution&lt;double&gt; dist(0, 1); // 正态
 bernoulli_distribution dist(0.7); // 70% true</code></pre>
-                    <p class="tip">举一反三：C++ 随机数库分引擎（产生原始随机位）+ 分布（映射为目标范围）。分布负责保证均匀性/目标形状。永远不要用 rand() % N（造成偏向性）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 其他常用分布 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 其他常用分布 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 其他常用分布」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -114,29 +114,66 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>原始字符串：Hello World! Base64 编码测试
+编码结果：SGVsbG8gV29ybGQhIEJhc2U2NCDnvJbnoIHmtYvor5U=
+解码验证：Hello World! Base64 编码测试
+字节数组编码（0x00-0x0F）：
+  AAECAwQFBgcICQoLDA0ODw==
+编码表验证（前10项）：
+  A B C D E F G H I J</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：Base64 编码原理</h3>
-                    <pre class="code-block"><code class="language-cpp">// 每 3 个字节（24 位） → 4 个 ASCII 字符
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>Base64 编码原理</h3>
+                        <p class="grammar-rule">【规则】Base64 编码原理 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 每 3 个字节（24 位） → 4 个 ASCII 字符
 // 每个字符取 6 位 → 0~63 映射到字符表
 // 不足 3 字节以 = 填充</code></pre>
-                    <p class="tip">举一反三：Base64 将二进制数据表示为可打印 ASCII 字符。编码后长度 ≈ 原始 × 4/3。= 填充只出现在末尾。常用于邮件、URL、JSON 嵌入二进制。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 Base64 编码原理 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 Base64 编码原理 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ Base64 编码原理」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：位运算提取字段</h3>
-                    <pre class="code-block"><code class="language-cpp">uint32_t buffer;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>位运算提取字段</h3>
+                        <p class="grammar-rule">【规则】位运算提取字段 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">uint32_t buffer;
 (buffer &gt;&gt; 18) &amp; 0x3F; // 提取高 6 位
 (buffer &gt;&gt; 12) &amp; 0x3F; // 提取次 6 位
 
 0x3F = 0011 1111 = 63</code></pre>
-                    <p class="tip">举一反三：& 0x3F 是取低 6 位的惯用写法。移位 >> 将目标位移到最低位，再 & 掩码提取。位运算在编码/网络协议中广泛应用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 位运算提取字段 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 位运算提取字段 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 位运算提取字段」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：vector<uint8_t> 存储二进制</h3>
-                    <pre class="code-block"><code class="language-cpp">vector&lt;uint8_t&gt; data;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>vector<uint8_t> 存储二进制</h3>
+                        <p class="grammar-rule">【规则】vector<uint8_t> 存储二进制 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">vector&lt;uint8_t&gt; data;
 data.push_back(0xFF); // 任意字节值
 // uint8_t 明确表示 8 位无符号，适合二进制数据</code></pre>
-                    <p class="tip">举一反三：std::byte (C++17) 更语义化地表示原始字节。char 可能是有符号的，用于二进制会出问题。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 vector<uint8_t> 存储二进制 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 vector<uint8_t> 存储二进制 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ vector<uint8_t> 存储二进制」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

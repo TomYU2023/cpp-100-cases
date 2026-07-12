@@ -110,30 +110,80 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 1. 循环引用导致泄漏 ===
+BadNode[A] 创建
+BadNode[B] 创建
+a use_count = 2
+b use_count = 2
+
+=== 2. weak_ptr 解决 ===
+GoodNode[A] 创建
+GoodNode[B] 创建
+a use_count = 1
+b use_count = 2
+GoodNode[A] 销毁
+GoodNode[B] 销毁
+
+=== 3. 父子关系 ===
+Parent[P] 创建
+Child[C] 创建
+parent use_count = 1
+Parent[P] 销毁
+Child[C] 销毁</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：shared_ptr 循环引用</h3>
-                    <pre class="code-block"><code class="language-cpp">auto a = make_shared&lt;Node&gt;();
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>shared_ptr 循环引用</h3>
+                        <p class="grammar-rule">【规则】shared_ptr 循环引用 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto a = make_shared&lt;Node&gt;();
 auto b = make_shared&lt;Node&gt;();
 a-&gt;ptr = b;
 b-&gt;ptr = a;
 // 离开作用域后 use_count 各为 1 → 不会析构 → 内存泄漏</code></pre>
-                    <p class="tip">举一反三：循环引用是 shared_ptr 的最常见陷阱。当两个对象互相持有 shared_ptr，引用计数永远不会归零。valgrind/ASan 可检测此类泄漏。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 shared_ptr 循环引用 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 shared_ptr 循环引用 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ shared_ptr 循环引用」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：weak_ptr 打破循环</h3>
-                    <pre class="code-block"><code class="language-cpp">weak_ptr&lt;Node&gt; prev; // 不增加引用计数
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>weak_ptr 打破循环</h3>
+                        <p class="grammar-rule">【规则】weak_ptr 打破循环 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">weak_ptr&lt;Node&gt; prev; // 不增加引用计数
 if (auto sp = prev.lock()) {  // 获取临时 shared_ptr
     // 安全使用 sp
 }</code></pre>
-                    <p class="tip">举一反三：weak_ptr 指向 shared_ptr 管理的对象但不拥有它。lock() 返回 shared_ptr（如果对象还存活）。必须检查 lock() 返回值（空 = 已释放）。典型用途：缓存、观察者、打破循环。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 weak_ptr 打破循环 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 weak_ptr 打破循环 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ weak_ptr 打破循环」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：设计原则：所有权方向</h3>
-                    <pre class="code-block"><code class="language-cpp">// 强引用 → 拥有关系（parent 拥有 child）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>设计原则：所有权方向</h3>
+                        <p class="grammar-rule">【规则】设计原则：所有权方向 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 强引用 → 拥有关系（parent 拥有 child）
 // 弱引用 → 观察关系（child 引用 parent）
 // 明确所有权方向，用 weak_ptr 实现反向引用</code></pre>
-                    <p class="tip">举一反三：树形结构（父→子用 shared_ptr，子→父用弱引用/原始指针）。图形结构中，明确一个「主方向」为 shared_ptr，反向为 weak_ptr。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 设计原则：所有权方向 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 设计原则：所有权方向 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 设计原则：所有权方向」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

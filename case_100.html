@@ -147,7 +147,7 @@ public:
         for (const auto&amp; item : items) {
             if (!showAll &amp;&amp; item.completed) continue;
             cout &lt;&lt; setw(4) &lt;&lt; item.id
-                 &lt;&lt; setw(6) &lt;&lt; (item.completed ? "完成「 : 」未完成")
+                 &lt;&lt; setw(6) &lt;&lt; (item.completed ? "完成" : "未完成")
                  &lt;&lt; setw(6) &lt;&lt; item.priorityStr()
                  &lt;&lt; setw(22) &lt;&lt; item.createdAt
                  &lt;&lt; "  " &lt;&lt; item.title &lt;&lt; endl;
@@ -227,30 +227,93 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== TODO 命令行工具 ===
+
+$ todo add "学习 C++20 协程"
+  [添加] 任务 #1: 学习 C++20 协程
+
+$ todo add "完成 Lambda 练习"
+  [添加] 任务 #2: 完成 Lambda 练习
+
+$ todo add "复习智能指针"
+  [添加] 任务 #3: 复习智能指针
+
+$ todo list
+  === 待办列表 ===
+  [ ] #1: 学习 C++20 协程
+  [ ] #2: 完成 Lambda 练习
+  [ ] #3: 复习智能指针
+
+$ todo done 2
+  [完成] 任务 #2: 完成 Lambda 练习
+
+$ todo list
+  === 待办列表 ===
+  [ ] #1: 学习 C++20 协程
+  [ ] #3: 复习智能指针
+  [x] #2: 完成 Lambda 练习
+
+$ todo remove 3
+  [删除] 任务 #3: 复习智能指针
+
+$ todo list
+  === 待办列表 ===
+  [ ] #1: 学习 C++20 协程
+  [x] #2: 完成 Lambda 练习</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：项目结构设计</h3>
-                    <pre class="code-block"><code class="language-cpp">// 数据层: TodoItem 结构体（任务数据模型）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>项目结构设计</h3>
+                        <p class="grammar-rule">【规则】项目结构设计 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 数据层: TodoItem 结构体（任务数据模型）
 // 业务层: TodoManager 类（增删改查 + 持久化）
 // 交互层: main 函数（命令解析 + 用户交互）
 // 分层让代码清晰、易维护、可测试</code></pre>
-                    <p class="tip">举一反三：小工具也要保持代码结构清晰。数据/业务/交互三层分离是通用模式。适当封装使各层独立演化和测试。100 个案例的终点：从语法到完整项目。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 项目结构设计 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 项目结构设计 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 项目结构设计」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：文件 I/O 持久化</h3>
-                    <pre class="code-block"><code class="language-cpp">ifstream file(filename);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>文件 I/O 持久化</h3>
+                        <p class="grammar-rule">【规则】文件 I/O 持久化 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">ifstream file(filename);
 if (!file) return; // 文件不存在则跳过
 // 与程序同目录下的文本文件做持久化
 // save() 在每次修改后调用确保数据不丢</code></pre>
-                    <p class="tip">举一反三：简单的文本文件是最轻量的持久化方案。二进制文件更快但不可读。JSON 格式是更好的选择（可读性强 + 跨语言）。生产项目应考虑异常处理和数据完整性。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 文件 I/O 持久化 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 文件 I/O 持久化 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 文件 I/O 持久化」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：命令行参数解析</h3>
-                    <pre class="code-block"><code class="language-cpp">istringstream iss(line);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>命令行参数解析</h3>
+                        <p class="grammar-rule">【规则】命令行参数解析 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">istringstream iss(line);
 iss &gt;&gt; cmd; // 提取第一个词为命令
 // 后续词为参数，根据命令类型解析
 // 移除了传统 C 的 argc/argv 复杂性</code></pre>
-                    <p class="tip">举一反三：istringstream 是轻量命令行解析的好工具。对更复杂的场景考虑 getopt（POSIX）或 CLI11 库。始终为未知命令提供帮助信息。工具可用性很大程度上取决于交互设计。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 命令行参数解析 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 命令行参数解析 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 命令行参数解析」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

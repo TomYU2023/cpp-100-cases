@@ -73,26 +73,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>[a,b] 值捕获 sum = 30
+引用捕获后 a = 15
+[a] mutable 内修改 = 115
+原始 a = 15
+泛型 add(3, 4.5) = 7.5
+降序排序: 9 8 5 2 1 
+3 * 5 = 15</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：Lambda 捕获列表</h3>
-                    <pre class="code-block"><code class="language-cpp">int x = 5;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>Lambda 捕获列表</h3>
+                        <p class="grammar-rule">【规则】Lambda 捕获列表 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int x = 5;
 auto f = [x]() { return x; };       // 值捕获
 // 或 [&amp;x] 引用捕获，[=] 全部值捕获，[&amp;] 全部引用捕获</code></pre>
-                    <p class="tip">举一反三：值捕获的变量默认 const，加 mutable 可修改（仅影响 Lambda 内部副本）。合理使用捕获列表避免悬垂引用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 Lambda 捕获列表 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 Lambda 捕获列表 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ Lambda 捕获列表」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：泛型 Lambda (C++14)</h3>
-                    <pre class="code-block"><code class="language-cpp">auto add = [](auto a, auto b) { return a + b; };
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>泛型 Lambda (C++14)</h3>
+                        <p class="grammar-rule">【规则】泛型 Lambda (C++14) 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto add = [](auto a, auto b) { return a + b; };
 // 编译器为每种参数组合生成特化版本</code></pre>
-                    <p class="tip">举一反三：泛型 Lambda 实质上是模板化的 operator()。C++20 支持显式模板参数：[]<typename T>(T a, T b){}。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 泛型 Lambda (C++14) 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 泛型 Lambda (C++14) 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 泛型 Lambda (C++14)」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：std::function 包装</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::function 包装</h3>
+                        <p class="grammar-rule">【规则】std::function 包装 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
 function&lt;int(int,int)&gt; f = [](int x, int y) { return x + y; };
 int result = f(3, 4);</code></pre>
-                    <p class="tip">举一反三：function 可存储任何可调用对象（函数指针、Lambda、函数对象）。有轻微性能开销，性能敏感场景用模板或 auto 推导。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::function 包装 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::function 包装 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::function 包装」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

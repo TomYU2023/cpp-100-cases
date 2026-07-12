@@ -105,10 +105,22 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>圆形(半径=5), 面积=78.5397
+矩形(宽=4 高=3), 面积=12
+圆形(半径=5), 面积=78.5397
+矩形(宽=4 高=3), 面积=12</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：CRTP 模式</h3>
-                    <pre class="code-block"><code class="language-cpp">template&lt;typename Derived&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>CRTP 模式</h3>
+                        <p class="grammar-rule">【规则】CRTP 模式 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template&lt;typename Derived&gt;
 class Base {
     void interface() {
         static_cast&lt;Derived*&gt;(this)-&gt;impl();
@@ -117,21 +129,43 @@ class Base {
 class Derived : public Base&lt;Derived&gt; {
     void impl() { /* 具体实现 */ }
 };</code></pre>
-                    <p class="tip">举一反三：CRTP (Curiously Recurring Template Pattern) 将派生类作为基类的模板参数。基类通过 static_cast 调用派生类方法，编译期解析，零运行时开销。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 CRTP 模式 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 CRTP 模式 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ CRTP 模式」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：静态多态 vs 动态多态</h3>
-                    <pre class="code-block"><code class="language-cpp">// 动态多态：虚函数 → vtable 查找 → 运行时
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>静态多态 vs 动态多态</h3>
+                        <p class="grammar-rule">【规则】静态多态 vs 动态多态 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 动态多态：虚函数 → vtable 查找 → 运行时
 // 静态多态：模板/CRTP → 编译期绑定 → 零开销
 // 取舍：动态灵活可容器存异构对象，静态速度快但类型在编译时确定</code></pre>
-                    <p class="tip">举一反三：静态多态无法将不同类型对象存入同一个容器（如 vector<Base*>）。两者选择：性能和编译隔离选静态，运行时灵活性和扩展性选动态。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 静态多态 vs 动态多态 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 静态多态 vs 动态多态 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 静态多态 vs 动态多态」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：static_cast 向下转型</h3>
-                    <pre class="code-block"><code class="language-cpp">static_cast&lt;const Derived*&gt;(this)-&gt;impl();
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>static_cast 向下转型</h3>
+                        <p class="grammar-rule">【规则】static_cast 向下转型 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">static_cast&lt;const Derived*&gt;(this)-&gt;impl();
 // 在 CRTP 中，this 一定是 Derived* 类型
 // 不是 dynamic_cast（运行时检查），而是 static_cast（编译期确定）</code></pre>
-                    <p class="tip">举一反三：CRTP 中 static_cast 是安全的，因为派生关系在编译期确定。dynamic_cast 有运行时开销，static_cast 则没有。但误用 static_cast 可能导致未定义行为。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 static_cast 向下转型 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 static_cast 向下转型 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ static_cast 向下转型」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

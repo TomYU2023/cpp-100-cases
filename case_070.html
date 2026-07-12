@@ -98,35 +98,89 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>b1: 00000000
+b2: 00101010 (=42)
+b3: 00001100
+
+=== 位运算 ===
+b2 | b3: 00101110
+b2 &amp; b3: 00001000
+b2 ^ b3: 00100110
+~b2: 11010101
+
+=== 单比特操作 ===
+set(3,5): 00101000
+reset(3): 00100000
+flip(2): 00100100
+位 5 是否设置: 1
+设置位数: 2
+是否有任何位设置: 1
+
+=== 权限系统 ===
+用户权限: 00000011
+可读: 1
+可写: 1
+可执行: 0
+同时拥有读写权限: true</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：bitset 构造</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;bitset&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>bitset 构造</h3>
+                        <p class="grammar-rule">【规则】bitset 构造 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;bitset&gt;
 bitset&lt;8&gt; b;          // 全 0
 bitset&lt;8&gt; b(42);      // 从整数
 bitset&lt;8&gt; b("1100");  // 从二进制字符串
 // 模板参数是编译期常量，大小固定</code></pre>
-                    <p class="tip">举一反三：bitset 是固定大小的位数组。与 vector<bool> 不同，bitset 是真正的位打包（每位 1 bit）。大小是编译期常量，适合已知位数的场景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 bitset 构造 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 bitset 构造 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ bitset 构造」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：位操作：set/reset/flip/test</h3>
-                    <pre class="code-block"><code class="language-cpp">b.set(3);       // 设置第 3 位为 1
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>位操作：set/reset/flip/test</h3>
+                        <p class="grammar-rule">【规则】位操作：set/reset/flip/test 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">b.set(3);       // 设置第 3 位为 1
 b.reset(3);     // 清除第 3 位（设为 0）
 b.flip(3);      // 翻转第 3 位
 b.test(3);      // 测试第 3 位是否为 1
 b.set();        // 全部设为 1
 b.reset();      // 全部清零</code></pre>
-                    <p class="tip">举一反三：所有单 bit 操作都是 O(1)。set(pos, bool) 可显式设置值。count() 返回置 1 位数，any() 检查是否有置 1，none() 检查是否全零。to_string() 转字符串。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 位操作：set/reset/flip/test 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 位操作：set/reset/flip/test 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 位操作：set/reset/flip/test」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：bitset 的位逻辑运算</h3>
-                    <pre class="code-block"><code class="language-cpp">b1 | b2  // 或
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>bitset 的位逻辑运算</h3>
+                        <p class="grammar-rule">【规则】bitset 的位逻辑运算 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">b1 | b2  // 或
 b1 &amp; b2  // 与
 b1 ^ b2  // 异或
 ~b1     // 取反
 b1 &lt;&lt;= 1 // 左移
 // 所有位运算都有对应的复合赋值</code></pre>
-                    <p class="tip">举一反三：位逻辑运算返回新的 bitset。左移右移不保留溢出位。可以用于集合运算（交集、并集、差集）和状态标志管理。to_ulong/to_ullong 转换回整数（可能抛异常）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 bitset 的位逻辑运算 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 bitset 的位逻辑运算 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ bitset 的位逻辑运算」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

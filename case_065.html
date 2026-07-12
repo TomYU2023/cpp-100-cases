@@ -96,30 +96,78 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>存储整数：42
+当前持有类型：int
+
+改为存储字符串："Hello Variant!"
+当前持有类型：string
+
+存储浮点数：3.14
+当前持有类型：double
+
+使用 std::visit 模式匹配：
+  Processing int: 42
+  Processing string: Hello Variant!
+  Processing double: 3.14
+
+Variant vs Union vs Any 对比：
+  Variant:  类型安全，编译期检查，无堆分配，访问必须处理所有可能类型
+  Union:    无类型标记，需要手动跟踪，无运行时安全检查
+  Any:      可存任意类型，有堆分配，有运行时开销</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：variant 基本操作</h3>
-                    <pre class="code-block"><code class="language-cpp">variant&lt;int,double,string&gt; v;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>variant 基本操作</h3>
+                        <p class="grammar-rule">【规则】variant 基本操作 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">variant&lt;int,double,string&gt; v;
 v = 42;                // 存 int
 v = 3.14;              // 改为 double
 get&lt;int&gt;(v);           // 获取（类型不对抛 bad_variant_access）
 holds_alternative&lt;int&gt;(v); // 判断当前类型</code></pre>
-                    <p class="tip">举一反三：variant 是类型安全的 union，自动管理类型切换时析构/构造。编译期知道所有可能类型。比 any 更快（无堆分配）但类型集合固定。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 variant 基本操作 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 variant 基本操作 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ variant 基本操作」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：visit 模式匹配</h3>
-                    <pre class="code-block"><code class="language-cpp">visit([](const auto&amp; val) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>visit 模式匹配</h3>
+                        <p class="grammar-rule">【规则】visit 模式匹配 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">visit([](const auto&amp; val) {
     if constexpr (is_same_v&lt;T, int&gt;) // 处理 int
     else if constexpr (is_same_v&lt;T, double&gt;) // 处理 double
 }, v);</code></pre>
-                    <p class="tip">举一反三：visit 是安全访问 variant 的首选方式。编译器保证所有类型都被处理（否则编译错误）。if constexpr 在编译期选择分支，避免了运行时开销。overload 模式可让代码更简洁。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 visit 模式匹配 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 visit 模式匹配 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ visit 模式匹配」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：variant vs union vs any</h3>
-                    <pre class="code-block"><code class="language-cpp">// union: 不安全（需手动跟踪类型）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>variant vs union vs any</h3>
+                        <p class="grammar-rule">【规则】variant vs union vs any 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// union: 不安全（需手动跟踪类型）
 // variant: 类型安全 + 编译期类型集 + 栈分配
 // any: 任意类型 + 运行时 + 堆分配</code></pre>
-                    <p class="tip">举一反三：variant 适合「固定几种类型切换」场景（如 JSON 值、AST 节点）。any 适合「未知类型」场景（如配置容器）。优先用 variant 追求编译期安全。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 variant vs union vs any 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 variant vs union vs any 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ variant vs union vs any」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

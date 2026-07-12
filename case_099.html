@@ -91,33 +91,88 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== Type Traits 类型信息报告 ===
+
+基本类型类别：
+  int:         is_integral=true, is_floating_point=false, is_arithmetic=true
+  double:      is_integral=false, is_floating_point=true, is_arithmetic=true
+  std::string: is_integral=false, is_class=true, is_arithmetic=false
+
+类型修饰符：
+  const int:   is_const=true
+  int&:        is_reference=true, is_lvalue_reference=true
+  int&&:       is_reference=true, is_rvalue_reference=true
+
+类型关系：
+  is_same<int, int32_t>: true
+  is_same<int, long>:    false（在 64 位 Linux 上可能 true）
+  is_base_of<Base, Derived>: true
+  is_convertible<Derived*, Base*>: true
+
+组合萃取示例：
+  has_value_type<std::vector<int>>::value: true
+  is_string_like<std::string>: true
+  is_string_like<int>: false
+
+static_assert 编译期检查：
+  所有 static_assert 均已通过（编译成功即验证通过）</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：type_traits 三大类</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. 类型检查: is_integral, is_floating_point, is_pointer
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>type_traits 三大类</h3>
+                        <p class="grammar-rule">【规则】type_traits 三大类 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. 类型检查: is_integral, is_floating_point, is_pointer
 // 2. 类型转换: remove_const, add_pointer, decay, make_signed
 // 3. 类型关系: is_same, is_base_of, is_convertible</code></pre>
-                    <p class="tip">举一反三：_v 后缀 (C++17) 替代 ::value。_t 后缀 (C++14) 替代 typename ...::type。组合使用实现复杂条件：is_arithmetic_v<T> && !is_const_v<T>。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 type_traits 三大类 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 type_traits 三大类 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ type_traits 三大类」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：static_assert 编译期断言</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>static_assert 编译期断言</h3>
+                        <p class="grammar-rule">【规则】static_assert 编译期断言 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
 class Container {
     static_assert(is_copy_constructible&lt;T&gt;::value,
         "T 必须支持拷贝构造");
 };
 // 编译失败时输出自定义错误信息</code></pre>
-                    <p class="tip">举一反三：static_assert 是模板代码中的重要工具。在实例化时检查类型约束，比运行时检查和注释都更可靠。C++17 起第二个参数（错误消息）可选。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 static_assert 编译期断言 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 static_assert 编译期断言 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ static_assert 编译期断言」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：组合萃取技巧</h3>
-                    <pre class="code-block"><code class="language-cpp">// 确保 T 是整数但非 bool（bool 满足 is_integral）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>组合萃取技巧</h3>
+                        <p class="grammar-rule">【规则】组合萃取技巧 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 确保 T 是整数但非 bool（bool 满足 is_integral）
 static_assert(is_integral_v&lt;T&gt; &amp;&amp; !is_same_v&lt;T, bool&gt;);
 // 移除所有限定后检查
 using Base = remove_cvref_t&lt;T&gt;;
 // 判断是否可调用
 static_assert(is_invocable_v&lt;Func, Args...&gt;);</code></pre>
-                    <p class="tip">举一反三：实际项目中很少只用一个萃取。组合判断更精确。注意 is_integral 包含 bool。remove_cvref_t (C++20) 相当于 decay_t 但不退化数组/函数。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 组合萃取技巧 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 组合萃取技巧 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 组合萃取技巧」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

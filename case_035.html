@@ -83,31 +83,74 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 目录遍历统计 ===
+路径: "C:\\Users\\Admin\\AppData\\Roaming\\Tencent\\Marvis\\User\\oAN1i2W84Rtt-QQvqUpuKmZEVfcw\\workspace\\conv_19f4769a1e5_3627c492b3f0\\temp"
+总文件数: 833
+总大小: 48483109 bytes
+
+按扩展名统计:
+  .cpp: 303 个文件, 605344 bytes
+  .exe: 208 个文件, 45329033 bytes
+  .json: 6 个文件, 40445 bytes
+  .py: 264 个文件, 1722344 bytes
+  .pyc: 11 个文件, 588818 bytes
+  .txt: 40 个文件, 152840 bytes
+  .zip: 1 个文件, 44285 bytes</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：recursive_directory_iterator</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;filesystem&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>recursive_directory_iterator</h3>
+                        <p class="grammar-rule">【规则】recursive_directory_iterator 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;filesystem&gt;
 for (const auto&amp; e : fs::recursive_directory_iterator(path)) {
     if (e.is_regular_file()) { /* 处理文件 */ }
 }</code></pre>
-                    <p class="tip">举一反三：递归遍历自动进入子目录。directory_iterator 只遍历当前目录。遍历顺序通常按文件系统顺序。遇到权限问题会抛异常，可用 error_code 版本。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 recursive_directory_iterator 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 recursive_directory_iterator 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ recursive_directory_iterator」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：path 常用操作</h3>
-                    <pre class="code-block"><code class="language-cpp">auto p = entry.path();
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>path 常用操作</h3>
+                        <p class="grammar-rule">【规则】path 常用操作 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto p = entry.path();
 p.extension();   // 扩展名 ".txt"
 p.filename();    // 文件名
 p.stem();        // 不含扩展名的文件名
 p.parent_path(); // 父目录</code></pre>
-                    <p class="tip">举一反三：filesystem::path 自动处理路径分隔符差异。支持 / 运算符拼接：auto p = root / "sub" / "file.txt"。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 path 常用操作 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 path 常用操作 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ path 常用操作」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：file_size 与 exists</h3>
-                    <pre class="code-block"><code class="language-cpp">if (fs::exists(p)) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>file_size 与 exists</h3>
+                        <p class="grammar-rule">【规则】file_size 与 exists 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">if (fs::exists(p)) {
     uintmax_t size = fs::file_size(p);
 }
 // fs::is_regular_file(p), fs::is_directory(p)</code></pre>
-                    <p class="tip">举一反三：file_size 只对普通文件有效，对目录返回实现定义值。exists 检查路径是否存在。这些函数都有不抛异常的 error_code 重载。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 file_size 与 exists 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 file_size 与 exists 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ file_size 与 exists」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

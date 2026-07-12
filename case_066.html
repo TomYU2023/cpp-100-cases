@@ -93,32 +93,75 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>使用 std::span 视图操作数据（无需拷贝）：
+  原始数组：[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  前 5 个元素（span.first(5)）：[1, 2, 3, 4, 5]
+  后 5 个元素（span.last(5)）：[6, 7, 8, 9, 10]
+  中间子视图（span.subspan(2, 4)）：[3, 4, 5, 6]
+
+通过 span 修改底层数据：
+  修改前：data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  修改 span 中第 1 个元素为 99
+  修改后：data = [1, 99, 3, 4, 5, 6, 7, 8, 9, 10]
+
+静态 span（编译期定长）：
+  std::span<int, 5> 只能绑定到恰好 5 个元素的范围</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：span 构造</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;span&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>span 构造</h3>
+                        <p class="grammar-rule">【规则】span 构造 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;span&gt;
 span&lt;int&gt; s(vec);          // 从 vector
 span&lt;int&gt; s(arr, 5);       // 从指针+长度
 span&lt;int&gt; s(cArray);       // 从 C 数组
 span&lt;const int&gt; s = vec;   // 只读视图</code></pre>
-                    <p class="tip">举一反三：span 不拥有数据，只是指针+长度的轻量视图。拷贝 span 不拷贝数据。动态 extent 运行时确定大小，静态 extent 编译期确定（span<int,5>）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 span 构造 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 span 构造 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ span 构造」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：subspan / first / last</h3>
-                    <pre class="code-block"><code class="language-cpp">span&lt;int&gt; s(vec);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>subspan / first / last</h3>
+                        <p class="grammar-rule">【规则】subspan / first / last 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">span&lt;int&gt; s(vec);
 s.subspan(2, 3);    // 索引 2 开始，取 3 个
 s.first(3);          // 前 3 个
 s.last(2);           // 后 2 个
 // 均为 O(1)，不分配内存</code></pre>
-                    <p class="tip">举一反三：所有子视图操作都是 O(1)（只调整指针和长度）。subspan 参数 offset+count，count 可选（默认到末尾）。first 和 last 是 subspan 的语法糖。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 subspan / first / last 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 subspan / first / last 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ subspan / first / last」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：span 作为函数参数</h3>
-                    <pre class="code-block"><code class="language-cpp">void process(span&lt;const int&gt; data);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>span 作为函数参数</h3>
+                        <p class="grammar-rule">【规则】span 作为函数参数 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">void process(span&lt;const int&gt; data);
 // 可接受：C数组、vector、array、其他 span
 // 不需要模板、不需要重载
 // 比 (int* ptr, size_t len) 更安全</code></pre>
-                    <p class="tip">举一反三：用 span 替代 (T* ptr, size_t len) 参数对。span 带边界信息，减少越界风险。const span 表示只读（元素不可修改），非 const span 可修改元素。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 span 作为函数参数 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 span 作为函数参数 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ span 作为函数参数」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

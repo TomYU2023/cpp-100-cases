@@ -94,30 +94,72 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>A: 1 3 5 7 9 
+B: 2 4 6 8 10 
+合并后: 1 2 3 4 5 6 7 8 9 10 
+
+=== 合并不同容器 ===
+不同容器合并: 10 20 30 40 50 60 70 
+
+inplace_merge 前: 1 3 5 7 2 4 6 8 
+inplace_merge 后: 1 2 3 4 5 6 7 8 
+
+原始: 38 27 43 3 9 82 10 
+一次归并排序后: 3 9 10 27 38 43 82</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::merge</h3>
-                    <pre class="code-block"><code class="language-cpp">merge(A.begin(), A.end(), B.begin(), B.end(), output);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::merge</h3>
+                        <p class="grammar-rule">【规则】std::merge 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">merge(A.begin(), A.end(), B.begin(), B.end(), output);
 // 两个有序序列合并为一个有序序列
 // 稳定排序：相等元素按 A 在前，B 在后
 // O(N+M) 时间，需要额外输出空间</code></pre>
-                    <p class="tip">举一反三：merge 是归并排序的核心操作。输入必须有序，输出到新容器。稳定：相等元素保持原序列中的顺序。不同容器的迭代器也可混合使用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::merge 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::merge 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::merge」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：inplace_merge</h3>
-                    <pre class="code-block"><code class="language-cpp">inplace_merge(v.begin(), middle, v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>inplace_merge</h3>
+                        <p class="grammar-rule">【规则】inplace_merge 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">inplace_merge(v.begin(), middle, v.end());
 // 将 v[begin,middle) 和 v[middle,end) 两段合并
 // 两段各自要求有序
 // 通常需要 O(N) 额外空间（缓冲区）</code></pre>
-                    <p class="tip">举一反三：inplace_merge 在单容器内合并相邻有序段。需要额外的线性空间（通常用临时缓冲区）来实现稳定合并。是归并排序最后一步的标准操作。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 inplace_merge 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 inplace_merge 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ inplace_merge」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：归并排序 vs 快速排序</h3>
-                    <pre class="code-block"><code class="language-cpp">// 归并排序: 稳定，O(N log N) 保证，需要 O(N) 额外空间
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>归并排序 vs 快速排序</h3>
+                        <p class="grammar-rule">【规则】归并排序 vs 快速排序 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 归并排序: 稳定，O(N log N) 保证，需要 O(N) 额外空间
 // 快速排序: 不稳定，O(N log N) 平均，原地
 // 外排序（大文件）必须用归并策略
 // 数据量小时插入排序可能更快</code></pre>
-                    <p class="tip">举一反三：std::stable_sort 通常使用归并排序（或 TimSort）。链表排序天然适合归并（不需要额外空间）。merge 也可用于两个有序文件的合并。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 归并排序 vs 快速排序 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 归并排序 vs 快速排序 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 归并排序 vs 快速排序」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

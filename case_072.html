@@ -93,31 +93,76 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>t1(42, 3.14, hello)
+t2(25, world, 1)
+
+t1&lt;0&gt;: 42
+t1&lt;1&gt;: 3.14
+t1&lt;2&gt;: hello
+t2中的string: world
+
+tie 解包: 42, 3.14, hello
+只取第一个: 42
+
+拼接后 t3(42, 3.14, hello, A, 99)
+
+t1 元素数: 3
+交换后 ta(3, 4)</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：tuple 创建与访问</h3>
-                    <pre class="code-block"><code class="language-cpp">auto t = make_tuple(42, 3.14, "hello");
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>tuple 创建与访问</h3>
+                        <p class="grammar-rule">【规则】tuple 创建与访问 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto t = make_tuple(42, 3.14, "hello");
 get&lt;0&gt;(t);         // 按索引访问
 get&lt;int&gt;(t);       // 按类型访问（仅唯一类型）
 tuple_size&lt;decltype(t)&gt;::value; // 元素数量</code></pre>
-                    <p class="tip">举一反三：make_tuple 自动推导类型。get 的索引必须是编译期常量。按类型访问要求 tuple 中该类型只出现一次，否则编译错误。C++14 可用 get<Type> 简化。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 tuple 创建与访问 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 tuple 创建与访问 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ tuple 创建与访问」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：tie 解包与 ignore</h3>
-                    <pre class="code-block"><code class="language-cpp">int a, b;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>tie 解包与 ignore</h3>
+                        <p class="grammar-rule">【规则】tie 解包与 ignore 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int a, b;
 tie(a, b) = make_pair(1, 2);
 tie(a, ignore) = make_tuple(3, 4.5, 'c');
 // ignore 跳过不需要的值
 // tie 创建的是左值引用</code></pre>
-                    <p class="tip">举一反三：tie 将已有变量绑定到 tuple 元素（引用语义，可修改原 tuple）。ignore 是 std::ignore 的实例。C++17 结构化绑定 auto [a,b] 更简洁且语法更自然。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 tie 解包与 ignore 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 tie 解包与 ignore 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ tie 解包与 ignore」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：tuple_cat 拼接</h3>
-                    <pre class="code-block"><code class="language-cpp">auto t3 = tuple_cat(t1, t2, make_tuple(42));
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>tuple_cat 拼接</h3>
+                        <p class="grammar-rule">【规则】tuple_cat 拼接 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto t3 = tuple_cat(t1, t2, make_tuple(42));
 // 将多个 tuple 拼接成一个
 // 元素类型和值均保留
 // 结果类型是编译期确定的</code></pre>
-                    <p class="tip">举一反三：tuple_cat 在编译期将多个 tuple 的成员列表合并。适合需要动态组合返回值的场景。注意：拼接后元素顺序是参数从左到右，各个 tuple 的成员顺序保留。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 tuple_cat 拼接 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 tuple_cat 拼接 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ tuple_cat 拼接」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

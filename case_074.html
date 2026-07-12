@@ -92,31 +92,79 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== GCD (最大公约数) ===
+gcd(12, 18) = 6
+gcd(48, 180) = 12
+gcd(17, 13) = 1
+gcd(0, 5) = 5
+
+=== LCM (最小公倍数) ===
+lcm(12, 18) = 36
+lcm(4, 6) = 12
+lcm(7, 9) = 63
+
+=== 分数简化 ===
+6/8 = 3/4
+15/(-25) = -3/5
+42/56 = 3/4
+
+=== 多个数的 GCD ===
+gcd(120, 180, 240, 300) = 60</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：gcd 和 lcm</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>gcd 和 lcm</h3>
+                        <p class="grammar-rule">【规则】gcd 和 lcm 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
 int g = gcd(12, 18); // 6
 int l = lcm(12, 18); // 36
 // C++17 标准，头文件 &lt;numeric&gt;</code></pre>
-                    <p class="tip">举一反三：gcd 使用欧几里得算法（辗转相除法）。lcm(a,b) = a * b / gcd(a,b)。两个函数返回非负值。C++17 前可用 __gcd（GCC 扩展）或手写。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 gcd 和 lcm 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 gcd 和 lcm 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ gcd 和 lcm」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：gcd 的数学性质</h3>
-                    <pre class="code-block"><code class="language-cpp">gcd(a, 0) = |a|
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>gcd 的数学性质</h3>
+                        <p class="grammar-rule">【规则】gcd 的数学性质 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">gcd(a, 0) = |a|
 gcd(0, 0) = 0
 gcd(a, b) = gcd(b, a mod b)
 // 可扩展到负数：gcd(-12, 18) = 6</code></pre>
-                    <p class="tip">举一反三：gcd 结合律使批量计算简单（fold）。gcd 在密码学（RSA）、离散数学、分数运算中广泛使用。lcm 在周期问题（两个齿轮对齐时间）中有用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 gcd 的数学性质 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 gcd 的数学性质 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ gcd 的数学性质」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：分数简化模式</h3>
-                    <pre class="code-block"><code class="language-cpp">void simplify() {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>分数简化模式</h3>
+                        <p class="grammar-rule">【规则】分数简化模式 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">void simplify() {
     long long g = gcd(abs(num), abs(den));
     num /= g; den /= g;
     if (den &lt; 0) { num = -num; den = -den; }
 }</code></pre>
-                    <p class="tip">举一反三：化简为最简分数是 gcd 的经典应用。先取绝对值再求 gcd。约定分母为正、互质。分子 0 时 gcd(0, den) = den，化简结果为 0/1。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 分数简化模式 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 分数简化模式 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 分数简化模式」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

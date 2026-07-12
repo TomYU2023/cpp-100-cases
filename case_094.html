@@ -97,30 +97,77 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 所有学生 ===
+Alice: 85.5
+Bob: 55
+Charlie: 92
+David: 58.5
+Eve: 73
+
+=== 按分数排序 ===
+Charlie: 92
+Alice: 85.5
+Eve: 73
+David: 58.5
+Bob: 55
+
+及格人数: 3 / 5
+
+第一个超 90 分: Charlie (92)</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::mem_fn 用法</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::mem_fn 用法</h3>
+                        <p class="grammar-rule">【规则】std::mem_fn 用法 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;functional&gt;
 auto printFn = mem_fn(&amp;Student::print);
 printFn(student); // 等价于 student.print()
 // 将成员函数包装为接受对象引用的可调用对象</code></pre>
-                    <p class="tip">举一反三：mem_fn 返回一个可调用对象，接受对象指针或引用作为第一个参数。与 bind 的区别：mem_fn 更轻量（无参数绑定开销）。用于将成员函数传给算法。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::mem_fn 用法 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::mem_fn 用法 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::mem_fn 用法」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：mem_fn 与算法结合</h3>
-                    <pre class="code-block"><code class="language-cpp">for_each(v.begin(), v.end(), mem_fn(&amp;T::method));
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>mem_fn 与算法结合</h3>
+                        <p class="grammar-rule">【规则】mem_fn 与算法结合 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">for_each(v.begin(), v.end(), mem_fn(&amp;T::method));
 count_if(v.begin(), v.end(), mem_fn(&amp;T::predicate));
 transform(v.begin(), v.end(), output, mem_fn(&amp;T::getter));
 // C++20 ranges: v | views::transform(mem_fn(&amp;T::getter))</code></pre>
-                    <p class="tip">举一反三：mem_fn 将对象方法适配为算法需要的函数形式。比手写 Lambda 更简洁（但 Lambda 更灵活）。适合简单取值/判断的场景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 mem_fn 与算法结合 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 mem_fn 与算法结合 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ mem_fn 与算法结合」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：mem_fn vs Lambda vs bind</h3>
-                    <pre class="code-block"><code class="language-cpp">// mem_fn: 最轻量，只能调用无参成员
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>mem_fn vs Lambda vs bind</h3>
+                        <p class="grammar-rule">【规则】mem_fn vs Lambda vs bind 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// mem_fn: 最轻量，只能调用无参成员
 // Lambda: 最灵活，可捕获变量，可处理额外参数
 // bind: 可绑定部分参数，但语法复杂（C++11/14）
 // 推荐: Lambda &gt; mem_fn &gt; bind</code></pre>
-                    <p class="tip">举一反三：C++11 后 Lambda 让 bind 基本过时。mem_fn 在简单场景仍有可读性优势。成员函数有参数时 mem_fn 自动适配（第一个参数是对象，后续是方法参数）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 mem_fn vs Lambda vs bind 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 mem_fn vs Lambda vs bind 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ mem_fn vs Lambda vs bind」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

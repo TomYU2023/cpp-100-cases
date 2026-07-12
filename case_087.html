@@ -79,30 +79,72 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>检查有序性:
+v1 [1-5] 升序: true
+v2 [1,3,2,4,5] 升序: false
+v3 [5 → 1] 降序: true
+
+v2 的第一个无序位置: 2 (值=2)
+
+成绩: 95 92 88 85 80 82 75 
+排序错误在位置 5 (值=82)
+
+前 3 个有序? true
+后 4 个有序? true</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::is_sorted</h3>
-                    <pre class="code-block"><code class="language-cpp">bool sorted = is_sorted(v.begin(), v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::is_sorted</h3>
+                        <p class="grammar-rule">【规则】std::is_sorted 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">bool sorted = is_sorted(v.begin(), v.end());
 // 检查整个范围是否非递减有序（升序）
 // O(N) 遍历，遇到无序立即停止
 // 可传自定义比较器</code></pre>
-                    <p class="tip">举一反三：is_sorted 可检查任何可比较的序列。默认用 operator< 判断非递减。空范围和单元素范围总是返回 true。降序检查用 greater<>()。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::is_sorted 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::is_sorted 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::is_sorted」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：is_sorted_until</h3>
-                    <pre class="code-block"><code class="language-cpp">auto it = is_sorted_until(v.begin(), v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>is_sorted_until</h3>
+                        <p class="grammar-rule">【规则】is_sorted_until 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto it = is_sorted_until(v.begin(), v.end());
 // 返回最长有序前缀之后的迭代器
 // 如果全部有序，返回 v.end()
 // 结合 distance 可定位第一个无序元素</code></pre>
-                    <p class="tip">举一反三：is_sorted_until 比 is_sorted 多提供位置信息。适合调试和验证（精确定位排序错误）。可用于部分排序算法的验证（如检查某段是否已处理完毕）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 is_sorted_until 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 is_sorted_until 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ is_sorted_until」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：有序性检查应用</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. 数据验证：输入/输出是否按要求有序
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>有序性检查应用</h3>
+                        <p class="grammar-rule">【规则】有序性检查应用 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. 数据验证：输入/输出是否按要求有序
 // 2. 算法前提检查：二分搜索前验证有序性
 // 3. 调试：排序算法错误定位
 // 4. 测试：验证排序结果</code></pre>
-                    <p class="tip">举一反三：在生产代码中添加 is_sorted 断言可提前发现数据问题。二分搜索（binary_search / lower_bound）要求有序，is_sorted 可在 Debug 模式检查。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 有序性检查应用 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 有序性检查应用 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 有序性检查应用」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

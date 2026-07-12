@@ -87,28 +87,61 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>请输入一个正整数：0 不是素数
+0 是回文数
+0 不是完数</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：函数定义与调用</h3>
-                    <pre class="code-block"><code class="language-cpp">bool isPrime(int n) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>函数定义与调用</h3>
+                        <p class="grammar-rule">【规则】函数是将可复用逻辑封装为独立模块的基本单元，语法为 返回值类型 函数名(参数列表) { 函数体 }。适用于代码复用、逻辑隔离和模块化设计。</p>
+                        <p class="grammar-principle">【原理】函数调用在汇编层面是 call 指令——压入返回地址、跳转到函数入口、函数执行完后用 ret 弹栈返回。参数通过寄存器或栈传递（由调用约定决定，如 x86-64 System V ABI 前 6 个整型参数通过 rdi/rsi/rdx/rcx/r8/r9 传递）。函数提供了抽象边界——调用者不需要知道内部实现，只需了解接口契约（前置条件 + 后置条件）。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 函数声明（原型）和定义（实现）不一致——如声明中写了默认参数但定义中不写（或反过来写），导致链接错误或奇怪行为；2. 在函数内部返回局部变量的指针或引用——局部变量在函数返回后被销毁，指针成为悬垂指针。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">bool isPrime(int n) {
     // 函数体
     return true;
 }
 // 调用
 if (isPrime(17)) { /* ... */ }</code></pre>
-                    <p class="tip">举一反三：将功能封装为函数提高复用性。函数声明放在调用之前，或用头文件 + 前向声明。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>通过引入函数重载机制（overload），在案例 004 的素数/回文/完数程序中新增参数化版函数签名，支持整数和字符串两种输入格式的跨类型调用。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将三个函数拆分为独立头文件（.h）和实现文件（.cpp）的形式，并在 main.cpp 中使用 #include 引入，练习多文件编译（g++ main.cpp isprime.cpp ispalindrome.cpp isperfect.cpp -o main）。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ calling conventions」了解 __cdecl / __stdcall / __fastcall 的区别；查阅 inline 函数的作用和限制；参考案例 006（运算符重载）了解成员函数的更多形式。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：sqrt() 优化循环</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;cmath&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>sqrt() 优化循环</h3>
+                        <p class="grammar-rule">【规则】判断素数时，只需检查 2 到 sqrt(n) 的因子即可——若 n 有大于 sqrt(n) 的因子，必有另一个因子小于 sqrt(n)。将循环上限从 n 优化为 sqrt(n)，时间复杂度从 O(n) 降至 O(√n)。</p>
+                        <p class="grammar-principle">【原理】这是「对称性优化」的经典案例：因子成对出现，小因子必然 ≤ √n。数学上，若 n = a×b 且 a ≤ b，则 a ≤ √n。因此只需枚举 a。对于大整数（10^12 级别），O(√n) 仍然很慢——这时需要 Miller-Rabin 概率素性测试（O(k log³n)）。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在循环条件中直接写 i <= sqrt(n)——每次迭代都重新计算 sqrt，浪费 CPU。应提前计算 int limit = sqrt(n) 并使用 i <= limit；2. sqrt 返回浮点数，直接与整数比较有精度风险，建议使用 i * i <= n 的整数版本避免浮点误差。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;cmath&gt;
 for (int i = 2; i &lt;= sqrt(n); i++) { /* ... */ }</code></pre>
-                    <p class="tip">举一反三：找 n 的所有因子只需遍历到 sqrt(n)，另一半因子自动获得。时间复杂度从 O(n) 降到 O(√n)。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>验证 int limit = sqrt(n) 和 i * i <= n 两种写法的精度差异：分别用两种方法计算到 10^8 范围内的素数个数，统计结果是否完全一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现埃拉托斯特尼筛法（Sieve of Eratosthenes），将批量判断素数的时间复杂度从 O(n√n) 优化到 O(n log log n)，对比两种方法在 n=1000000 时的运行速度。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「Sieve of Eratosthenes C++」和「Miller-Rabin primality test」；查阅 <cmath> 中 sqrt 的精度保证；参考案例 030（accumulate/reduce）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：字符串与数字互转</h3>
-                    <pre class="code-block"><code class="language-cpp">string s = to_string(123);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>字符串与数字互转</h3>
+                        <p class="grammar-rule">【规则】C++11 提供了 to_string(num) 将数字转字符串，以及 stoi/stod/stol 将字符串转数字。适用于数值显示、文件解析、用户输入处理等场景。</p>
+                        <p class="grammar-principle">【原理】to_string 内部使用 snprintf（或等价的流操作）进行格式化，等价于 C 语言的 sprintf。C++17 引入了 std::to_chars（高性能，无 locale 开销，无异常，无动态内存）和 std::from_chars，是 C++20 的首选方案。to_string 会受 locale 影响（如某些地区小数点为逗号），而 to_chars 不受。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 使用 stoi 时字符串开头有空白或末尾有非数字字符导致抛出 std::invalid_argument 异常但没有 try-catch 处理；2. 在循环中大量调用 to_string 产生频繁的 string 构造/析构，可改用 to_chars + 预分配 char 数组。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string s = to_string(123);
 int n = stoi("456");</code></pre>
-                    <p class="tip">举一反三：C++11 提供 to_string() 和 stoi/stod 系列函数。还可使用 stringstream 进行复杂格式化转换。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>修改回文数判断函数：不用字符串反转比较，而是用纯数值方法（while 循环取余数 + 构建反转数），对比两种方法在大数（10^9 级别）下的性能差异。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>编写一个通用函数，输入任意整数 n 和进制 base（2-36），输出该进制的字符串表示。使用 std::to_chars 实现高性能版本。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ to_chars performance benchmark」了解性能差异数据；查阅 std::from_chars 的错误处理方式；参考案例 067（std::format 格式化）。</p>
+                    </div>
                 </div>
             </section>
         </div>

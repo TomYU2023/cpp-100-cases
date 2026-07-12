@@ -107,10 +107,23 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>Widget 构造
+Widget: pImpl Widget
+Data: 10 20 30 
+Widget: pImpl Widget
+Data: 10 20 30</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：pImpl 惯用法结构</h3>
-                    <pre class="code-block"><code class="language-cpp">// 头文件
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>pImpl 惯用法结构</h3>
+                        <p class="grammar-rule">【规则】pImpl 惯用法结构 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 头文件
 class Widget {
     struct Impl;  // 前向声明
     unique_ptr&lt;Impl&gt; pImpl;
@@ -120,21 +133,43 @@ public:
 // 实现文件
 struct Widget::Impl { /* 真实的成员 */ };
 Widget::Widget() : pImpl(make_unique&lt;Impl&gt;()) {}</code></pre>
-                    <p class="tip">举一反三：pImpl 将类的实现细节移到 .cpp 文件，用户看不到也不依赖它们。改变 Impl 不需要重新编译使用 Widget 的代码。是大型项目的核心编译优化技术。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 pImpl 惯用法结构 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 pImpl 惯用法结构 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ pImpl 惯用法结构」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：析构函数的特殊处理</h3>
-                    <pre class="code-block"><code class="language-cpp">// 头文件中: ~Widget();
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>析构函数的特殊处理</h3>
+                        <p class="grammar-rule">【规则】析构函数的特殊处理 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 头文件中: ~Widget();
 // .cpp 中: Widget::~Widget() = default;
 // 必须在 Impl 完整定义之后才能 default 析构函数</code></pre>
-                    <p class="tip">举一反三：unique_ptr 的析构需要完整类型定义才能 delete。如果在头文件中 = default 析构，编译器会在此处实例化 unique_ptr 的析构但 Impl 不完整，导致编译错误。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 析构函数的特殊处理 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 析构函数的特殊处理 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 析构函数的特殊处理」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：编译防火墙的好处</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. 修改实现不影响接口用户（只需重新链接）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>编译防火墙的好处</h3>
+                        <p class="grammar-rule">【规则】编译防火墙的好处 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. 修改实现不影响接口用户（只需重新链接）
 // 2. 头文件不暴露内部类型、库依赖
 // 3. ABI 兼容：实现改变不破坏二进制兼容</code></pre>
-                    <p class="tip">举一反三：代价：多一层间接访问（轻微性能开销）、多一次动态分配、代码量增加。Bridge 模式是 pImpl 的设计模式对应物。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 编译防火墙的好处 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 编译防火墙的好处 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 编译防火墙的好处」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

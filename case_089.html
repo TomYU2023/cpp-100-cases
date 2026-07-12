@@ -87,30 +87,66 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>1 到 10: 1 2 3 4 5 6 7 8 9 10 
+100 到 107: 100 101 102 103 104 105 106 107 
+10 到 1: 10 9 8 7 6 5 4 3 2 1 
+步长为 2: 0 2 4 6 8 10 12 14 16 18 
+
+按 i%10 排序的索引 (前 20 个): 0 10 20 30 40 50 60 70 80 90 1 11 21 31 41 51 61 71 81 91</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::iota</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::iota</h3>
+                        <p class="grammar-rule">【规则】std::iota 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
 iota(v.begin(), v.end(), start);
 // 依次填充: start, start+1, start+2, ...
 // 对迭代器范围内的每个元素调用 ++value 并赋值</code></pre>
-                    <p class="tip">举一反三：iota 是最简单的序列生成器。名字来自 APL 语言的 ι（iota）符号。C++11 引入。C++20 的 ranges::iota 更灵活（支持无穷序列）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::iota 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::iota 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::iota」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：反向 iota</h3>
-                    <pre class="code-block"><code class="language-cpp">iota(v.rbegin(), v.rend(), 1);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>反向 iota</h3>
+                        <p class="grammar-rule">【规则】反向 iota 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">iota(v.rbegin(), v.rend(), 1);
 // 从末尾向开头方向填充
 // 结果: 10, 9, 8, ..., 1
 // rbegin/rend 改变填充方向</code></pre>
-                    <p class="tip">举一反三：rbegin() 从最后一个元素开始。每次 ++value 但方向是从后往前。这是生成递减序列的巧妙用法（无需额外整理）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 反向 iota 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 反向 iota 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 反向 iota」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：iota vs generate</h3>
-                    <pre class="code-block"><code class="language-cpp">// iota: 步长固定为 1，简单场景
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>iota vs generate</h3>
+                        <p class="grammar-rule">【规则】iota vs generate 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// iota: 步长固定为 1，简单场景
 // generate: 任意生成逻辑，灵活但稍复杂
 // 推荐：简单序列用 iota，复杂用 generate
 generate(v.begin(), v.end(), [n=0]() mutable { return n++ * 3; });</code></pre>
-                    <p class="tip">举一反三：iota 语义清晰（递增填充）。generate 适合非线性的生成逻辑（如斐波那契、随机、映射公式）。两者结合：iota 生成索引，再 transform 为实际值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 iota vs generate 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 iota vs generate 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ iota vs generate」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

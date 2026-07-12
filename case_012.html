@@ -113,33 +113,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>存款 2000 元成功
+取款 1000 元成功
+转账 1500 元：Alice -&gt; Bob
+Alice 余额: 4500
+Bob 余额: 4500
+银行总存款: 9000</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：访问控制: private vs public</h3>
-                    <pre class="code-block"><code class="language-cpp">class MyClass {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>访问控制: private vs public</h3>
+                        <p class="grammar-rule">【规则】public 成员可被外部代码访问，private 成员只能在类内部（包括友元）访问。这是 C++ 封装的核心机制，隐藏实现细节。适用于所有需要数据保护的类。</p>
+                        <p class="grammar-principle">【原理】访问控制是编译期概念——编译器在编译时检查访问权限，不产生任何运行时开销。private 不是「安全」机制（反射、friend、#define private public 等方式可以绕过），而是「意图表达」机制——告诉使用者「这是内部实现细节，变更后不保证兼容」。封装的价值在于可以自由修改内部实现而不影响外部代码。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将所有成员变量设为 public 以方便外部访问——破坏了封装性，后期修改数据结构时所有使用方都要改；2. 为每个 private 变量都写了 getter/setter 但对 setter 不做任何验证——这本质上和 public 没有区别，只是多了函数调用开销。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class MyClass {
 private:
     int secret; // 只能类内访问
 public:
     int getSecret() const { return secret; } // 公共接口
 };</code></pre>
-                    <p class="tip">举一反三：封装原则：数据成员 private，通过 public 成员函数提供受控访问。protected 允许派生类访问。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 012 的 BankAccount 类增加「最低余额限制」功能：在 setBalance 校验客户身份前先确保余额不能设置低于该客户的信用等级对应的阈值（private 成员变量 minBalance）。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>对比两种设计：A）balance 为 private + getBalance()/setBalance()；B）balance 为 public 直接访问。修改第 012 案例让客户通过 B 方案尝试扣款后，模拟如何在不破坏外部接口的前提下修改内部数据结构（如将 balance 从 double 改为固定点数类型）。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ encapsulation and information hiding」；查阅 pImpl 惯用法如何实现更彻底的封装（参考案例 053）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：友元函数</h3>
-                    <pre class="code-block"><code class="language-cpp">class A {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>友元函数</h3>
+                        <p class="grammar-rule">【规则】friend 关键字授予非成员函数或另一个类访问本类 private 成员的权限。适用于操作符重载、紧密协作的类之间、测试代码等场景。</p>
+                        <p class="grammar-principle">【原理】友元破坏了封装——这是设计上的刻意妥协。C++ 的设计哲学是「你可以打破规则，但必须显式声明」。友元关系是单向的、不可传递的、不可继承的。适度的友元比把所有成员设为 public 更好——至少它精确声明了谁可以访问隐密数据。最佳实践：将友元数限制在最小范围。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 滥用 friend 让一个类可以访问另一个类的全部私有成员——友元应该是最小权限的「外科手术式」访问；2. 以为 friend class B 使得 B 的派生类也能访问私有成员——友元关系不继承，派生类没有权限。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class A {
     friend void func(A&amp; a); // func 可访问 A 的私有成员
 };</code></pre>
-                    <p class="tip">举一反三：友元破坏了封装性，应谨慎使用。适用场景：运算符重载（如 <<）、两个类之间的密切协作（如转账）。友元关系不可继承、不可传递。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 012 新增一个审计类 Auditor，它作为 BankAccount 的友元可以查看所有账户的交易历史，但不能修改余额。实现一个 generateReport 函数输出交易汇总。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>不要使用 friend，改为在 BankAccount 中提供 public 的只读访问接口（如 getBalance、getTransactionHistory），让 Auditor 通过这些接口访问。对比两种方案的封装程度和维护性。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ friend best practices」和「friend vs getter」；查阅 C++20 的 explicit(bool) 如何影响设计；参考案例 010（友元 operator<<）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：静态成员变量与函数</h3>
-                    <pre class="code-block"><code class="language-cpp">class C {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>静态成员变量与函数</h3>
+                        <p class="grammar-rule">【规则】static 成员变量属于类本身而非对象（所有对象共享同一份数据），static 成员函数可不通过对象调用。适用于计数器、配置常量、工厂方法等类级别操作。</p>
+                        <p class="grammar-principle">【原理】静态成员变量在类定义中只是声明——必须在类外（.cpp 文件中）定义一次以分配存储空间。C++17 引入 inline static 成员变量，可直接在类定义中初始化，省去类外定义。静态成员函数没有 this 指针，因此不能访问非静态成员，也不能是 virtual。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在头文件的类定义中初始化了非 const 静态成员变量——编译通过但链接报多重定义错误；2. 在多线程环境中，多个线程同时修改同一静态成员变量而没有同步机制——数据竞争导致未定义行为。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class C {
     static int count;  // 类级别共享
 public:
     static int getCount() { return count; }
 };
 int C::count = 0; // 类外定义</code></pre>
-                    <p class="tip">举一反三：静态成员属于类而非对象，所有对象共享。静态成员函数只能访问静态成员。调用方式：C::getCount() 或 obj.getCount()。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 012 的 BankAccount 类添加静态成员 totalAccounts 和 nextAccountNumber，每次构造新账户时自动递增编号。添加静态函数 getTotalAccounts() 查询总数。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>使用 C++17 的 inline static 成员变量改写 totalAccounts 的定义，省去类外定义。然后用 thread_local static 变量实现每线程独立的计数器。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ static member initialization order fiasco」；查阅 inline static (C++17) 和 thread_local 的用法；参考案例 048（单例模式）。</p>
+                    </div>
                 </div>
             </section>
         </div>

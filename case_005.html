@@ -56,28 +56,60 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>原始数组：5 2 8 2 9 1 5 5 8 3 
+去重排序后：1 2 3 5 8 9</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：vector 动态数组</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;vector&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>vector 动态数组</h3>
+                        <p class="grammar-rule">【规则】std::vector<T> 是 C++ 标准库的动态数组容器，自动管理内存，支持随机访问和尾部动态增长。适用于元素数量不确定、需要频繁在尾部增删的场景。</p>
+                        <p class="grammar-principle">【原理】vector 在堆上分配一块连续内存，维护三个指针：_start（起始）、_finish（已使用末尾）、_end_of_storage（容量末尾）。当 push_back 导致 size() == capacity() 时触发扩容——通常是 1.5x 或 2x 增长（MSVC 用 1.5x，GCC 用 2x），然后将旧元素拷贝或移动到新内存，释放旧内存。选择 1.5x 可复用已释放的内存块（几何上收敛），而 2x 永远无法复用。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在循环中重复调用 v.size() 作为终止条件，且循环体内对 v 执行 push_back——导致死循环（条件永远满足）；2. 保存了 vector 元素的指针/引用/迭代器，随后执行 push_back 触发扩容——原指针全部失效（reallocation）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;vector&gt;
 vector&lt;int&gt; v = {1, 2, 3};
 v.push_back(4);  // 末尾追加
 cout &lt;&lt; v.size(); // 获取大小</code></pre>
-                    <p class="tip">举一反三：vector 是 C++ 最常用的容器，连续内存存储，支持随机访问。相比 C 数组无需手动管理内存。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>用 reserve() 预分配空间后向 vector 添加 10000 个元素，对比不使用 reserve 的构造方式，统计扩容次数和总耗时（用 chrono 计时）。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现一个函数 void print_vector_info(const vector<int>& v)，打印 size()、capacity()、sizeof(v) 和元素起始地址，观察 push_back 过程中这些值的变化，验证扩容倍数。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ vector growth factor 1.5 vs 2」了解扩容策略背后的数学；查阅 shrink_to_fit() 的使用场景和限制；参考案例 069（array vs vector 性能对比）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：sort + unique 组合去重</h3>
-                    <pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>sort + unique 组合去重</h3>
+                        <p class="grammar-rule">【规则】先排序（sort）再配合 unique（将相邻重复元素移到末尾并返回新逻辑结尾），最后 erase 去除尾部无效元素。这是 vector 去重的标准三步法。</p>
+                        <p class="grammar-principle">【原理】unique 不真正删除元素——它只是把不重复的元素往前搬，返回指向新逻辑结尾的迭代器。尾部残留的是被移动后留下的未定义值。erase 根据这个迭代器清除尾部。这种「重排 + 截断」的两阶段设计遵循了 STL 的分离关注原则：算法只管排列，容器只管删除。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 忘记先 sort，直接调用 unique——unique 只移除相邻重复，非相邻的重名元素不会被处理；2. 认为 unique 后 vector 的 size() 会自动变小——它只是返回了新的 end 迭代器，容量不变，必须显式 erase。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end());
 auto last = unique(v.begin(), v.end());
 v.erase(last, v.end());</code></pre>
-                    <p class="tip">举一反三：这是 C++ 经典去重模式。unique 只移动元素不删除，必须配合 erase 才能真正删除尾部重复项。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>对随机乱序的整数数组（长度为 100000），用 v.erase(unique(v.begin(),v.end()),v.end()) 的标准三步去重法处理，再用 unordered_set 直接去重后重建 vector，对比两种方案的耗时和内存使用。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>不改变原有顺序地去除重复元素（保留首次出现的位置）：使用 unordered_set 辅助判断是否已见过该元素，配合 remove_if 实现「保持顺序同时高效去重」的效果。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ erase-remove idiom」和「remove_if with set」；查阅 std::unique_copy 的使用方式；参考案例 084（unique/unique_copy 去重）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：范围 for 循环</h3>
-                    <pre class="code-block"><code class="language-cpp">for (int n : nums) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>范围 for 循环</h3>
+                        <p class="grammar-rule">【规则】for(auto x : container) 是 C++11 引入的基于范围的循环语法，自动遍历容器所有元素。适用于不需要索引、只关心元素值的简单遍历场景。</p>
+                        <p class="grammar-principle">【原理】范围 for 底层等价于：auto __begin = begin(container), __end = end(container); for(; __begin != __end; ++__begin) { auto x = *__begin; ... }。关键细节：如果容器在遍历期间被增删元素，__begin 可能失效，导致未定义行为。使用 const auto& 而非 auto 可避免不必要的拷贝，特别是对 string、vector<string> 等大元素。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在范围 for 循环体内对容器进行 push_back/erase，导致迭代器失效——编译器不会警告，运行时行为不可预测；2. 使用 auto 而非 const auto& 遍历 string 或大对象，触发隐式拷贝构造，性能损失可能达 10x 以上。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">for (int n : nums) {
     cout &lt;&lt; n &lt;&lt; " ";
 }</code></pre>
-                    <p class="tip">举一反三：C++11 引入，简洁遍历容器。如需修改元素使用 for (int &n : nums)。只读场景用 for (const int &n : nums) 避免拷贝。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>分别用范围 for (auto x)、范围 for (const auto& x) 和传统下标循环遍历一个存有 100 万个 string 的 vector，用 chrono 记录耗时，观察引用的性能优势。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>使用范围 for + 结构化绑定遍历 map<string, int>，直接在循环头写成 for(const auto& [key, value] : myMap)，练习 C++17 的结构化绑定语法。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ range-based for loop internals」了解底层实现；查阅 C++20 的 range 库提供的 filter/transform 链式操作；参考案例 068（结构化绑定）。</p>
+                    </div>
                 </div>
             </section>
         </div>

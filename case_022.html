@@ -100,26 +100,70 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>已添加 张三
+已添加 李四
+已添加 王五
+已更新 张三
+李四 -&gt; 13900139000
+未找到 赵六
+=== 电话簿（按姓名排序）===
+  张三 : 13600136000
+  李四 : 13900139000
+  王五 : 13700137000
+已删除 王五
+=== 电话簿（按姓名排序）===
+  张三 : 13600136000
+  李四 : 13900139000</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：map::insert 返回值</h3>
-                    <pre class="code-block"><code class="language-cpp">auto result = book.insert({key, value});
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>map::insert 返回值</h3>
+                        <p class="grammar-rule">【规则】map::insert 返回值 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto result = book.insert({key, value});
 // result.first: 迭代器
 // result.second: bool(是否插入成功)</code></pre>
-                    <p class="tip">举一反三：insert 在 key 已存在时不覆盖，返回 pair<iterator, bool>。book[key]=value 则会覆盖已有值。两者结合使用可检测重复。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 map::insert 返回值 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 map::insert 返回值 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ map::insert 返回值」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：结构化绑定 (C++17)</h3>
-                    <pre class="code-block"><code class="language-cpp">for (const auto&amp; [name, phone] : book) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>结构化绑定 (C++17)</h3>
+                        <p class="grammar-rule">【规则】结构化绑定 (C++17) 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">for (const auto&amp; [name, phone] : book) {
     cout &lt;&lt; name &lt;&lt; " : " &lt;&lt; phone &lt;&lt; endl;
 }</code></pre>
-                    <p class="tip">举一反三：结构化绑定将 pair/tuple/struct 成员直接解构到变量中。也可用于数组：auto [a,b,c] = arr;。map 迭代解构的是 pair<const K, V>。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 结构化绑定 (C++17) 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 结构化绑定 (C++17) 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 结构化绑定 (C++17)」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：map 与 unordered_map 区别</h3>
-                    <pre class="code-block"><code class="language-cpp">// map: 红黑树，O(log n)，有序
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>map 与 unordered_map 区别</h3>
+                        <p class="grammar-rule">【规则】map 与 unordered_map 区别 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// map: 红黑树，O(log n)，有序
 // unordered_map: 哈希表，O(1) 平均，无序</code></pre>
-                    <p class="tip">举一反三：需要有序遍历时用 map，只需快速查找用 unordered_map。unordered_map 需提供自定义类型的哈希函数。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 map 与 unordered_map 区别 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 map 与 unordered_map 区别 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ map 与 unordered_map 区别」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

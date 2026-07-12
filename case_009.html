@@ -89,27 +89,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>姓名    数学  英语  C++     总分  平均分
+--------------------------------------------------
+赵六    95      91      88      274     91.3
+李四    90      88      95      273     91.0
+张三    85      92      78      255     85.0
+王五    72      85      80      237     79.0</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：struct 定义与成员函数</h3>
-                    <pre class="code-block"><code class="language-cpp">struct Student {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>struct 定义与成员函数</h3>
+                        <p class="grammar-rule">【规则】struct 定义自定义数据类型，可包含数据成员和成员函数。与 class 的区别仅在于默认访问权限：struct 默认 public，class 默认 private。适用于数据聚合和简单值对象。</p>
+                        <p class="grammar-principle">【原理】C++ 的 struct 继承自 C 的 struct，但能力被大幅扩展——可以包含构造函数、析构函数、成员函数、继承、访问控制。语义约定上，struct 常用于「数据聚合」（POD/aggregate），class 常用于「封装对象」。但这只是约定——编译器对两者一视同仁。POD struct 的内存布局是连续的，可以直接 memcpy。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 在 struct 中使用 std::string 后试图用 memset 清零——string 内部有指针，memset 会把指针设为零，析构时崩溃；2. 以为 struct 不能有 private 成员——实际上可以，只是默认 public，显式写 private: 照样生效。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">struct Student {
     string name;
     int score;
     int total() const { return score; }
 };</code></pre>
-                    <p class="tip">举一反三：C++ 中 struct 与 class 几乎相同，仅默认访问权限不同（struct 默认 public）。const 成员函数承诺不修改成员变量。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 009 的 Student struct 添加成员函数 display()，将格式化输出的逻辑封装在 struct 内部。体现「数据 + 行为」的设计思想。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 Student struct 改为 class，显式声明 public/private，对比编译差异。然后定义一个 teacher class 继承自 person struct，观察 struct 的默认继承访问权限。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ POD type」和「aggregate initialization」；查阅 C++20 的 designated initializers（指定初始化）；参考案例 012（银行账户类封装）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：sort + lambda 自定义排序</h3>
-                    <pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end(),
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>sort + lambda 自定义排序</h3>
+                        <p class="grammar-rule">【规则】std::sort(begin, end, lambda) 使用 lambda 表达式作为自定义比较器。Lambda 返回 true 表示第一个参数应排在第二个参数之前。适用于多条件排序、降序排列等。</p>
+                        <p class="grammar-principle">【原理】sort 要求比较器满足「严格弱序」——即 irreflexive（a<a 为 false）、transitive（若 a<b 且 b<c 则 a<c）、asymmetric（若 a<b 则 !(b<a)）。Lambda 捕获列表 [] 为空表示无状态，编译器可内联优化。若比较器不满足严格弱序，sort 行为未定义——常见症状是越界访问、段错误。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. Lambda 写成了 return a <= b（带等号）——这违反了严格弱序的 irreflexive 原则（a<=a 为 true，但要求必须为 false），sort 在遇到相等元素时可能越界；2. 忽视命名空间语法限制，将 lambda 表达式中捕获的 string 变量拼凑成多条件表达式时，少闭合了一个括号导致反直觉结果。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">sort(v.begin(), v.end(),
      [](const T&amp; a, const T&amp; b) { return a.key &gt; b.key; });</code></pre>
-                    <p class="tip">举一反三：第三个参数 lambda 返回 true 表示 a 应排在 b 前面。也可传函数指针或函数对象。降序用 >，升序用 <。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>按「总分降序，总分相同时按数学成绩降序，数学也相同时按姓名升序」的三级排序规则编写 lambda 比较器。提示：用 if-return 链而非 && || 组合。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>不用 lambda，改用函数对象（functor）实现相同的排序逻辑。定义一个 CompareByTotal 类，重载 operator()，传给 sort 的第三个参数。对比两种写法的代码量和可读性。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ strict weak ordering」和「lambda vs functor performance」；查阅 std::stable_sort 和 std::partial_sort 的差异；参考案例 017（Lambda 表达式）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：iomanip 格式化表格</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>iomanip 格式化表格</h3>
+                        <p class="grammar-rule">【规则】使用 <iomanip> 中的操纵符（setw、left、right、setfill、setprecision 等）控制输出格式，实现控制台表格的美观打印。适用于报表输出、数据展示等。</p>
+                        <p class="grammar-principle">【原理】操纵符分两类：一次性（setw）和持久性（setfill、setprecision、left/right）。一次性操纵符在每次输出后自动重置，这是 C++ 流库防止格式污染的机制。底层原理是每个 ostream 对象有一个 fmtflags 状态字，操纵符修改这个状态字的不同位。理解这个机制让你能准确预测格式行为。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 使用 setw 设置每列宽度后忘记在列与列之间加空格分隔符，导致不同列内容粘连在一起；2. 中文和英文/数字混排时，中文占 2 倍宽度但 setw 按 char 计数，导致表格对不齐——需要根据中文字符数动态调整宽度或使用等宽中文字体。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
 cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; name; // 左对齐，宽度 10</code></pre>
-                    <p class="tip">举一反三：left/right 控制对齐方向，setw 控制列宽，setprecision(n) 控制小数位数，fixed 固定小数格式。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在成绩管理系统中增加「平均分」列和「排名」列，用 setw 和 left/right 对齐所有列，输出一个完整美观的成绩总表。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>不使用 iomanip，改用 printf 风格的格式说明符（%s、%d、%-8s 等）实现相同的表格输出，对比两种风格在格式控制上的表达力差异。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ iomanip cheatsheet」获取完整操作符列表；查阅 C++20 的 std::format 作为更现代的格式化方案；参考案例 056（cout 格式化全攻略）。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -130,31 +130,65 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>绘制圆形，半径=5，面积=78.5397
+绘制矩形，宽=4 高=3 面积=12
+绘制三角形，底=6 高=4 面积=12
+绘制圆形，半径=5，面积=78.5397</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：工厂模式结构</h3>
-                    <pre class="code-block"><code class="language-cpp">class Factory {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>工厂模式结构</h3>
+                        <p class="grammar-rule">【规则】工厂模式结构 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class Factory {
     static unique_ptr&lt;Product&gt; create(Type t) {
         switch (t) {
             case A: return make_unique&lt;ConcreteA&gt;();
         }
     }
 };</code></pre>
-                    <p class="tip">举一反三：工厂模式将对象创建从使用代码中解耦。简单工厂用 switch/map 调度。工厂方法模式进一步延迟到子类决定创建哪个具体产品。C++ 中常用 enum + switch 或 map<string, function> 实现。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 工厂模式结构 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 工厂模式结构 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 工厂模式结构」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：unique_ptr 多态管理</h3>
-                    <pre class="code-block"><code class="language-cpp">vector&lt;unique_ptr&lt;Shape&gt;&gt; shapes;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>unique_ptr 多态管理</h3>
+                        <p class="grammar-rule">【规则】unique_ptr 多态管理 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">vector&lt;unique_ptr&lt;Shape&gt;&gt; shapes;
 shapes.push_back(make_unique&lt;Circle&gt;(5));
 // 基类指针管理派生类对象，析构时自动调用正确析构函数</code></pre>
-                    <p class="tip">举一反三：unique_ptr 支持多态（只要基类有虚析构函数）。虚析构函数确保 delete 基类指针时调用派生类析构。C++14 的 make_unique 优于 new。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 unique_ptr 多态管理 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 unique_ptr 多态管理 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ unique_ptr 多态管理」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：原型模式：clone()</h3>
-                    <pre class="code-block"><code class="language-cpp">virtual unique_ptr&lt;Shape&gt; clone() const = 0;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>原型模式：clone()</h3>
+                        <p class="grammar-rule">【规则】原型模式：clone() 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">virtual unique_ptr&lt;Shape&gt; clone() const = 0;
 // 每个派生类实现自己的克隆方法
 auto copy = original-&gt;clone(); // 多态拷贝</code></pre>
-                    <p class="tip">举一反三：clone 模式（原型模式）在需要多态拷贝对象时有用。C++ 没有 Java 的 clone()，需手动实现。返回 unique_ptr 语义清晰（转移所有权）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 原型模式：clone() 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 原型模式：clone() 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 原型模式：clone()」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

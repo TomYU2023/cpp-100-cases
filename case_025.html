@@ -78,28 +78,64 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 任务调度（按优先级）===
+1. [修复登录 Bug] 优先级=5 预估耗时=30分
+2. [数据库备份] 优先级=5 预估耗时=10分
+3. [优化首页加载] 优先级=3 预估耗时=60分
+4. [UI 微调] 优先级=2 预估耗时=45分
+5. [编写用户文档] 优先级=1 预估耗时=120分</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：priority_queue 定义</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;queue&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>priority_queue 定义</h3>
+                        <p class="grammar-rule">【规则】std::priority_queue<T> 是最大堆实现的适配器容器，默认 std::less<T> 作为比较器。top() 返回最大值，pop() 移除最大值。适用于任务调度、Top-K 问题、Dijkstra 算法。</p>
+                        <p class="grammar-principle">【原理】priority_queue 底层默认使用 std::vector 并通过 std::make_heap 系列算法维护堆性质。堆是一棵完全二叉树，父子关系通过数组索引计算（i 的左子: 2i+1, 右子: 2i+2）。插入 O(log n)（上浮 sift-up），删除 O(log n)（下沉 sift-down），取最值 O(1)。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. priority_queue 默认是最大堆（大的在顶部），需要最小堆时传 greater<T> 但忘记换底层容器类型（需声明 priority_queue<T, vector<T>, greater<T>>）；2. 自定义比较器写反了——返回 true 表示 a 应该排在 b 之后，容易与 sort 的比较逻辑搞混。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;queue&gt;
 priority_queue&lt;int&gt; pq;          // 默认大顶堆
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; minHeap; // 小顶堆</code></pre>
-                    <p class="tip">举一反三：默认是大顶堆（最大元素在 top）。三个模板参数：元素类型、底层容器（默认 vector）、比较器。底层是二叉堆，push/pop 为 O(log n)。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>使用 priority_queue 实现「数据流中的中位数」：维护两个堆（最大堆存较小一半，最小堆存较大一半），每次插入后保持两堆大小差 ≤1，中位数由堆顶计算。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>为案例 025 增加「优先级反转」模拟：高优先级任务到达时，如果正在执行低优先级任务，如何中断并切换？使用 priority_queue + 任务状态管理实现。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ priority queue custom comparator」和「two-heap median algorithm」；查阅 std::make_heap / push_heap / pop_heap 的原生堆操作；参考案例 031（partition 分区）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：自定义比较器</h3>
-                    <pre class="code-block"><code class="language-cpp">struct Compare {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>自定义比较器</h3>
+                        <p class="grammar-rule">【规则】sort/priority_queue/set 等 STL 容器和算法接受自定义比较器——函数指针、函数对象（functor）或 lambda 表达式。比较器必须满足严格弱序（strict weak ordering）。</p>
+                        <p class="grammar-principle">【原理】比较器 comp(a, b) 返回 true 表示 a 应排在 b 前面。STL 的所有排序/查找算法都基于 < 操作构建，不依赖 ==。这是为了通用性——某些类型只有偏序关系（如任务优先级中可能有两个任务同等优先），严格全序反而难以建模。比较器需满足：irreflexive、transitive、比较等价传递性。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将小于等于比较逻辑（<=）引入比较器，使得 comp(a,a) 返回 true——违反 irreflexive 原则，sort 会越界访问；2. 使用未初始化的变量作为排序依据——导致同一元素多次比较结果不同，sort 进入未定义行为。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">struct Compare {
     bool operator()(const T&amp; a, const T&amp; b) {
         return a.key &lt; b.key; // 注意：返回 true 表示 a 优先级更低
     }
 };</code></pre>
-                    <p class="tip">举一反三：priority_queue 的比较器语义是「a 是否应排在 b 之后」，与 sort 的第三个参数相反。可用 decltype + lambda 或函数对象。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>实现一个多级排序比较器：对 Student 对象先按总分降序，总分相同按数学降序，数学相同按姓名升序。先用 lambda 实现，再用函数对象实现，对比代码可读性。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>故意写一个违反严格弱序的比较器（如 return a <= b），用 std::sort 对 vector<int> 排序，观察结果（可能崩溃、段错误、无限循环或输出垃圾值）。然后修复。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ strict weak ordering requirements」；查阅 std::greater、std::less 等标准比较器；参考案例 027（sort/stable_sort 对比）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：emplace 直接构造</h3>
-                    <pre class="code-block"><code class="language-cpp">taskQueue.emplace("任务名", 5, 30); // 直接传构造参数
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>emplace 直接构造</h3>
+                        <p class="grammar-rule">【规则】emplace / emplace_back 直接在容器内部构造元素（原地构造），避免了临时对象的创建-拷贝-销毁三步开销。适用于存储复杂对象、不可拷贝对象。</p>
+                        <p class="grammar-principle">【原理】push_back(obj) 需要 obj 先构造完毕再拷贝/移动到容器内，然后销毁临时对象——至少 3 步。emplace_back(args...) 将参数完美转发给容器内部管理的存储空间，直接在目标位置调用构造函数——仅 1 步。对于 string、vector 等有动态内存的对象，节省显著。C++11 引入的完美转发（std::forward）和可变参数模板是实现 emplaces 的关键技术。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 以为 emplace_back 总是比 push_back 快——当参数本身就是同类型对象时，push_back(move(obj)) 和 emplace_back(move(obj)) 都走移动构造，性能相同；2. emplace_back 的参数被隐式转换时可能选择非预期的构造函数——如 emplace_back(42, 'x') 可能匹配 vector(size_t, char) 而非构造带两个元素的 vector。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">taskQueue.emplace("任务名", 5, 30); // 直接传构造参数
 // 等价于 taskQueue.push(Task("任务名", 5, 30)); 但少一次拷贝</code></pre>
-                    <p class="tip">举一反三：emplace 将参数直接传给构造函数在容器内存上构造对象。所有容器都提供 emplace 系列，推荐优先使用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>创建一个存有 10000 个 pair<int, string> 的 vector，分别用 push_back(make_pair(...)) 和 emplace_back(...) 填充，用 chrono 测量耗时差异。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>构造一个禁止拷贝的对象（= delete 拷贝构造），尝试用 push_back 添加到 vector（编译失败），然后用 emplace_back（编译通过），体会 emplaces 对不可拷贝类型的支持。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ emplace_back vs push_back benchmark」；查阅 std::forward 和完美转发机制；参考案例 072（tuple 元组操作）。</p>
+                    </div>
                 </div>
             </section>
         </div>

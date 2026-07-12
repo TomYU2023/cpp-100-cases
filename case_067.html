@@ -69,32 +69,81 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>整数格式化：
+  format("{}", 42)           -> "42"
+  format("{:>10}", 42)       -> "        42"
+  format("{:0>10}", 42)      -> "0000000042"
+  format("{:#x}", 42)        -> "0x2a"
+
+浮点数格式化：
+  format("{:.2f}", 3.14159)  -> "3.14"
+  format("{:.4e}", 3.14159)  -> "3.1416e+00"
+
+字符串格式化：
+  format("Hello, {}!", "World") -> "Hello, World!"
+  format("{:*^20}", "center")   -> "*******center*******"
+
+组合格式化：
+  format("{} + {} = {}", 1, 2, 3) -> "1 + 2 = 3"
+
+使用 format_to（输出到已有缓冲区）：
+  buffer contents -> "Formatted: 42, 3.14" </code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：format 基本占位符</h3>
-                    <pre class="code-block"><code class="language-cpp">format("{} + {} = {}", a, b, a + b);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>format 基本占位符</h3>
+                        <p class="grammar-rule">【规则】format 基本占位符 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">format("{} + {} = {}", a, b, a + b);
 // {} 自动按顺序匹配参数
 // {0} {1} 指定参数索引
 // {:.2f} 格式说明（2 位小数）</code></pre>
-                    <p class="tip">举一反三：format 是类型安全的（编译期检查参数类型），比 printf 安全，比 stringstream 简洁。{} 占位符不需要 %d %s 等类型标记。不匹配的类型编译报错。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 format 基本占位符 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 format 基本占位符 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ format 基本占位符」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：格式说明符</h3>
-                    <pre class="code-block"><code class="language-cpp">{:&gt;10}  右对齐，宽度 10
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>格式说明符</h3>
+                        <p class="grammar-rule">【规则】格式说明符 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">{:&gt;10}  右对齐，宽度 10
 {:&lt;10}  左对齐
 {:^10}  居中
 {:*^10} 用 * 填充并居中
 {:#x}   带 0x 前缀的十六进制
 {:.2f}  2 位小数</code></pre>
-                    <p class="tip">举一反三：格式说明符是 format 的强大之处。格式：[[fill]align][sign][#][0][width][.precision][type]。类似 Python 的 f-string 和 C# 的 string interpolation。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 格式说明符 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 格式说明符 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 格式说明符」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：format_to / format_to_n</h3>
-                    <pre class="code-block"><code class="language-cpp">string buffer;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>format_to / format_to_n</h3>
+                        <p class="grammar-rule">【规则】format_to / format_to_n 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string buffer;
 format_to(back_inserter(buffer), "x={}", x);
 // 格式化到已有容器（而非创建新 string）
 format_to_n(buf, max, "{}", x); // 限制长度，防止溢出</code></pre>
-                    <p class="tip">举一反三：format_to 适合追加到已有字符串或文件（避免多次分配）。format_to_n 限制最大写入字符数，适合固定缓冲区（如日志缓冲区）。C++23 引入 print() 直接输出。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 format_to / format_to_n 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 format_to / format_to_n 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ format_to / format_to_n」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -92,32 +92,76 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>A: 1 2 3 4 
+B: 1 2 4 0 
+C: 1 2 3 
+
+A &lt; B: 1
+C &lt; A: 1 (C 是 A 的前缀)
+
+按绝对值: X &lt; Y = 0
+
+版本号比较:
+1.2.3 &lt; 1.2.10: 1
+1.2.3 &lt; 1.2.3.0: 1 (前缀更短算更小)
+
+Point(1,5) &lt; Point(1,3): 0</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::lexicographical_compare</h3>
-                    <pre class="code-block"><code class="language-cpp">bool result = lexicographical_compare(
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::lexicographical_compare</h3>
+                        <p class="grammar-rule">【规则】std::lexicographical_compare 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">bool result = lexicographical_compare(
     A.begin(), A.end(), B.begin(), B.end());
 // 逐元素比较，遇到第一对不等的元素时按该对比较
 // 一个序列是另一个的前缀时，短的更小
 // 类似字符串的 strcmp</code></pre>
-                    <p class="tip">举一反三：字典序是序列比较的标准方式。与字符串比较逻辑一致。空序列小于任何非空序列。默认用 operator< 比较元素。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::lexicographical_compare 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::lexicographical_compare 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::lexicographical_compare」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：自定义比较器</h3>
-                    <pre class="code-block"><code class="language-cpp">lexicographical_compare(A.begin(), A.end(),
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>自定义比较器</h3>
+                        <p class="grammar-rule">【规则】sort/priority_queue/set 等 STL 容器和算法接受自定义比较器——函数指针、函数对象（functor）或 lambda 表达式。比较器必须满足严格弱序（strict weak ordering）。</p>
+                        <p class="grammar-principle">【原理】比较器 comp(a, b) 返回 true 表示 a 应排在 b 前面。STL 的所有排序/查找算法都基于 < 操作构建，不依赖 ==。这是为了通用性——某些类型只有偏序关系（如任务优先级中可能有两个任务同等优先），严格全序反而难以建模。比较器需满足：irreflexive、transitive、比较等价传递性。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将小于等于比较逻辑（<=）引入比较器，使得 comp(a,a) 返回 true——违反 irreflexive 原则，sort 会越界访问；2. 使用未初始化的变量作为排序依据——导致同一元素多次比较结果不同，sort 进入未定义行为。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">lexicographical_compare(A.begin(), A.end(),
     B.begin(), B.end(), customLess);
 // 按自定义规则逐元素比较
 // 可比较复杂类型（如按结构体某个字段）</code></pre>
-                    <p class="tip">举一反三：自定义比较器可用于按不同字段排序比较。如按日期排序（先比年，再比月，再比日）。比较器必须满足严格弱序（strict weak ordering）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>实现一个多级排序比较器：对 Student 对象先按总分降序，总分相同按数学降序，数学相同按姓名升序。先用 lambda 实现，再用函数对象实现，对比代码可读性。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>故意写一个违反严格弱序的比较器（如 return a <= b），用 std::sort 对 vector<int> 排序，观察结果（可能崩溃、段错误、无限循环或输出垃圾值）。然后修复。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ strict weak ordering requirements」；查阅 std::greater、std::less 等标准比较器；参考案例 027（sort/stable_sort 对比）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：版本号比较</h3>
-                    <pre class="code-block"><code class="language-cpp">// 版本号 「1.2.10」 vs 「1.2.3」
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>版本号比较</h3>
+                        <p class="grammar-rule">【规则】版本号比较 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 版本号 「1.2.10」 vs 「1.2.3」
 // 不能用字符串比较（「10」 &lt; 「3」）
 // 拆分为数字序列后字典序比较
 auto v1 = split("1.2.10"); // {1,2,10}
 auto v2 = split("1.2.3");  // {1,2,3}</code></pre>
-                    <p class="tip">举一反三：版本号分段字典序是 lexicographical_compare 的经典应用。注意补零处理（1.2 = 1.2.0）。也可用 tuple 比较（std::tie）实现多列排序。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 版本号比较 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 版本号比较 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 版本号比较」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

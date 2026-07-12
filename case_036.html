@@ -93,29 +93,71 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 日志解析结果 ===
+[2024-03-15 10:30:45] INFO | 服务启动成功
+[2024-03-15 10:31:02] WARN | 磁盘使用率超过 80%
+[2024-03-15 10:32:18] ERROR | 数据库连接超时
+[2024-03-15 10:33:00] INFO | 用户 admin 登录
+[2024-03-15 10:35:00] ERROR | 文件未找到: config.json
+
+共解析 5 条日志，2 条 ERROR
+
+=== 错误日志 ===
+  数据库连接超时
+  文件未找到: config.json</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：regex 匹配与捕获</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;regex&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>regex 匹配与捕获</h3>
+                        <p class="grammar-rule">【规则】regex 匹配与捕获 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;regex&gt;
 regex pat(R"((\d+)年)");
 smatch m;
 if (regex_search(s, m, pat)) {
     cout &lt;&lt; m[1]; // 第一个捕获组
 }</code></pre>
-                    <p class="tip">举一反三：R"(...)" 是原始字符串字面量，不需要转义反斜杠。smatch 是 string 匹配结果。m[0] 是完整匹配，m[1] 开始是捕获组。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 regex 匹配与捕获 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 regex 匹配与捕获 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ regex 匹配与捕获」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：regex_match vs regex_search</h3>
-                    <pre class="code-block"><code class="language-cpp">regex_match(s, m, pat); // 整个字符串必须完全匹配
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>regex_match vs regex_search</h3>
+                        <p class="grammar-rule">【规则】regex_match vs regex_search 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">regex_match(s, m, pat); // 整个字符串必须完全匹配
 regex_search(s, m, pat); // 搜索子串匹配</code></pre>
-                    <p class="tip">举一反三：regex_match 检查整个字符串是否满足模式（如验证邮箱格式）。regex_search 查找任意位置的匹配（如提取日志中的 IP 地址）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 regex_match vs regex_search 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 regex_match vs regex_search 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ regex_match vs regex_search」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：regex_replace 替换</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;regex&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>regex_replace 替换</h3>
+                        <p class="grammar-rule">【规则】regex_replace 替换 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;regex&gt;
 string result = regex_replace(s, pat, "new");
 // 将匹配部分替换为新字符串</code></pre>
-                    <p class="tip">举一反三：正则表达式性能开销较大，高频场景考虑手动解析或使用 C++17 的 boyer_moore_searcher。复杂正则可先 regex::optimize 后复用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 regex_replace 替换 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 regex_replace 替换 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ regex_replace 替换」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

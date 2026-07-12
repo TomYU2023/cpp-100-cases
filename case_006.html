@@ -87,28 +87,60 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>10 20 30 40 50 60 70 80 90 100 
+size=10 capacity=16</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：动态内存分配与 RAII</h3>
-                    <pre class="code-block"><code class="language-cpp">int* data = new int[cap]; // 分配
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>动态内存分配与 RAII</h3>
+                        <p class="grammar-rule">【规则】new 在堆上分配内存并调用构造函数，delete 调用析构函数并释放内存。RAII（资源获取即初始化）将资源生命周期绑定到对象生命周期——构造函数获取资源，析构函数释放资源。</p>
+                        <p class="grammar-principle">【原理】C++ 没有垃圾回收器。new 调用 operator new（可重载）分配原始内存，再在该内存上构造对象。RAII 是 C++ 最核心的资源管理哲学：把资源（内存、文件句柄、锁、socket）的生命周期绑定到栈对象的生命周期。当栈对象离开作用域时，析构函数自动释放资源——即使发生异常也是如此（栈展开机制保证）。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 用 new 分配了内存但没有对应的 delete——轻微的内存泄漏可能累积成严重问题；更糟的是，用 new[] 分配数组却用 delete（而非 delete[]）释放——这是未定义行为；2. 在构造函数中 new 失败后没有在析构函数中做空指针检查就 delete——双重释放或访问已释放内存。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int* data = new int[cap]; // 分配
 // ... 使用 ...
 delete[] data;           // 释放</code></pre>
-                    <p class="tip">举一反三：new[] 必须搭配 delete[]，new 搭配 delete。RAII 将资源绑定到对象生命周期，构造时获取，析构时释放。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在案例 006 的 SimpleVector 类中加入异常安全保障：当 new 失败时，类的析构函数仍能安全运行（不会二次释放）。使用 try-catch 在构造函数中处理分配失败。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>为 SimpleVector 添加 capacity() 和 shrink_to_fit() 方法，并编写测试用例验证：连续 push_back 10000 个元素后统计扩容次数，然后 shrink_to_fit 释放多余容量。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ RAII idiom」和「rule of three/five/zero」；查阅智能指针（unique_ptr/shared_ptr）中 RAII 的运用；参考案例 019（智能指针）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：拷贝构造函数</h3>
-                    <pre class="code-block"><code class="language-cpp">MyVector(const MyVector&amp; other) : sz(other.sz), cap(other.cap) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>拷贝构造函数</h3>
+                        <p class="grammar-rule">【规则】拷贝构造函数（ClassName(const ClassName& other)）用于创建已有对象的副本。在值传递、值返回、显式拷贝时自动调用。管理资源的类必须自定义拷贝构造函数。</p>
+                        <p class="grammar-principle">【原理】编译器默认生成的拷贝构造函数按成员逐一拷贝（浅拷贝）。对于管理动态内存的类，浅拷贝导致两个对象指向同一块内存——一个析构释放后另一个访问就是 use-after-free。正确的深拷贝为每个对象分配独立的资源副本。拷贝语义表达了「独立但等价」的含义。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 自定义了拷贝构造但忘记自定义拷贝赋值运算符（或反之），导致资源管理逻辑不一致——这就是 Rule of Three 的根源；2. 拷贝构造函数中直接用 memcpy 拷贝整个对象——对于内部有指针的对象，这等价于浅拷贝，应逐个指针分配新内存并复制内容。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">MyVector(const MyVector&amp; other) : sz(other.sz), cap(other.cap) {
     data = new int[cap];
     // 深拷贝数据
 }</code></pre>
-                    <p class="tip">举一反三：三大法则：若自定义了析构/拷贝构造/拷贝赋值中的一个，通常需要全部定义。C++11 增加移动构造和移动赋值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 006 的 SimpleVector 显式实现拷贝构造函数（深拷贝），并编写测试验证：拷贝后的 vector 与原 vector 完全独立，修改一个不影响另一个。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>编写代码验证编译器何时调用拷贝构造函数：值传递参数、值返回局部变量、显式 T b = a、T b(a)。在拷贝构造函数中加 cout 打印调用来源。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ Rule of Three/Five/Zero」了解完整规范；查阅移动构造函数与拷贝构造函数的性能差异；参考案例 018（移动语义）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：运算符重载</h3>
-                    <pre class="code-block"><code class="language-cpp">int&amp; operator[](size_t index) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>运算符重载</h3>
+                        <p class="grammar-rule">【规则】使用 operator@ 函数为自定义类型定义运算符行为（如 +、-、[]、<<），使自定义类型的操作语法与内置类型一致。适用于数学类、容器类等。</p>
+                        <p class="grammar-principle">【原理】运算符重载本质是语法糖——编译器将 a + b 转换为 operator+(a, b) 或 a.operator+(b)。关键设计选择：成员函数 vs 友元函数。二元运算符做成员函数时，左操作数是 this 指针——这意味着类型转换只对右操作数生效。友元函数可以对两个参数都做隐式转换，写对称操作符（如 <<）时更灵活。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 重载了 operator+ 但没有重载 operator+=——用户期望 a += b 比 a = a + b 更高效（避免临时对象），不一致会破坏用户直觉；2. 赋值运算符忘记检查自赋值（if(this != &other)），在深拷贝场景下可能先把 this 的资源 delete 掉然后从 other 拷贝——但 other 就是 this，资源已经没了。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int&amp; operator[](size_t index) {
     return data[index];
 }</code></pre>
-                    <p class="tip">举一反三：返回引用允许读写元素（v[i] = 5）。const 版本返回 const int& 只读。不能重载不存在的运算符（如 **）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 006 的 SimpleVector 实现 operator[] 的两个版本——const 版本（只读）和非 const 版本（可写），并验证：当 vector 是 const 引用时，const 版本会被调用。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现 operator< 和 operator== 用于 SimpleVector 的比较，使得两个 vector 可以用于 sort 和 set 等需要排序的容器中（按元素逐一比较）。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ operator overloading best practices」和「friend vs member operator」；查阅 std::rel_ops 命名空间提供的自动生成比较运算符；参考案例 010（复数类运算符重载）。</p>
+                    </div>
                 </div>
             </section>
         </div>

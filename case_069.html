@@ -119,30 +119,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 容器性能对比 (N=10000000) ===
+
+--- 顺序求和 ---
+C数组 (heap): 5.3741 ms
+std::array (stack) x10: 0.0829 ms
+std::vector: 8.5469 ms
+
+--- 随机访问 ---</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：array vs vector vs C数组</h3>
-                    <pre class="code-block"><code class="language-cpp">// array: 栈分配，编译期大小，无动态分配
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>array vs vector vs C数组</h3>
+                        <p class="grammar-rule">【规则】array vs vector vs C数组 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// array: 栈分配，编译期大小，无动态分配
 array&lt;int, 100&gt; arr;
 // vector: 堆分配，运行时大小，可动态增长
 vector&lt;int&gt; vec(100);
 // C数组: 需手动管理，无边界信息
 int cArr[100];</code></pre>
-                    <p class="tip">举一反三：array 是 C 数组的现代替代，支持迭代器、size()、at() 等。无额外开销（sizeof(array) == sizeof(C数组)）。编译期确定大小是限制也是优势。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 array vs vector vs C数组 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 array vs vector vs C数组 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ array vs vector vs C数组」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：operator[] vs at()</h3>
-                    <pre class="code-block"><code class="language-cpp">arr[5];    // 不检查边界，越界是 UB
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>operator[] vs at()</h3>
+                        <p class="grammar-rule">【规则】operator[] vs at() 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">arr[5];    // 不检查边界，越界是 UB
 arr.at(5); // 检查边界，越界抛 out_of_range
 // at() 有 1~3% 的性能开销（分支预测良好的情况下）</code></pre>
-                    <p class="tip">举一反三：operator[] 用于确定不会越界的场景（如循环中已知范围）。at() 用于不确定的场景（如用户输入索引）。Debug 模式下编译器的 operator[] 可能也有检查。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 operator[] vs at() 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 operator[] vs at() 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ operator[] vs at()」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：array 初始化和赋值</h3>
-                    <pre class="code-block"><code class="language-cpp">array&lt;int, 5&gt; a = {1, 2, 3, 4, 5}; // 列表初始化
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>array 初始化和赋值</h3>
+                        <p class="grammar-rule">【规则】array 初始化和赋值 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">array&lt;int, 5&gt; a = {1, 2, 3, 4, 5}; // 列表初始化
 a.fill(0);                              // 全部填充
 auto b = a;                            // 值拷贝（而非指针拷贝）</code></pre>
-                    <p class="tip">举一反三：与 C 数组不同，array 可以直接赋值和拷贝。fill() 比 memset 类型安全。array 可以整体传给函数（按值或引用），保留大小信息。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 array 初始化和赋值 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 array 初始化和赋值 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ array 初始化和赋值」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

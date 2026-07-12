@@ -89,31 +89,88 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>整数加法: 30
+浮点加法: 5.86
+
+=== 类型信息 ===
+类型: i
+  是整数? true
+  是浮点? false
+  是指针? false
+  是 const? false
+  sizeof = 4
+---
+类型: d
+  是整数? false
+  是浮点? true
+  是指针? false
+  是 const? false
+  sizeof = 8
+---
+类型: NSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE
+  是整数? false
+  是浮点? false
+  是指针? false
+  是 const? false
+  sizeof = 32
+
+int 是整数类型，执行整数特有逻辑
+vector size = 5</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：enable_if 条件编译</h3>
-                    <pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>enable_if 条件编译</h3>
+                        <p class="grammar-rule">【规则】enable_if 条件编译 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template&lt;typename T&gt;
 typename enable_if&lt;is_integral&lt;T&gt;::value, T&gt;::type
 func(T val) { /* 仅整数可用 */ }</code></pre>
-                    <p class="tip">举一反三：enable_if 在编译期根据条件「启用」或「禁用」模板。条件为 false 时产生替换失败（SFINAE），模板被排除但不报错。C++17 可用 if constexpr 替代部分场景。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 enable_if 条件编译 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 enable_if 条件编译 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ enable_if 条件编译」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：type_traits 类型查询</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;type_traits&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>type_traits 类型查询</h3>
+                        <p class="grammar-rule">【规则】type_traits 类型查询 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;type_traits&gt;
 is_integral&lt;T&gt;::value    // 是否整数
 is_pointer&lt;T&gt;::value      // 是否指针
 is_const&lt;T&gt;::value        // 是否 const
 is_same&lt;T, U&gt;::value      // 是否同一类型</code></pre>
-                    <p class="tip">举一反三：type_traits 在编译期查询类型属性。_v 后缀别名（C++17）简化写法：is_integral_v<T> 等价于 is_integral<T>::value。广泛用于模板元编程和 SFINAE。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 type_traits 类型查询 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 type_traits 类型查询 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ type_traits 类型查询」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：if constexpr (C++17)</h3>
-                    <pre class="code-block"><code class="language-cpp">if constexpr (is_integral&lt;T&gt;::value) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>if constexpr (C++17)</h3>
+                        <p class="grammar-rule">【规则】if constexpr (C++17) 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">if constexpr (is_integral&lt;T&gt;::value) {
     // 编译期分支，不满足条件的代码不会被编译
 } else {
     // 另一个分支
 }</code></pre>
-                    <p class="tip">举一反三：if constexpr 比 enable_if 更直观易读。条件在编译期求值，不满足条件的分支完全不会被实例化。适合替代简单的 enable_if 和标签派发。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 if constexpr (C++17) 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 if constexpr (C++17) 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ if constexpr (C++17)」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

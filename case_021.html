@@ -83,28 +83,72 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>--- push_back 测试 ---
+分配 1 个元素 (4 bytes)
+分配 2 个元素 (8 bytes)
+释放 1 个元素
+分配 4 个元素 (16 bytes)
+释放 2 个元素
+分配 8 个元素 (32 bytes)
+释放 4 个元素
+分配 16 个元素 (64 bytes)
+释放 8 个元素
+
+vector 内容: 1 2 3 4 5 6 7 8 9 10 
+size=10 capacity=16
+释放 16 个元素</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：自定义分配器接口</h3>
-                    <pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>自定义分配器接口</h3>
+                        <p class="grammar-rule">【规则】自定义分配器接口 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">template &lt;typename T&gt;
 struct MyAllocator {
     using value_type = T;
     T* allocate(size_t n);
     void deallocate(T* p, size_t n);
 };</code></pre>
-                    <p class="tip">举一反三：分配器需提供 value_type、allocate()、deallocate()，以及相等比较运算符。C++17 引入 polymorphic_allocator 简化多态分配器。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 自定义分配器接口 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 自定义分配器接口 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 自定义分配器接口」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：::operator new/delete</h3>
-                    <pre class="code-block"><code class="language-cpp">T* p = static_cast&lt;T*&gt;(::operator new(n * sizeof(T)));
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>::operator new/delete</h3>
+                        <p class="grammar-rule">【规则】::operator new/delete 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">T* p = static_cast&lt;T*&gt;(::operator new(n * sizeof(T)));
 ::operator delete(p);</code></pre>
-                    <p class="tip">举一反三：::operator new 只分配内存不调构造函数，::operator delete 只释放不调析构。区别于 new/delete 表达式（会调用构造/析构函数）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 ::operator new/delete 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 ::operator new/delete 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ ::operator new/delete」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：模板分配器的 rebind</h3>
-                    <pre class="code-block"><code class="language-cpp">// 容器内部分配器需为不同内部类型分配内存
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>模板分配器的 rebind</h3>
+                        <p class="grammar-rule">【规则】模板分配器的 rebind 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 容器内部分配器需为不同内部类型分配内存
 // 旧式写法: rebind&lt;U&gt;::other，C++17 后 allocator_traits 自动处理</code></pre>
-                    <p class="tip">举一反三：allocator_traits<A>::rebind_alloc<U> 自动推导其他类型的分配器。自定义分配器通常只需提供模板化拷贝构造。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 模板分配器的 rebind 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 模板分配器的 rebind 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 模板分配器的 rebind」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

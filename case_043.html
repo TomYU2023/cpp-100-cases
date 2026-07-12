@@ -103,28 +103,71 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 字符串哈希值 ===
+输入「 &lt;&lt; 」哈希值 (32位十六进制)     
+------------------------------------------------------------------------------------------
+"hello world"                                     e7d23c02e7659a77427799a742c03fd2
+"Hello World"                                     270c4e2de7de583d82a9eb88427bfd98
+"hello world!"                                    72265acd88ed2d78d783ff682d4888dd
+"C++ Programming"                                 a5d80c4479e7e151007da9e1dc4244f4
+"The quick brown fox jumps over the lazy dog"     1071e4e7f5b7f9f3b5d4414250125c56
+
+=== 验证一致性 ===
+"test" -&gt; 252b7c19efe6e6f9808ed9bc4a43435c
+"test" -&gt; 252b7c19efe6e6f9808ed9bc4a43435c
+一致 ✓</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：字节转十六进制</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>字节转十六进制</h3>
+                        <p class="grammar-rule">【规则】字节转十六进制 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;iomanip&gt;
 stringstream ss;
 ss &lt;&lt; hex &lt;&lt; setfill('0') &lt;&lt; setw(2) &lt;&lt; (int)byte;
 // 确保每个字节输出为 2 位十六进制</code></pre>
-                    <p class="tip">举一反三：hex 操作符设置十六进制模式。setw 只对紧接着的一次输出生效。uint8_t 可能被解释为 char，需先转为 int。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 字节转十六进制 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 字节转十六进制 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 字节转十六进制」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：XOR 和位移混合运算</h3>
-                    <pre class="code-block"><code class="language-cpp">hash ^= byte;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>XOR 和位移混合运算</h3>
+                        <p class="grammar-rule">【规则】XOR 和位移混合运算 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">hash ^= byte;
 hash *= prime;
 // 结合 XOR、乘法和位移增加扩散性</code></pre>
-                    <p class="tip">举一反三：哈希算法核心思想：输入微小变化 → 输出巨大变化（雪崩效应）。XOR（^）结合乘法提供了良好混合。真正的 MD5/SHA256 更复杂。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 XOR 和位移混合运算 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 XOR 和位移混合运算 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ XOR 和位移混合运算」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：uint64_t / uint8_t 固定宽度整数</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;cstdint&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>uint64_t / uint8_t 固定宽度整数</h3>
+                        <p class="grammar-rule">【规则】uint64_t / uint8_t 固定宽度整数 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;cstdint&gt;
 uint64_t hash;  // 始终 64 位
 uint8_t byte;   // 始终 8 位</code></pre>
-                    <p class="tip">举一反三：固定宽度整数类型保证跨平台一致性。在哈希和加密场景中至关重要。另有 int64_t、uint32_t 等。用于位运算时比 int 更可预测。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 uint64_t / uint8_t 固定宽度整数 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 uint64_t / uint8_t 固定宽度整数 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ uint64_t / uint8_t 固定宽度整数」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -115,33 +115,65 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>线程安全计数器: 1000000 (期望: 1000000)
+非安全计数器: 186283 (期望: 1000000)</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：lock_guard RAII 加锁</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;mutex&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>lock_guard RAII 加锁</h3>
+                        <p class="grammar-rule">【规则】lock_guard RAII 加锁 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;mutex&gt;
 mutex mtx;
 void safeFunc() {
     lock_guard&lt;mutex&gt; lock(mtx); // 自动加锁
     // 临界区操作
 } // 离开作用域自动解锁</code></pre>
-                    <p class="tip">举一反三：lock_guard 不可手动解锁，构造后即拥有锁。C++17 的 scoped_lock 可同时锁多个 mutex 避免死锁。unique_lock 提供更多灵活性。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 lock_guard RAII 加锁 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 lock_guard RAII 加锁 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ lock_guard RAII 加锁」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：mutable 关键字</h3>
-                    <pre class="code-block"><code class="language-cpp">class Counter {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>mutable 关键字</h3>
+                        <p class="grammar-rule">【规则】mutable 关键字 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class Counter {
     mutable mutex mtx; // const 函数中也可修改
 public:
     int get() const { lock_guard&lt;mutex&gt; lk(mtx); return val; }
 };</code></pre>
-                    <p class="tip">举一反三：mutable 允许在 const 成员函数中修改成员。mutex 通常声明为 mutable，因为加锁是一种不影响逻辑 const 的物理操作。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 mutable 关键字 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 mutable 关键字 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ mutable 关键字」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：避免死锁的原则</h3>
-                    <pre class="code-block"><code class="language-cpp">// 1. 固定加锁顺序
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>避免死锁的原则</h3>
+                        <p class="grammar-rule">【规则】避免死锁的原则 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 1. 固定加锁顺序
 // 2. 使用 scoped_lock(mtx1, mtx2) 同时加锁
 // 3. 尽量缩小临界区
 // 4. 避免在持锁时调用外部代码</code></pre>
-                    <p class="tip">举一反三：死锁发生条件：互斥、持有并等待、不可抢占、循环等待。破坏任一条件即可预防。C++17 的 scoped_lock 通过同时获取多锁来避免死锁。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 避免死锁的原则 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 避免死锁的原则 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 避免死锁的原则」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

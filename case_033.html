@@ -86,28 +86,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>内容: "Hello, World!"  长度: 13
+内容: "C++ Programming"  长度: 15
+子串: C++
+修剪后: "trim me"
+拆分结果: apple banana orange grape</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：string_view 构造与传递</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;string_view&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>string_view 构造与传递</h3>
+                        <p class="grammar-rule">【规则】string_view 构造与传递 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;string_view&gt;
 string_view sv = "hello";        // C字符串
 string_view sv = std::string_obj;  // std::string
 void f(string_view sv);           // 参数零拷贝</code></pre>
-                    <p class="tip">举一反三：string_view 只持有指针和长度，拷贝代价极低。可接受 C 字符串和 std::string，是函数参数的最佳实践。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 string_view 构造与传递 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 string_view 构造与传递 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ string_view 构造与传递」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：substr() 零拷贝切片</h3>
-                    <pre class="code-block"><code class="language-cpp">string_view sv = "hello world";
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>substr() 零拷贝切片</h3>
+                        <p class="grammar-rule">【规则】substr() 零拷贝切片 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string_view sv = "hello world";
 string_view sub = sv.substr(0, 5); // "hello"，不分配新内存</code></pre>
-                    <p class="tip">举一反三：string_view::substr 返回新的 view，只修改指针和长度。注意原始字符串的生命周期必须长于 view。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 substr() 零拷贝切片 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 substr() 零拷贝切片 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ substr() 零拷贝切片」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：string_view 生命周期陷阱</h3>
-                    <pre class="code-block"><code class="language-cpp">string_view bad() {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>string_view 生命周期陷阱</h3>
+                        <p class="grammar-rule">【规则】string_view 生命周期陷阱 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string_view bad() {
     string s = "temp";
     return s; // 危险！s 销毁后 view 悬垂
 }</code></pre>
-                    <p class="tip">举一反三：string_view 不拥有数据，必须确保底层字符串在 view 使用期间存活。常见陷阱：临时 string、返回局部 string 的 view。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 string_view 生命周期陷阱 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 string_view 生命周期陷阱 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ string_view 生命周期陷阱」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

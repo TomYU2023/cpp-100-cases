@@ -67,25 +67,57 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>简易计算器
+请输入表达式（如 3 + 5）：错误：不支持的运算符！</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：switch-case 语句</h3>
-                    <pre class="code-block"><code class="language-cpp">switch (op) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>switch-case 语句</h3>
+                        <p class="grammar-rule">【规则】switch 对整型/枚举/字符表达式求值后跳转到匹配的 case 标签执行，break 阻止穿透（fall-through）。适用于菜单选择、状态机、命令分发等固定值匹配场景。</p>
+                        <p class="grammar-principle">【原理】编译器常将密集的 switch-case 编译为跳转表（jump table），即一个以 case 值为索引的函数指针数组，O(1) 时间定位目标——这是 if-else if 链做不到的。对于稀疏的 case 值，编译器可能退化为二分查找或条件跳转。理解这个优化机制有助于写出高性能的分支代码。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 忘记在 case 末尾写 break，导致穿透到下一个 case——这是 C/C++ 最臭名昭著的 bug 来源之一；2. switch 表达式中使用了浮点数或字符串——编译器直接报错，switch 只支持整型家族（int / char / enum）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">switch (op) {
     case '+': /* ... */ break;
     case '-': /* ... */ break;
     default: /* ... */
 }</code></pre>
-                    <p class="tip">举一反三：switch 只能判断整数或枚举类型。每个 case 必须以 break 结尾，否则会「穿透」执行下一个 case。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为计算器增加取模运算（%），在 switch 中新增一个 case，并注意取模时也需要除零检查。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>用 if-else if 重写计算器的运算符判断，然后用 switch 重写，统计每种实现的行数和分支数，体会何时用 switch 更合适。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ switch jump table」了解编译器优化原理；查阅 C++17 的 if constexpr 作为编译期 switch 替代方案；参考案例 003（简易计算器）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：除零检查</h3>
-                    <pre class="code-block"><code class="language-cpp">if (num2 != 0) { result = num1 / num2; } else { cout &lt;&lt; "错误" &lt;&lt; endl; }</code></pre>
-                    <p class="tip">举一反三：整数除法还会截断小数。浮点数除法用近乎零判断：fabs(num2) < 1e-9。</p>
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>除零检查</h3>
+                        <p class="grammar-rule">【规则】在执行除法或取模运算前，必须检查除数是否为 0 并给出提示，防止程序崩溃或未定义行为。适用于计算器、分数运算、数据归一化等。</p>
+                        <p class="grammar-principle">【原理】整数除零在 C++ 中是未定义行为（UB），意味着编译器可以做任何事情——可能崩溃、可能返回垃圾值、可能被优化器删掉整段代码。浮点除零会产生 ±inf 或 NaN（IEEE 754 标准保证），但也不应依赖这个行为。防御性编程的核心原则是「永远不信任外部输入」。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 只检查了直接赋值给除数的变量，忽略了除数可能是复杂表达式的结果（如 a / (b - c) 当 b==c 时依然除零）；2. 除零检查的提示信息不够具体，用户不知道哪个操作数导致了问题。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">if (num2 != 0) { result = num1 / num2; } else { cout &lt;&lt; "错误" &lt;&lt; endl; }</code></pre>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在计算器中增加连续运算功能：输入格式为 'a op b op c'（如 '10 / 0 + 5'），在每一步运算前都做除零检查，遇到除零时跳过该步而非直接退出。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现一个安全的除法函数 safe_divide(a, b, fallback)，当 b==0 时返回 fallback 值并在 cerr 输出警告，否则返回 a/b。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ undefined behavior division by zero」了解 UB 的严重后果；查阅 std::optional 作为安全返回值的使用模式（参考案例 064）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：cin 连续输入</h3>
-                    <pre class="code-block"><code class="language-cpp">cin &gt;&gt; num1 &gt;&gt; op &gt;&gt; num2;</code></pre>
-                    <p class="tip">举一反三：>> 运算符默认以空白字符（空格/换行/Tab）分隔。输入类型不匹配时 cin 会进入 fail 状态，可用 cin.clear() 恢复。</p>
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>cin 连续输入</h3>
+                        <p class="grammar-rule">【规则】使用 cin >> var1 >> var2 >> var3 可连续从标准输入读取多个值，空白字符（空格、换行、制表符）自动作为分隔符。适用于批量数据录入场景。</p>
+                        <p class="grammar-principle">【原理】cin 是 istream 对象，operator>> 返回 istream& 自身，所以支持链式调用。内部通过 streambuf 与操作系统缓冲区交互。关键细节：operator>> 默认跳过前导空白但保留尾随换行在缓冲区中——这会导致后续 getline 读取到空行，需要 cin.ignore() 清理。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将 cin >> 和 getline() 混用后 getline 读到空串——因为 >> 操作后缓冲区残留了换行符，需在两者之间加 cin.ignore()；2. 用户输入了非数字字符给 int 类型变量，cin 进入 fail 状态，后续所有读取全部跳过——必须先 cin.clear() 再 cin.ignore() 恢复。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">cin &gt;&gt; num1 &gt;&gt; op &gt;&gt; num2;</code></pre>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>修改计算器，改为 '操作数1 运算符 操作数2' 一行输入（如 '12 + 34'），使用 cin >> 连续读取三个值，省去多次提示的冗长交互。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>在计算器中增加错误处理：如果用户输入的运算符不是 +-*/，提示错误并用 cin.clear() + cin.ignore() 恢复输入流状态，允许重新输入。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ cin fail state recovery」了解输入流状态管理；查阅 cin.peek() 和 cin.get() 的区别；参考案例 047（CSV 解析器）了解更复杂的输入解析。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -77,7 +77,7 @@ int main() {
     cout &lt;&lt; "解析 \"12345\": " &lt;&lt; num.value_or(0) &lt;&lt; endl;
 
     auto fail = parseInteger("abc");
-    cout &lt;&lt; "解析 \"abc\": " &lt;&lt; (fail ? "成功「 : 」失败") &lt;&lt; endl;
+    cout &lt;&lt; "解析 \"abc\": " &lt;&lt; (fail ? "成功" : "失败") &lt;&lt; endl;
 
     // 3. 安全除法
     auto result = safeDivide(10.0, 3.0);
@@ -91,32 +91,68 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>找到 30，索引: 2
+查找 99 的索引: -1
+解析 "12345": 12345
+解析 "abc": 失败
+10/3 = 3.33333
+除数为零，无法计算</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：optional 构造与判断</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;optional&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>optional 构造与判断</h3>
+                        <p class="grammar-rule">【规则】optional 构造与判断 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;optional&gt;
 optional&lt;int&gt; opt;
 opt = 42;               // 有值
 opt = nullopt;           // 无值
 if (opt.has_value()) {}  // 判断
 if (opt) {}              // 隐式转 bool</code></pre>
-                    <p class="tip">举一反三：optional 是值语义的「可能不存在」类型。比指针更安全（不涉及内存管理），比哨兵值（如 -1）更类型安全。nullopt 是空状态的字面量。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 optional 构造与判断 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 optional 构造与判断 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ optional 构造与判断」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：value() / value_or() / *</h3>
-                    <pre class="code-block"><code class="language-cpp">opt.value();            // 获取值（空时抛 bad_optional_access）
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>value() / value_or() / *</h3>
+                        <p class="grammar-rule">【规则】value() / value_or() / * 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">opt.value();            // 获取值（空时抛 bad_optional_access）
 opt.value_or(0);        // 获取值或默认值
 *opt;                   // 解引用（空时 UB，需先检查）</code></pre>
-                    <p class="tip">举一反三：value() 带运行时检查但抛异常。value_or() 是最安全的方式（总有返回值）。* 解引用最高效但需要外部保证非空。推荐：先检查 has_value() 再用 *。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 value() / value_or() / * 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 value() / value_or() / * 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ value() / value_or() / *」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：optional 作为返回值</h3>
-                    <pre class="code-block"><code class="language-cpp">optional&lt;int&gt; find(const vector&lt;int&gt;&amp; v, int target) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>optional 作为返回值</h3>
+                        <p class="grammar-rule">【规则】optional 作为返回值 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">optional&lt;int&gt; find(const vector&lt;int&gt;&amp; v, int target) {
     // 遍历查找...
     if (found) return index;
     return nullopt; // 明确表达「没找到」
 }</code></pre>
-                    <p class="tip">举一反三：optional 返回值代替了「哨兵值 + 注释」模式（如返回 -1 表示没找到）。调用的代码更清晰：if (auto result = search()) ... 而不是检查特殊值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 optional 作为返回值 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 optional 作为返回值 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ optional 作为返回值」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

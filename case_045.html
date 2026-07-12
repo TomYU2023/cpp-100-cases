@@ -119,30 +119,74 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>{
+  "address": {
+    "city": "Beijing",
+    "zip": "100000"
+  },
+  "age": 25,
+  "isStudent": false,
+  "name": "Alice",
+  "scores": [
+    95,
+    87,
+    92
+  ]
+}</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：variant + visit 模式匹配</h3>
-                    <pre class="code-block"><code class="language-cpp">variant&lt;int,double,string&gt; v;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>variant + visit 模式匹配</h3>
+                        <p class="grammar-rule">【规则】variant + visit 模式匹配 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">variant&lt;int,double,string&gt; v;
 v = 42;
 visit([](const auto&amp; x) {
     // 针对每种类型处理
 }, v);</code></pre>
-                    <p class="tip">举一反三：variant 是类型安全的 union，编译期保证所有类型访问。visit 结合 if constexpr 实现编译期多态。C++17 的 overloaded 模式可简化 visit。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 variant + visit 模式匹配 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 variant + visit 模式匹配 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ variant + visit 模式匹配」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：递归数据结构的 variant</h3>
-                    <pre class="code-block"><code class="language-cpp">struct JsonValue;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>递归数据结构的 variant</h3>
+                        <p class="grammar-rule">【规则】递归数据结构的 variant 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">struct JsonValue;
 using JsonArray = vector&lt;JsonValue&gt;;
 using JsonObject = map&lt;string, JsonValue&gt;;
 using JsonData = variant&lt;..., JsonArray, JsonObject&gt;;</code></pre>
-                    <p class="tip">举一反三：variant 支持递归类型定义（通过 vector/map 等间接层）。前向声明 struct + using 是嵌套类型定义的标准模式。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 递归数据结构的 variant 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 递归数据结构的 variant 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 递归数据结构的 variant」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：toJsonString 递归缩进</h3>
-                    <pre class="code-block"><code class="language-cpp">string pad(indent * 2, ' ');
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>toJsonString 递归缩进</h3>
+                        <p class="grammar-rule">【规则】toJsonString 递归缩进 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string pad(indent * 2, ' ');
 // 每层递归增加 2 空格缩进
 // 字符串构造：string(n, c) 创建 n 个 c 的字符串</code></pre>
-                    <p class="tip">举一反三：递归生成缩进格式是格式化输出的常见模式。每次递归 indent+1，退出时缩进自动恢复。可用 stringstream 替代 string 拼接提升性能。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 toJsonString 递归缩进 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 toJsonString 递归缩进 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ toJsonString 递归缩进」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

@@ -65,28 +65,73 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 字符频率 ===
+'c': 3
+'d': 2
+'e': 2
+'h': 2
+'l': 6
+'o': 4
+'p': 6
+'r': 2
+'w': 2
+
+=== 单词频率 ===
+cpp: 3
+hello: 2
+world: 2</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：map 统计频率</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;map&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>map 统计频率</h3>
+                        <p class="grammar-rule">【规则】std::map<Key, int> 结合 ++ 操作可实现简洁的频率统计——map[key] 在 key 不存在时自动插入默认值 0 并返回引用。适用于词频统计、投票计数、标签分布等。</p>
+                        <p class="grammar-principle">【原理】map 内部是红黑树，每次 [] 操作 O(log n)。map[key] 的行为有微妙之处：如果 key 不存在，它会在 map 中插入一个值为 0 的条目（值类型的默认构造）。这就是 ++map[key] 能工作的原因——即使 key 从未见过，也会先插入 0 再递增。如果只需要查询而不插入，应该用 find() 或 C++20 的 contains()。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 使用 map.count(key) 判断存在性——count 在有重复键时返回更高值，对 map（键唯一）等价于 contains() 但要遍历所有匹配；2. 在 const 成员函数中使用 map[key]——operator[] 不是 const，因为找不到时会插入，应改用 at() 或 find()。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;map&gt;
 map&lt;string, int&gt; freq;
 freq[word]++; // 键不存在时自动插入并初始化为 0</code></pre>
-                    <p class="tip">举一反三：map 基于红黑树，有序；如需更高性能可用 unordered_map（哈希表）。freq[key] 不存在时自动创建，用 freq.at(key) 则不存在时抛异常。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>将当前程序的 map 替换为 unordered_map，重新编译运行。对比两种容器在 100000 个单词统计场景下的运行时间。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现「Top-K 高频词」功能：在统计完所有词频后，使用 partial_sort 或 nth_element 只提取频率最高的 10 个词，而不对全部词排序。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ map vs unordered_map performance benchmark」；查阅 C++20 的 std::map::contains() 和 std::erase_if；参考案例 022（map 电话号码簿）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：stringstream 分词</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;sstream&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>stringstream 分词</h3>
+                        <p class="grammar-rule">【规则】std::istringstream 将字符串当作输入流处理，用 operator>> 可自然按空格切分词。适用于文本解析、数据分词、配置读取等场景。</p>
+                        <p class="grammar-principle">【原理】stringstream 继承自 istream，其 operator>> 对 string 类型的重载会自动跳过前导空白并以空白字符为分隔符——与 cin >> 行为一致。如果要按其他分隔符（如逗号、冒号）分词，需要 getline(ss, token, delimiter)。它的底层是 std::stringbuf，所有数据在内存中操作，无磁盘 I/O。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 分词后 stringstream 的内部读取位置在末尾，忘了调用 ss.clear() 和 ss.str() 重置就把新字符串灌进去——读取位置仍在末尾，导致后续读取为空；2. >> 操作会把连续的空白压缩为单个分隔，如果要保留空字段（如 CSV 中两个连续逗号表示的空列），必须改用 getline。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;sstream&gt;
 stringstream ss(text);
 string word;
 while (ss &gt;&gt; word) { /* 处理 */ }</code></pre>
-                    <p class="tip">举一反三：stringstream 默认按空白分割，也可用 getline(ss, token, ',') 按指定分隔符分割。还可用于字符串和其他类型的转换（ss >> num）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>改用 getline(ss, word, ' ') 按空格分词，然后再用 regex 移除标点符号（如句号、逗号、引号），对比与 operator>> 分词的结果差异。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>读取一个多行段落，先用 stringstream 按行分割（getline），再对每行使用另一个 stringstream 分词，构建「行号 → 单词列表」的二维结构。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ stringstream performance」和「how to reset stringstream」；查阅 C++23 的 std::views::split 作为新式分词方案；参考案例 047（CSV 解析器）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：基于范围的 for + const auto&</h3>
-                    <pre class="code-block"><code class="language-cpp">for (const auto&amp; pair : wordCount) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>基于范围的 for + const auto&</h3>
+                        <p class="grammar-rule">【规则】for(const auto& item : container) 以只读引用方式遍历容器，避免拷贝开销。适用于统计、查找、输出等不需要修改元素的只读遍历。</p>
+                        <p class="grammar-principle">【原理】const auto& 告诉编译器两件事：const 禁止修改（防止意外改动），& 按引用传递（避免拷贝）。当元素是 std::string 或自定义大对象时，拷贝开销可能是基准性能的 100 倍以上。编译器看到 const 引用后可以做更多优化——它知道被引用对象在循环体内不会改变，可以安全地缓存成员访问结果。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 写了 for(const auto& p : map)，但在循环体内访问 p.first 和 p.second——这没错，但更推荐结构化绑定 for(const auto& [k, v] : map)，可读性更好；2. 想在 for 循环体中修改元素但写了 const auto&——编译报错，应改为 auto&。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">for (const auto&amp; pair : wordCount) {
     cout &lt;&lt; pair.first &lt;&lt; ": " &lt;&lt; pair.second &lt;&lt; endl;
 }</code></pre>
-                    <p class="tip">举一反三：const auto& 避免拷贝 pair，提升性能。map 中 pair.first 是键、pair.second 是值。C++17 可用结构化绑定：for (const auto& [k,v] : m)。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>将案例 008 中所有基于范围 for 的遍历统一为 const auto& 风格，确保每个循环都正确声明了元素类型。对于类型不一致的循环（如 int vs const int&），观察编译器的隐式转换行为。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>分别用 for(const auto& x : vec)、for(size_t i=0; i<vec.size(); i++) const auto& x = vec[i] 和迭代器遍历三方式完成同一任务，用 chrono 精确测量差异。编写一个 100 万次遍历的基准测试程序。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ range for assembly output」了解编译器对范围 for 的优化程度；参考案例 058 了解 const 在防止意外修改中的作用。</p>
+                    </div>
                 </div>
             </section>
         </div>

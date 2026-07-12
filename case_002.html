@@ -60,26 +60,69 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>我已想好了一个 1~100 之间的数字，请猜！
+请输入你的猜测：50
+太大了，再试试！
+请输入你的猜测：25
+太小了，再试试！
+请输入你的猜测：37
+太大了，再试试！
+请输入你的猜测：31
+太小了，再试试！
+请输入你的猜测：34
+太大了，再试试！
+请输入你的猜测：32
+恭喜你猜中了！共用了 6 次。</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：rand() 和 srand()</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;cstdlib&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>rand() 和 srand()</h3>
+                        <p class="grammar-rule">【规则】rand() 生成伪随机整数（0 到 RAND_MAX），srand(seed) 设置随机种子以产生不同序列。需要 <cstdlib> 和 <ctime>。适用于游戏、模拟、测试数据生成。</p>
+                        <p class="grammar-principle">【原理】rand() 是线性同余生成器（LCG），公式为 X_{n+1} = (a*X_n + c) % m。它的周期和统计质量都很有限——低位的随机性远差于高位（因为模运算的性质），所以取余操作应避免直接取低位。C++11 的 <random> 库提供了 mt19937（梅森旋转算法）等高质量引擎，周期长达 2^19937-1。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 忘记调用 srand(time(0)) 导致每次运行产生相同序列——rand() 默认种子为 1；2. 误用 rand() % N 生成固定范围——这引入了取模偏差（modulo bias），当 RAND_MAX+1 不能被 N 整除时，较小的余数出现概率偏高。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;cstdlib&gt;
 srand(time(0));
 int r = rand() % 100 + 1; // 1~100</code></pre>
-                    <p class="tip">举一反三：rand() 质量较低，C++11 后推荐使用 <random> 中的 mt19937 和 uniform_int_distribution。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>改用 <random> 库的 mt19937 + uniform_int_distribution 重写随机数生成部分，对比两种方式的代码量和安全性。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>编写程序验证取模偏差：生成 [0, RAND_MAX] 范围的 1000 万个随机数，统计 rand() % 100 的各值分布，计算方差并与理论均匀分布的期望值对比。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ modulo bias」了解取模偏差及其解决方案；参考案例 075（std::sample 随机抽样）学习 <random> 库的标准用法。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：while(true) 无限循环</h3>
-                    <pre class="code-block"><code class="language-cpp">while (true) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>while(true) 无限循环</h3>
+                        <p class="grammar-rule">【规则】while(true) 创建一个永不自动退出的循环体，必须通过 break 语句主动退出。适用于服务器主循环、游戏主循环、交互式 REPL 等场景。</p>
+                        <p class="grammar-principle">【原理】从编译器视角，while(true) 被优化为一条无条件跳转指令（jmp），零开销。与 for(;;) 完全等价。关键是必须在循环体内有明确的退出路径——否则是真的死循环。设计哲学上，这种「显式无限 + 显式中断」的结构比 while(flag) 更清晰表达了「本循环的退出条件在循环体中间才确定」的语义。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. break 被放在嵌套循环的内层里，但开发者以为它能跳出外层循环——break 只退出最内层循环；2. 循环体内有多条分支路径，但其中某一条会绕过 break，形成偶尔死循环的 heisenbug。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">while (true) {
     // 循环体
     if (condition) break; // 必须提供退出条件
 }</code></pre>
-                    <p class="tip">举一反三：也可用 while(条件)、do...while 实现。break 退出当前循环，continue 跳过本次剩余语句进入下一轮。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在猜数字游戏中增加「放弃」功能：用户输入 0 时打印正确答案并退出。这需要在循环内增加一个分支判断。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>把 while(true) 改为 do...while 实现同样的猜数字逻辑（先执行一次循环体再判断条件），对比两种写法的适用场景。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ break out of nested loop」了解如何用 goto 或 flag 退出多层循环；参考案例 061（线程池）了解生产级 while(true) 主循环的写法。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：if-else if-else 链</h3>
-                    <pre class="code-block"><code class="language-cpp">if (a &gt; b) { } else if (a &lt; b) { } else { }</code></pre>
-                    <p class="tip">举一反三：条件互斥时用 else if 而非多个独立 if，效率和逻辑都更好。注意所有分支都应初始化使用的变量。</p>
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>if-else if-else 链</h3>
+                        <p class="grammar-rule">【规则】if-else if-else 用于多分支条件判断，从上到下依次求值，第一个为 true 的分支被执行后其余跳过。适用于成绩分级、菜单选择、状态分类等互斥决策场景。</p>
+                        <p class="grammar-principle">【原理】编译器将 if-else if 链编译为一系列比较+条件跳转指令，按书写顺序执行。这与 switch-case 的跳转表机制有本质区别——if-else 链适合区间判断等非等值比较；switch 适合离散值匹配（编译器可优化为跳转表或二分查找）。理解这一点能帮你做出性能更优的选择。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 条件不是互斥的——例如 if(x>0)、if(x>10)、if(x>100) 当 x=200 时三个分支都成立，应改为降序排列 if(x>100) else if(x>10) else if(x>0)；2. 最后一个 else 分支忽略了对意外值的处理（如未初始化的变量），应当保留 else 作为防御性编程的安全网。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">if (a &gt; b) { } else if (a &lt; b) { } else { }</code></pre>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为猜数字游戏增加难度选择：用户先输入 1/2/3 选择简单(1-50)/中等(1-100)/困难(1-200)，在不同范围内生成随机数。用 if-else if 处理难度选项。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将成绩分级程序（90+ 为 A, 80+ 为 B, 70+ 为 C, 60+ 为 D, 其余 F）分别用 if-else if 和 switch-case（/10 取整后匹配）实现，对比可读性和适用性。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ branch prediction」了解 CPU 分支预测对 if-else 性能的影响；参考案例 003（switch-case）对比多分支的实现方案。</p>
+                    </div>
                 </div>
             </section>
         </div>

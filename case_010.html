@@ -88,26 +88,62 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>a = 3 + 2i
+b = 1 + 4i
+a + b = 4 + 6i
+a - b = 2 - 2i
+a * b = -5 + 14i
+a == b ? false</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：成员函数重载二元运算符</h3>
-                    <pre class="code-block"><code class="language-cpp">Complex operator+(const Complex&amp; other) const {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>成员函数重载二元运算符</h3>
+                        <p class="grammar-rule">【规则】ReturnType operator@(const ClassName& rhs) const 以成员函数形式重载二元运算符，左操作数是 this 指向的对象。适用于 +、-、*、/、== 等运算。</p>
+                        <p class="grammar-principle">【原理】成员函数重载时只有右操作数可以隐式类型转换——因为左操作数必须是指定类型的对象才能触发成员函数查找。如果希望两边都可以隐式转换（如 Complex + double 和 double + Complex 都成立），需要对称地提供友元函数版本。编译器选择规则：有成员函数优先用成员，否则找友元/自由函数。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 重载 operator+ 时修改了 this 对象——operator+ 应该是 const 成员函数，返回新对象，不应有副作用；如果要修改自身，应重载 operator+=；2. 在 operator+ 内返回了局部变量的引用——悬垂引用是未定义行为，应返回值（非引用）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">Complex operator+(const Complex&amp; other) const {
     return Complex(real + other.real, imag + other.imag);
 }</code></pre>
-                    <p class="tip">举一反三：成员函数重载时左操作数是 this。一般 +、-、*、/ 返回新对象（const 函数，不改原对象），+=、-= 返回引用（修改自身）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 010 的 Complex 类新增 operator-、operator*、operator/，分别实现复数减法、乘法和除法。注意除法的分母处理。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>实现 Complex 与 double 的混合运算：重载 friend Complex operator+(double d, const Complex& c)，使得 3.0 + c1 也能正常工作。然后测试 c1 + 3.0 + c2 的表达式树生成。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ operator overloading canonical forms」；查阅 Boost.Operators 库如何自动生成运算符；参考案例 006（运算符重载）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：友元函数重载 <<</h3>
-                    <pre class="code-block"><code class="language-cpp">friend ostream&amp; operator&lt;&lt;(ostream&amp; os, const Complex&amp; c) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>友元函数重载 <<</h3>
+                        <p class="grammar-rule">【规则】friend ostream& operator<<(ostream& os, const ClassName& obj) 使自定义类型支持 cout 输出。因左操作数是 ostream 而非自定义类型，必须用友元而非成员函数实现。</p>
+                        <p class="grammar-principle">【原理】operator<< 的左操作数必须是 ostream&（输出流对象），而 ostream 是标准库类型，不能为其添加成员函数。友元函数虽然写在类定义内部，但本质是全局函数，只是被授予了访问 private 成员的权限。返回 ostream& 是为了支持链式调用：cout << a << b << c。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 忘记在 operator<< 声明前加 friend 关键字——没有 friend 则变成普通全局函数，无法访问私有成员；2. 函数内修改了传入对象的内部状态——operator<< 应该只读，不应修改 obj，参数应声明为 const ClassName&。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">friend ostream&amp; operator&lt;&lt;(ostream&amp; os, const Complex&amp; c) {
     os &lt;&lt; c.real &lt;&lt; " + " &lt;&lt; c.imag &lt;&lt; "i";
     return os;
 }</code></pre>
-                    <p class="tip">举一反三：<< 的第一个操作数是 ostream，不能作为成员函数重载，必须用友元或全局函数。cin 的 >> 同理。返回 ostream& 支持链式调用。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 010 的 Complex 类重载 operator>>，使其支持从 cin 读取复数（格式如 '3.0+4.0i' 或 '3.0 4.0'）。在实现中处理用户输入的各种边界情况。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>重载 operator<< 使 Complex 输出更美观——当虚部为 0 时只输出实部，虚部为负时输出 '3-4i' 而非 '3+-4i'。这需要特殊的格式化逻辑。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ stream insertion idiom」；查阅 std::ostream 的其他操纵符；参考案例 010（复数类完整实现）。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：默认参数构造函数</h3>
-                    <pre class="code-block"><code class="language-cpp">Complex(double r = 0, double i = 0) : real(r), imag(i) {}</code></pre>
-                    <p class="tip">举一反三：默认参数让一个构造函数覆盖多种调用方式：Complex()，Complex(3)，Complex(3,2)。默认参数只能从右向左设置。</p>
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>默认参数构造函数</h3>
+                        <p class="grammar-rule">【规则】构造函数参数可指定默认值，允许使用不同数量参数构造对象。ClassName(double r = 0, double i = 0) 可作无参/单参/双参构造。适用于需要灵活初始化的类。</p>
+                        <p class="grammar-principle">【原理】默认参数本质是编译期展开——编译器在调用处将缺失的实参替换为默认值，与函数重载等价但更简洁。但默认参数也有局限：不能跳过中间参数（如 f(a, , c) 无效），且默认值只能出现在声明中（定义中不能重复）。默认参数和函数重载同时出现可能导致二义性。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 同时在声明和定义中写了默认参数值——编译错误（重复默认参数），只在声明处写一次即可；2. 一个构造函数有默认参数（ClassName(int a=0)），另一个构造函数签名类似（ClassName()），当调用无参构造时编译器报 ambiguous。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">Complex(double r = 0, double i = 0) : real(r), imag(i) {}</code></pre>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>为案例 010 的 Complex 类添加全默认参数构造函数 Complex(double r=0, double i=0)，然后删除默认构造函数和无参构造，测试三种构造方式（Complex()、Complex(3)、Complex(3,4)）是否都正常。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>使用 C++11 的委托构造函数改写 Complex：Complex(double r, double i) : real(r), imag(i) {}，然后用 Complex() : Complex(0, 0) {} 委托。对比默认参数和委托构造两种风格的优劣。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ default parameters vs overloading」和「delegating constructors」；查阅 C++11 的 explicit 关键字如何影响单参数默认构造；参考案例 012（银行账户类）。</p>
+                    </div>
                 </div>
             </section>
         </div>

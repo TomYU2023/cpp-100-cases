@@ -115,30 +115,72 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>=== 解析结果 ===
+  --age = 25
+  --name = Alice
+  --output = result.txt
+  -d = true
+  -v = true
+位置参数: input1.txt input2.txt 
+
+--name: Alice
+--age: 25
+verbose: ON
+debug: ON</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：argc 和 argv</h3>
-                    <pre class="code-block"><code class="language-cpp">int main(int argc, char* argv[]) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>argc 和 argv</h3>
+                        <p class="grammar-rule">【规则】argc 和 argv 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">int main(int argc, char* argv[]) {
     // argc: 参数数量（包括程序名）
     // argv[0]: 程序名
     // argv[1..argc-1]: 实际参数
 }</code></pre>
-                    <p class="tip">举一反三：argv 是 C 风格字符串数组。遍历时注意边界检查。参数可能包含空格（被 shell 用引号括起时）。Windows 下可用 GetCommandLineW 获取完整命令行。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 argc 和 argv 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 argc 和 argv 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ argc 和 argv」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：字符串查找与截取</h3>
-                    <pre class="code-block"><code class="language-cpp">string arg = "--name=value";
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>字符串查找与截取</h3>
+                        <p class="grammar-rule">【规则】字符串查找与截取 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">string arg = "--name=value";
 size_t pos = arg.find('=');         // 找分隔符
 string key = arg.substr(0, pos);   // 从 0 开始取 pos 个字符
 string val = arg.substr(pos + 1);  // 从 pos+1 到末尾</code></pre>
-                    <p class="tip">举一反三：find 返回 string::npos 表示未找到。substr(pos, count) 的第二参数可省略（取到末尾）。注意检查返回值避免越界。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 字符串查找与截取 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 字符串查找与截取 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 字符串查找与截取」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：map 存配置选项</h3>
-                    <pre class="code-block"><code class="language-cpp">map&lt;string, string&gt; options;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>map 存配置选项</h3>
+                        <p class="grammar-rule">【规则】map 存配置选项 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">map&lt;string, string&gt; options;
 options["--name"] = "Alice";
 if (options.count("-v")) { /* 存在 */ }</code></pre>
-                    <p class="tip">举一反三：map 天然支持 key-value 查询。命令行参数通常用 unordered_map（不需要排序）。bool 型选项常用存在性判断。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 map 存配置选项 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 map 存配置选项 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ map 存配置选项」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

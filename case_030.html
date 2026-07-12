@@ -63,28 +63,63 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>累加结果: 55
+累乘结果: 3628800
+并行 reduce: 55
+拼接: Hello World!
+平均值: 5.5</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::accumulate</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::accumulate</h3>
+                        <p class="grammar-rule">【规则】std::accumulate 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
 int sum = accumulate(v.begin(), v.end(), 0);
 // 等价于 sum = v[0]+v[1]+...+v[n-1]</code></pre>
-                    <p class="tip">举一反三：accumulate 是严格的串行：从左到右依次累加。第三个参数是初始值，决定返回类型（0 是 int，0.0 是 double）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::accumulate 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::accumulate 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::accumulate」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：std::reduce (C++17)</h3>
-                    <pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::reduce (C++17)</h3>
+                        <p class="grammar-rule">【规则】std::reduce (C++17) 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">#include &lt;numeric&gt;
 #include &lt;execution&gt;
 int sum = reduce(execution::par, v.begin(), v.end(), 0);</code></pre>
-                    <p class="tip">举一反三：reduce 允许乱序并行执行，要求操作满足结合律和交换律（+、* 满足）。需要编译器/标准库支持并行策略，否则退化为串行。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::reduce (C++17) 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::reduce (C++17) 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::reduce (C++17)」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：accumulate 自定义操作</h3>
-                    <pre class="code-block"><code class="language-cpp">// 拼接字符串
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>accumulate 自定义操作</h3>
+                        <p class="grammar-rule">【规则】accumulate 自定义操作 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 拼接字符串
 string s = accumulate(words.begin(), words.end(), string(""));
 // 计算乘积
 int p = accumulate(v.begin(), v.end(), 1, multiplies&lt;int&gt;());</code></pre>
-                    <p class="tip">举一反三：第四个参数是二元函数对象。STL 预定义了 plus、minus、multiplies 等函数对象在 <functional> 中。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 accumulate 自定义操作 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 accumulate 自定义操作 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ accumulate 自定义操作」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

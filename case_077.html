@@ -80,30 +80,79 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>创建链表：10 -> 20 -> 30 -> 40 -> 50
+std::distance 计算：
+  从 begin 到第一个 30：distance = 2
+  从第一个 30 到 end：distance = 3
+  总长度：5
+
+std::advance 移动迭代器：
+  it 指向 begin (10)
+  advance(it, 2)：it 现在指向 30
+  advance(it, -1)：it 回到 20
+
+std::next / std::prev（不修改原迭代器）：
+  it = begin
+  std::next(it, 3) 指向 40，it 仍在 begin
+  std::prev(end, 2) 指向 40
+
+性能对比（vector vs list）：
+  vector:  distance O(1)，advance O(1)（随机访问）
+  list:    distance O(n)，advance O(n)（双向遍历）</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::distance</h3>
-                    <pre class="code-block"><code class="language-cpp">ptrdiff_t n = distance(first, last);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::distance</h3>
+                        <p class="grammar-rule">【规则】std::distance 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">ptrdiff_t n = distance(first, last);
 // 返回从 first 到 last 需要的步数
 // 随机访问: O(1)，其他: O(N)
 // 要求 last 可以从 first 到达（否则 UB）</code></pre>
-                    <p class="tip">举一反三：distance 对随机访问迭代器只需指针减法（O(1)），对 list/set 等需遍历计数（O(N)）。返回类型 ptrdiff_t 是有符号整数。first 必须在 last 前面。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::distance 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::distance 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::distance」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：std::advance</h3>
-                    <pre class="code-block"><code class="language-cpp">advance(it, n);
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::advance</h3>
+                        <p class="grammar-rule">【规则】std::advance 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">advance(it, n);
 // 将 it 前进 n 步（n 可正可负）
 // 随机访问: O(1)，其他: O(|n|)
 // n 为负数时要求迭代器是双向的</code></pre>
-                    <p class="tip">举一反三：advance 相当于 n 次 ++it（或 --it）。对非随机访问迭代器是 O(N)。修改原迭代器。超出范围时行为未定义。配合 distance 可实现二分搜索等算法。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::advance 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::advance 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::advance」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：std::next / std::prev</h3>
-                    <pre class="code-block"><code class="language-cpp">auto it2 = next(it, 3);  // it 前进 3 步，返回新迭代器
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::next / std::prev</h3>
+                        <p class="grammar-rule">【规则】std::next / std::prev 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">auto it2 = next(it, 3);  // it 前进 3 步，返回新迭代器
 auto it3 = prev(it, 2);  // it 后退 2 步
 default: next(it)  // 前进 1 步
 // 不修改原迭代器（与 advance 的区别）</code></pre>
-                    <p class="tip">举一反三：next/prev 是 advance 的纯函数版本。更安全（不会无意修改迭代器）。prev 要求双向迭代器。C++11/14 标准函数，需 #include <iterator>。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::next / std::prev 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::next / std::prev 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::next / std::prev」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>

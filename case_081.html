@@ -78,29 +78,70 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>原始数据: 33 10 55 22 44 11 66 88 5 77 
+
+中位数: 44
+nth_element 后: 11 10 5 22 33 44 66 55 88 77 
+
+第 3 小: 11
+第 3 大: 66
+
+最小的 3 个: 11 10 5 
+
+Top 3 分数线: 90 分以上</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：std::nth_element</h3>
-                    <pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>std::nth_element</h3>
+                        <p class="grammar-rule">【规则】std::nth_element 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end());
 // 将第 k 小的元素放在 v[k] 位置
 // v[0..k-1] ≤ v[k] ≤ v[k+1..n-1]
 // 平均 O(N)，最坏 O(N^2)（但实现通常用 Introselect 保证 O(N)）</code></pre>
-                    <p class="tip">举一反三：nth_element 基于快速选择算法（Quickselect）。比 sort + v[k] 快（O(N log N) vs O(N)）。常用于找中位数、topK、分数排名。不保证前后部分的顺序。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 std::nth_element 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 std::nth_element 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ std::nth_element」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：部分排序与完整排序的选择</h3>
-                    <pre class="code-block"><code class="language-cpp">// 只需要第 K 个元素 → nth_element (O(N))
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>部分排序与完整排序的选择</h3>
+                        <p class="grammar-rule">【规则】部分排序与完整排序的选择 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 只需要第 K 个元素 → nth_element (O(N))
 // 需要前 K 个元素但不关心顺序 → nth_element + 取前 K (O(N))
 // 需要前 K 个元素且需顺序 → partial_sort (O(N log K))
 // 需要全部排序 → sort (O(N log N))</code></pre>
-                    <p class="tip">举一反三：选择合适的算法避免过度排序。nth_element 是最优的「求第 K 个」方案。但注意 nth_element 后前 K 个元素是未排序的（仅保证都 ≤ v[k]）。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 部分排序与完整排序的选择 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 部分排序与完整排序的选择 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 部分排序与完整排序的选择」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：自定义比较器</h3>
-                    <pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end(), greater&lt;&gt;());
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>自定义比较器</h3>
+                        <p class="grammar-rule">【规则】sort/priority_queue/set 等 STL 容器和算法接受自定义比较器——函数指针、函数对象（functor）或 lambda 表达式。比较器必须满足严格弱序（strict weak ordering）。</p>
+                        <p class="grammar-principle">【原理】比较器 comp(a, b) 返回 true 表示 a 应排在 b 前面。STL 的所有排序/查找算法都基于 < 操作构建，不依赖 ==。这是为了通用性——某些类型只有偏序关系（如任务优先级中可能有两个任务同等优先），严格全序反而难以建模。比较器需满足：irreflexive、transitive、比较等价传递性。</p>
+                        <p class="grammar-pitfall">【常见陷阱】1. 将小于等于比较逻辑（<=）引入比较器，使得 comp(a,a) 返回 true——违反 irreflexive 原则，sort 会越界访问；2. 使用未初始化的变量作为排序依据——导致同一元素多次比较结果不同，sort 进入未定义行为。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">nth_element(v.begin(), v.begin()+k, v.end(), greater&lt;&gt;());
 // 第 k 大 = nth_element(..., greater&lt;&gt;())
 // 等价于: 第 (n-k-1) 小</code></pre>
-                    <p class="tip">举一反三：默认比较器 less<> 找第 K 小。greater<> 找第 K 大。配合自定义比较器可按任意条件界定「大小」。注意 0-based 索引和 1-based 第几的对应。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>实现一个多级排序比较器：对 Student 对象先按总分降序，总分相同按数学降序，数学相同按姓名升序。先用 lambda 实现，再用函数对象实现，对比代码可读性。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>故意写一个违反严格弱序的比较器（如 return a <= b），用 std::sort 对 vector<int> 排序，观察结果（可能崩溃、段错误、无限循环或输出垃圾值）。然后修复。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ strict weak ordering requirements」；查阅 std::greater、std::less 等标准比较器；参考案例 027（sort/stable_sort 对比）。</p>
+                    </div>
                 </div>
             </section>
         </div>

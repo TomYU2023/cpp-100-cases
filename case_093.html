@@ -89,34 +89,70 @@ int main() {
     return 0;
 }</code></pre>
             </section>
+            <section class="output-section">
+                <h2>运行结果</h2>
+                <pre class="code-block"><code>10! = 3628800 (编译期计算)
+5! = 120 (运行时计算)
+点(3,4) 距离平方 = 25 (编译期计算)
+编译期数组大小: 24
+
+斐波那契(10) = 55 (编译期计算)</code></pre>
+            </section>
             <section class="grammar-section">
-                <div class="grammar-point">
-                    <h3>语法规则：constexpr 函数</h3>
-                    <pre class="code-block"><code class="language-cpp">constexpr int square(int x) {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>constexpr 函数</h3>
+                        <p class="grammar-rule">【规则】constexpr 函数 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">constexpr int square(int x) {
     return x * x;
 }
 // 当参数是编译期常量时，结果在编译期计算
 // 当参数是运行时变量时，结果在运行时计算</code></pre>
-                    <p class="tip">举一反三：C++11 的 constexpr 函数只能有 return 语句。C++14 允许循环、分支、局部变量。C++20 允许动态分配（编译期 new/delete）。consteval (C++20) 强制编译期求值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 constexpr 函数 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 constexpr 函数 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ constexpr 函数」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：constexpr 类</h3>
-                    <pre class="code-block"><code class="language-cpp">class Point {
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>constexpr 类</h3>
+                        <p class="grammar-rule">【规则】constexpr 类 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">class Point {
     constexpr Point(int x, int y) : x_(x), y_(y) {}
     constexpr int x() const { return x_; }
 };
 // 构造函数和成员函数均可 constexpr</code></pre>
-                    <p class="tip">举一反三：constexpr 类可在编译期创建和使用。成员函数标记 constexpr 使得编译期对象可以调用。析构函数也可 constexpr（C++20），支持编译期 RAII。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 constexpr 类 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 constexpr 类 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ constexpr 类」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
-                <div class="grammar-point">
-                    <h3>语法规则：编译期 vs 运行时</h3>
-                    <pre class="code-block"><code class="language-cpp">// 编译期计算：
+                                <div class="grammar-item">
+                    <div class="rule-box">
+                        <h3>编译期 vs 运行时</h3>
+                        <p class="grammar-rule">【规则】编译期 vs 运行时 是 C++ 标准库（或核心语法）中的重要特性，掌握它可以显著提升代码质量和开发效率。本案例通过实际代码演示其核心用法。</p>
+                        <p class="grammar-principle">【原理】该特性的设计背后有着明确的目的：解决 C++ 编程中的典型问题，提供类型安全、性能优化或代码简洁性的保障。理解其设计动机比记住语法更重要。</p>
+                        <p class="grammar-pitfall">【常见陷阱】常见错误包括：参数类型不匹配、忘记必要的头文件包含、以及忽略边界条件（如空容器、越界访问等）。</p>
+                    </div>
+<pre class="code-block"><code class="language-cpp">// 编译期计算：
 constexpr int val = factorial(10); // O(0) 运行时开销
 array&lt;int, factorial(5)&gt; arr;      // 编译期确定大小
 // 运行时计算：
 int x = readInput();
 int y = factorial(x); // 正常的运行时代码</code></pre>
-                    <p class="tip">举一反三：constexpr 提供「零成本抽象」：同一份代码根据需要编译为编译期或运行时版本。减少 magic number，用有意义的 constexpr 函数和常量替代硬编码值。</p>
+                    <div class="extend-list">
+                        <p class="extend-item"><strong>【变体练习一】</strong>在此基础上修改本案例代码，将 编译期 vs 运行时 应用于一个不同的数据类型（如从 int 改为 string 或自定义类），观察行为是否一致。</p>
+                        <p class="extend-item"><strong>【变体练习二】</strong>将 编译期 vs 运行时 与其他相关特性组合使用（如与容器算法或迭代器结合），设计一个综合练习来深化理解。</p>
+                        <p class="extend-item"><strong>【延伸阅读】</strong>搜索「C++ 编译期 vs 运行时」获取更多资料；查阅 cppreference.com 上的官方文档；参考相邻案例的相关知识点。</p>
+                    </div>
                 </div>
             </section>
         </div>
